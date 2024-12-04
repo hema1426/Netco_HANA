@@ -328,7 +328,7 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
         jsonObject.put("InvoiceNo",soNumber);
         jsonObject.put("LocationCode",locationCode);
         RequestQueue requestQueue = Volley.newRequestQueue(mContext);
-        String url= Utils.getBaseUrl(mContext) +"APInvoiceDetails";
+        String url= Utils.getBaseUrl(mContext) +"PurchaseInvoiceDetails";
         // Initialize a new JsonArrayRequest instance
         Log.w("Given_url_purchas:",url+jsonObject);
         salesOrdernewList =new ArrayList<>();

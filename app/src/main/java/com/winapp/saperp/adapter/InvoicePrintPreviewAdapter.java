@@ -1,5 +1,7 @@
 package com.winapp.saperp.adapter;
 
+import static com.winapp.saperp.activity.NewInvoiceListActivity.shortCodeStr;
+
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,6 +47,7 @@ public class InvoicePrintPreviewAdapter extends RecyclerView.Adapter<InvoicePrin
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         InvoicePrintPreviewModel.InvoiceList invoiceList=invoiceLists.get(position);
         viewHolder.slNo.setText(String.valueOf(position+1));
+        viewHolder.code.setText(String.valueOf(invoiceList.getProductCode()));
 
         if (invoiceList.getUomCode()!=null && !invoiceList.getUomCode().equals("null") && !invoiceList.getUomCode().isEmpty()){
             viewHolder.description.setText(invoiceList.getDescription()+" ("+invoiceList.getUomCode()+")");
@@ -67,10 +70,20 @@ public class InvoicePrintPreviewAdapter extends RecyclerView.Adapter<InvoicePrin
             viewHolder.qtyValue.setText((int) Double.parseDouble(invoiceList.getNetQuantity()) + "");
         }
 
-        viewHolder.price.setText(invoiceList.getPricevalue());
+        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+            viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble((invoiceList.getPricevalue()))));
+            viewHolder.total.setText(Utils.fourDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
+        }else{
+            if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
+                viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble((invoiceList.getPricevalue()))));
+                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
+            }else{
+                viewHolder.price.setText(invoiceList.getPricevalue());
+                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
+            }
+        }
      //   viewHolder.qtyValue.setText(invoiceList.getNetQuantity());
 
-        viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
 
 //        if (invoiceList.getUomCode()!=null && !invoiceList.getUomCode().equals("null")
 //                && !invoiceList.getUomCode().isEmpty()) {
@@ -155,6 +168,7 @@ public class InvoicePrintPreviewAdapter extends RecyclerView.Adapter<InvoicePrin
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         private TextView slNo;
+        private TextView code;
         private TextView description;
         private TextView qtyValue;
         private TextView price;
@@ -163,6 +177,7 @@ public class InvoicePrintPreviewAdapter extends RecyclerView.Adapter<InvoicePrin
             super(view);
             slNo=view.findViewById(R.id.sl_no);
             description=view.findViewById(R.id.description);
+            code=view.findViewById(R.id.inv_code_item);
             qtyValue=view.findViewById(R.id.qty);
             price=view.findViewById(R.id.price);
             total=view.findViewById(R.id.total);

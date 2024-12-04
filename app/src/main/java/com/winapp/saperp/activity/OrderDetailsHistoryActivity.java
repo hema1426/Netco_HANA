@@ -548,7 +548,7 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         model1.setPriceWithGST(object.optString("taxAmount"));
                                         model1.setItemDiscount(object.optString("itemDiscount"));
                                         model1.setBillDisc(salesObject.optString("billDiscount"));
-                                        model1.setIsItemFOC(salesObject.optString("itemAllowFOC"));
+                                        model1.setIsItemFOC(object.optString("itemAllowFOC"));
                                         model1.setMinimumSellingPrice(salesObject.optString("minimumSellingPrice"));
                                         model1.setBillDiscPercentage("0.00");
                                         double qty = Double.parseDouble(object.optString("quantity"));
@@ -719,6 +719,7 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         model1.setExchangeQty(object.optString("exc_Qty"));
                                         model1.setNetQty(object.optString("quantity"));
                                         model1.setPriceWithGST(object.optString("taxAmount"));
+                                        model1.setIsItemFOC(object.optString("itemAllowFOC"));
                                         model1.setItemDiscount(object.optString("itemDiscount"));
                                         model1.setBillDisc(salesObject.optString("billDiscount"));
                                         model1.setMinimumSellingPrice(salesObject.optString("minimumSellingPrice"));
@@ -726,7 +727,6 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         double qty = Double.parseDouble(object.optString("quantity"));
                                         double price = Double.parseDouble(object.optString("price"));
                                         double nettotal = qty * price;
-
                                         model1.setNetAmount(String.valueOf(nettotal));
                                         model1.setProductCheck(false);
 

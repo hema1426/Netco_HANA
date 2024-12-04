@@ -278,7 +278,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
 
-                showFilterAlertDialog(view,"Invoice By Summary");
+                showFilterAlertDialog(view,"Sales Summary");
             }
 
         }else if (view.getId()==R.id.customer_statement) {

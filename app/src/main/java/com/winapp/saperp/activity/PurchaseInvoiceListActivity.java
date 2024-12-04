@@ -633,9 +633,9 @@ public class PurchaseInvoiceListActivity extends NavigationActivity implements A
         jsonObject.put("InvoiceNo", soNumber);
         jsonObject.put("LocationCode",locationCode);
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url= Utils.getBaseUrl(this) +"APInvoiceDetails";
+        String url= Utils.getBaseUrl(this) +"PurchaseInvoiceDetails";
         // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:",url);
+        Log.w("Given_url_purchas:",url);
      //   pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
      //   pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
       //  pDialog.setTitleText("Generating Print Preview...");

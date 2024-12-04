@@ -1470,7 +1470,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                            "",
                                            "",
                                            "",
-                                           object.optString("focQty"),
+                                           "0",
                                            object.optString("minimumSellingPrice"),
                                            object.optString("stockInHand") , String.valueOf(timeStamp),
                                            object.optString("itemAllowFOC")

@@ -2404,7 +2404,7 @@ public class TSCPrinter {
 
                 //String status = TscDll.printerstatus(300);
                 int y = 0;
-                height = 60;
+                height = 70;
                 double currencytotal = 0.0;
                 double expensetotal = 0.0;
                 finalHeight = height + (currencyList.size() * 8) + (expenseList.size() * 8) + invoiceBottomLine;
@@ -3946,7 +3946,7 @@ public class TSCPrinter {
                             String firstname = reportSalesSummaryDetails.getCustomer().substring(0, 42);
                             String secondname = reportSalesSummaryDetails.getCustomer().substring(42);
 
-                            TscDll.sendcommand("TEXT 60," + y + ",\"Bold.TTF\",0,8,8,\"" + "CUST: " + firstname + "\"\n\n");
+                            TscDll.sendcommand("TEXT 60," + y + ",\"Bold.TTF\",0,8,8,\"" + firstname + "\"\n\n");
                             y += 30;
                             TscDll.sendcommand("TEXT 60," + y + ",\"Bold.TTF\",0,8,8,\"" + secondname + "\"\n\n");
                         }
@@ -4187,17 +4187,17 @@ public class TSCPrinter {
                 // Define the Box
                 //TscDll.sendcommand("BOX 0,"+y+",570,0,2\n");
                 TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,9,9,\"" + "No: " + salesOrderHeaderDetails.get(0).getSoNumber() + "\"\n");
-                TscDll.sendcommand("TEXT 400," + y + ",\"Bold.TTF\",0,10,10,\"" + salesOrderHeaderDetails.get(0).getSoDate() + "\"\n");
+                TscDll.sendcommand("TEXT 400," + y + ",\"Bold.TTF\",0,8,8,\"" + salesOrderHeaderDetails.get(0).getSoDate() + "\"\n");
                 y += LINE_SPACING;
                 if (salesOrderHeaderDetails.get(0).getCustomerName().length() <= 45) {
-                    TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,10,10,\"" + "CUST: " + salesOrderHeaderDetails.get(0).getCustomerName() + "\"\n\n");
+                    TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,8,8,\"" + "CUST: " + salesOrderHeaderDetails.get(0).getCustomerName() + "\"\n\n");
                 } else {
                     String firstname = salesOrderHeaderDetails.get(0).getCustomerName().substring(0, 42);
                     String secondname = salesOrderHeaderDetails.get(0).getCustomerName().substring(42);
 
-                    TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,10,10,\"" + "CUST: " + firstname + "\"\n\n");
+                    TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,8,8,\"" + "CUST: " + firstname + "\"\n\n");
                     y += 30;
-                    TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,10,10,\"" + secondname + "\"\n\n");
+                    TscDll.sendcommand("TEXT 0," + y + ",\"Bold.TTF\",0,8,8,\"" + secondname + "\"\n\n");
                 }
                 y += 30;
                 TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,7,7,\"" + "CODE: " + salesOrderHeaderDetails.get(0).getCustomerCode() + "\"\n");
@@ -4235,15 +4235,12 @@ public class TSCPrinter {
                         TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + address2 + "\"\n\n");
                     }
                 }
-                if (showUserName.equals("true")) {
-                    y += 30;
-                    TscDll.sendcommand("TEXT 400," + y + ",\"Poppins.TTF\",0,8,8,\"" + "User: " + username + "\"\n");
-                }
+
                 if (salesOrderHeaderDetails.get(0).getAddress1() != null &&
                         !salesOrderHeaderDetails.get(0).getAddress1().isEmpty()) {
                     y += 30;
                     Log.w("Address1_Value:", salesOrderHeaderDetails.get(0).getAddress1());
-                    TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" +  "ADDR: " +salesOrderHeaderDetails.get(0).getAddress1() + "\"\n");
+                    TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\""  +salesOrderHeaderDetails.get(0).getAddress1() + "\"\n");
                 }
 
                 if (salesOrderHeaderDetails.get(0).getAddress2() != null &&
@@ -4267,7 +4264,10 @@ public class TSCPrinter {
                     y += 30;
                     TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + salesOrderHeaderDetails.get(0).getAddresssZipcode() + "\"\n");
                 }
-
+                if (showUserName.equals("true")) {
+                    y += 30;
+                    TscDll.sendcommand("TEXT 400," + y + ",\"Poppins.TTF\",0,8,8,\"" + "User: " + username + "\"\n");
+                }
 
                 y += LINE_SPACING;
                 TscDll.sendcommand("BAR 0," + y + ",800,2\n");
@@ -4287,22 +4287,23 @@ public class TSCPrinter {
                     y += 30;
                     TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + index + "\"\n");
                     String productName = "";
-                    if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) == 0.00) {
-                        productName = salesOrder.getDescription() + "-(as FOC)";
-                    } else if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) > 0.00) {
-                        productName = salesOrder.getDescription();
-                    } else {
-                        productName = salesOrder.getDescription() + "-(as RTN)";
-                    }
                     String uomcode = "";
                     if (salesOrder.getUomCode() != null && !salesOrder.getUomCode().isEmpty() && !salesOrder.getUomCode().equals("null")) {
                         uomcode = "(" + salesOrder.getUomCode() + ")";
                     }
-                    if (showUom.equals("true")) {
-                        TscDll.sendcommand("TEXT 50," + y + ",\"Bold.TTF\",0,8,8,\"" + productName + uomcode + "\"\n");
+                    if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) == 0.00) {
+                        productName = salesOrder.getDescription() + "-(as FOC)"+"(PCS)";
+                    } else if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) > 0.00) {
+                        if (showUom.equals("true")) {
+                            productName = salesOrder.getDescription() + uomcode;
+                        }else{
+                            productName = salesOrder.getDescription();
+                        }
                     } else {
-                        TscDll.sendcommand("TEXT 50," + y + ",\"Bold.TTF\",0,8,8,\"" + productName + "\"\n");
+                        productName = salesOrder.getDescription() + "-(as RTN)"+"(PCS)";
                     }
+
+                    TscDll.sendcommand("TEXT 50," + y + ",\"Bold.TTF\",0,8,8,\"" + productName + "\"\n");
                     y += 30;
                     TscDll.sendcommand("TEXT 290," + y + ",\"Poppins.TTF\",0,9,9,\"" + (int) Double.parseDouble(salesOrder.getNetQty()) + "\"\n");
                     if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
@@ -4313,10 +4314,19 @@ public class TSCPrinter {
                         TscDll.sendcommand("TEXT 490," + y + ",\"Poppins.TTF\",0,9,9,\"" +
                                 fourDecimalPoint(Double.parseDouble(salesOrder.getTotal())) + "\"\n");
                     }else{
-                        TscDll.sendcommand("TEXT 390," + y + ",\"Poppins.TTF\",0,9,9,\"" + salesOrder.getPricevalue() + "\"\n");
+                        if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
 
-                        TscDll.sendcommand("TEXT 490," + y + ",\"Poppins.TTF\",0,9,9,\"" +
-                                twoDecimalPoint(Double.parseDouble(salesOrder.getTotal())) + "\"\n");
+                            TscDll.sendcommand("TEXT 390," + y + ",\"Poppins.TTF\",0,9,9,\"" +
+                                    fourDecimalPoint(Double.parseDouble(salesOrder.getPricevalue())) + "\"\n");
+                            TscDll.sendcommand("TEXT 490," + y + ",\"Poppins.TTF\",0,9,9,\"" +
+                                    twoDecimalPoint(Double.parseDouble(salesOrder.getTotal())) + "\"\n");
+                        }else{
+                            TscDll.sendcommand("TEXT 390," + y + ",\"Poppins.TTF\",0,9,9,\"" + salesOrder.getPricevalue() + "\"\n");
+
+                            TscDll.sendcommand("TEXT 490," + y + ",\"Poppins.TTF\",0,9,9,\"" +
+                                    twoDecimalPoint(Double.parseDouble(salesOrder.getTotal())) + "\"\n");
+                        }
+
                     }
                     index++;
                 }
@@ -4663,22 +4673,23 @@ public class TSCPrinter {
                             y += 30;
                             TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + index + "\"\n");
                             String productName = "";
-                            if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) == 0.00) {
-                                productName = salesOrder.getDescription() + "-(as FOC)";
-                            } else if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) > 0.00) {
-                                productName = salesOrder.getDescription();
-                            } else {
-                                productName = salesOrder.getDescription() + "-(as RTN)";
-                            }
                             String uomcode = "";
                             if (salesOrder.getUomCode() != null && !salesOrder.getUomCode().isEmpty() && !salesOrder.getUomCode().equals("null")) {
                                 uomcode = "(" + salesOrder.getUomCode() + ")";
                             }
-                            if (showUom.equals("true")) {
-                                TscDll.sendcommand("TEXT 50," + y + ",\"Bold.TTF\",0,8,8,\"" + productName + uomcode + "\"\n");
+                            if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) == 0.00) {
+                                productName = salesOrder.getDescription() + "-(as FOC)"+"(PCS)";
+                            } else if (Double.parseDouble(twoDecimalPoint(Double.parseDouble(salesOrder.getTotal()))) > 0.00) {
+                                if (showUom.equals("true")) {
+                                    productName = salesOrder.getDescription() + uomcode;
+                                }else{
+                                    productName = salesOrder.getDescription();
+                                }
                             } else {
-                                TscDll.sendcommand("TEXT 50," + y + ",\"Bold.TTF\",0,8,8,\"" + productName + "\"\n");
+                                productName = salesOrder.getDescription() + "-(as RTN)"+"(PCS)";
                             }
+
+                            TscDll.sendcommand("TEXT 50," + y + ",\"Bold.TTF\",0,8,8,\"" + productName + "\"\n");
                             y += 30;
                             TscDll.sendcommand("TEXT 290," + y + ",\"Poppins.TTF\",0,9,9,\"" + (int) Double.parseDouble(salesOrder.getNetQty()) + "\"\n");
                             if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
@@ -5963,7 +5974,7 @@ public class TSCPrinter {
                 // Define the Box
                 //TscDll.sendcommand("BOX 0,"+y+",570,0,2\n");
                 TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "FROM DATE: " + fromDate + "\"\n");
-                TscDll.sendcommand("TEXT 330," + y + ",\"Poppins.TTF\",0,8,8,\"" + "TO DATE: " + toDate + "\"\n");
+                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "TO DATE: " + toDate + "\"\n");
 
                 y += 40;
                 if (customerStateModels.get(0).getCustomerName().length() <= 45) {

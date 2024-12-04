@@ -162,8 +162,13 @@ public class NewInvoicePrintPreviewAdapter extends RecyclerView.Adapter<NewInvoi
             viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble((invoiceList.getPricevalue()))));
             viewHolder.total.setText(Utils.fourDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
         }else{
-            viewHolder.price.setText(invoiceList.getPricevalue());
-            viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
+            if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
+                viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble((invoiceList.getPricevalue()))));
+                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
+            }else{
+                viewHolder.price.setText(invoiceList.getPricevalue());
+                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
+            }
         }
     }
 

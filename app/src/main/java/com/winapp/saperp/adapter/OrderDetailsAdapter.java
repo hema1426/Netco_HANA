@@ -202,7 +202,7 @@ public class OrderDetailsAdapter extends RecyclerView.Adapter<OrderDetailsAdapte
                             "",
                             "",
                             model.getExchangeQty(),
-                            model.getMinimumSellingPrice(),model.getStockQty(),"",model.isItemFOC
+                            model.getMinimumSellingPrice(),model.getStockQty(),"",model.getIsItemFOC()
                     );
 ;
 
