@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -244,86 +245,99 @@ public class ProductAdapterLoadMore extends RecyclerView.Adapter {
                 productViewHolder.thumbnail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        SharedPreferences sharedPreferences = mContext.getSharedPreferences("customerPref",MODE_PRIVATE);
-                        SharedPreferences.Editor customerPredEdit= sharedPreferences.edit();
+                        SharedPreferences sharedPreferences = mContext.getSharedPreferences("customerPref", MODE_PRIVATE);
+                        SharedPreferences.Editor customerPredEdit = sharedPreferences.edit();
                         String selectCustomerId = sharedPreferences.getString("customerId", "");
-                        customerDetails=new ArrayList<>();
-                        if (selectCustomerId!=null && !selectCustomerId.isEmpty()){
-                            customerDetails=dbHelper.getCustomer(selectCustomerId);
+                        customerDetails = new ArrayList<>();
+                        if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
+                            customerDetails = dbHelper.getCustomer(selectCustomerId);
                         }
-                        ArrayList<SettingsModel> settings=dbHelper.getSettings();
-                        if (settings.size()>0) {
+                        ArrayList<SettingsModel> settings = dbHelper.getSettings();
+                        if (settings.size() > 0) {
                             for (SettingsModel model : settings) {
                                 if (model.getSettingName().equals("allow_negative_switch")) {
-                                    isAllowLowStock= model.getSettingValue().equals("1");
+                                    isAllowLowStock = model.getSettingValue().equals("1");
                                 }
                             }
                         }
-                        if (productViewHolder.stockStatus.getText().equals("No Stock")){
-                            if (isAllowLowStock){
+                        if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
+
+                            if (products.getProductName() != null && !products.getProductName().equals("")) {
+
+                        if (productViewHolder.stockStatus.getText().equals("No Stock")) {
+
+                            if (isAllowLowStock) {
 
                                 // Disable the Customer Choose for Showing the Products
-                               // if (customerDetails.size()>0){
-                                    int orientation = mContext.getResources().getConfiguration().orientation;
-                                    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                        // code for portrait mode
-                                        if (mContext instanceof MainHomeActivity){
-                                            callBack.showBottomDescription(products);
-                                        }else {
-                                            Gson gson = new Gson();
-                                            String object = gson.toJson(products);
-                                            Intent intent = new Intent(mContext, DescriptionActivity.class);
-                                            intent.putExtra("productDetails", object);
-                                            mContext.startActivity(intent);
-                                        }
+                                // if (customerDetails.size()>0){
+                                int orientation = mContext.getResources().getConfiguration().orientation;
+                                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                    // code for portrait mode
+                                    if (mContext instanceof MainHomeActivity) {
+                                        callBack.showBottomDescription(products);
                                     } else {
-                                        // code for landscape mode
                                         Gson gson = new Gson();
                                         String object = gson.toJson(products);
                                         Intent intent = new Intent(mContext, DescriptionActivity.class);
                                         intent.putExtra("productDetails", object);
                                         mContext.startActivity(intent);
                                     }
-                               // }else {
-                                 //   showAlert();
-                               // }
-                            }else {
-                              //  callBack.showLowStockAlert();
+                                } else {
+                                    // code for landscape mode
+                                    Gson gson = new Gson();
+                                    String object = gson.toJson(products);
+                                    Intent intent = new Intent(mContext, DescriptionActivity.class);
+                                    intent.putExtra("productDetails", object);
+                                    mContext.startActivity(intent);
+                                }
+                                // }else {
+                                //   showAlert();
+                                // }
+                            } else {
+                                //  callBack.showLowStockAlert();
                                 Gson gson = new Gson();
                                 String object = gson.toJson(products);
                                 Intent intent = new Intent(mContext, DescriptionActivity.class);
                                 intent.putExtra("productDetails", object);
                                 mContext.startActivity(intent);
                             }
-                        }else {
-                           // if (customerDetails.size()>0){
-                                int orientation = mContext.getResources().getConfiguration().orientation;
-                                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                    // code for portrait mode
-                                    if (mContext instanceof MainHomeActivity /*|| mContext instanceof CategoriesActivity*/){
-                                        callBack.showBottomDescription(products);
-                                    }else {
-                                        Gson gson = new Gson();
-                                        String object = gson.toJson(products);
-                                        Intent intent = new Intent(mContext, DescriptionActivity.class);
-                                        intent.putExtra("productDetails", object);
-
-                                        mContext.startActivity(intent);
-
-                                    }
+                        } else {
+                            // if (customerDetails.size()>0){
+                            int orientation = mContext.getResources().getConfiguration().orientation;
+                            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                // code for portrait mode
+                                if (mContext instanceof MainHomeActivity /*|| mContext instanceof CategoriesActivity*/) {
+                                    callBack.showBottomDescription(products);
                                 } else {
-                                    // code for landscape mode
-                                      Gson gson = new Gson();
-                                      String object = gson.toJson(products);
-                                      Intent intent = new Intent(mContext, DescriptionActivity.class);
-                                      intent.putExtra("productDetails", object);
+                                    Gson gson = new Gson();
+                                    String object = gson.toJson(products);
+                                    Intent intent = new Intent(mContext, DescriptionActivity.class);
+                                    intent.putExtra("productDetails", object);
+
                                     mContext.startActivity(intent);
+
                                 }
-                           // }else {
-                              //  showAlert();
-                           // }
+                            } else {
+                                // code for landscape mode
+                                Gson gson = new Gson();
+                                String object = gson.toJson(products);
+                                Intent intent = new Intent(mContext, DescriptionActivity.class);
+                                intent.putExtra("productDetails", object);
+                                mContext.startActivity(intent);
+                            }
+                            // }else {
+                            //  showAlert();
+                            // }
                         }
+                    }else{
+                            Toast.makeText(mContext, "Product Name and Detail Empty.", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }else{
+                        Toast.makeText(mContext, "Select Customer ", Toast.LENGTH_SHORT).show();
+
                     }
+                }
                 });
             }catch (Exception ex){ Log.e("Error_in_adapter:", Objects.requireNonNull(ex.getMessage()));
             }

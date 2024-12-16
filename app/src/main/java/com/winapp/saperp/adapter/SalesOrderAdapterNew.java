@@ -394,6 +394,8 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
                                     salesListModel.setNetQty(detailObject.optString("quantity"));
                                     salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                                     salesListModel.setUnitPrice(detailObject.optString("price"));
+                                    salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
+
                                     double qty=Double.parseDouble(detailObject.optString("quantity"));
                                     double price=Double.parseDouble(detailObject.optString("price"));
 
@@ -436,6 +438,7 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
                                         salesListModel.setLqty(detailObject.optString("LQty"));
                                         salesListModel.setCqty(detailObject.optString("CQty"));
                                         salesListModel.setNetQty(detailObject.optString("ReturnQty"));
+                                        salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                         double qty1 = Double.parseDouble(detailObject.optString("ReturnQty"));
                                         double price1 = Double.parseDouble(detailObject.optString("Price"));

@@ -32,6 +32,7 @@
             android:layout_gravity="center"
             android:layout_marginLeft="10dp"
             android:padding="5dp"
+            android:layout_weight="1"
             android:focusableInTouchMode="true"
             android:layout_height="wrap_content">
 
@@ -42,19 +43,15 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:text="Product Name"
                     android:id="@+id/item_name"
                     android:layout_marginLeft="5dp"
                     android:textSize="12sp"
+                    android:layout_weight="2"
                     android:textColor="#212121"
                     android:textStyle="bold"
-                    android:layout_height="wrap_content"/>
-
-                <Space
-                    android:layout_width="0dip"
-                    android:layout_weight="1"
-                    android:layout_height="0dip"/>
+                    android:layout_height="30dp"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -75,9 +72,10 @@
                         android:layout_width="wrap_content"
                         android:id="@+id/item_price"
                         android:textStyle="bold"
-                        android:layout_marginRight="20dp"
+                        android:text="$2344"
+                        android:layout_marginRight="50dp"
                         android:textColor="#212121"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:layout_height="wrap_content"/>
 
                 </LinearLayout>
@@ -176,7 +174,7 @@
                         android:text="CTN"
                         android:layout_gravity="center"
                         android:gravity="center"
-                        android:id="@+id/customer_code"
+                        android:id="@+id/uomtitle_item"
                         android:textSize="12sp"
                         android:layout_marginRight="20dp"
                         android:textColor="#212121"
@@ -361,9 +359,38 @@
                 android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_marginLeft="10dp"
+                    android:layout_width="match_parent"
                     android:layout_marginTop="5dp"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:text="UOM : "
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:textSize="10sp"
+                        android:textColor="@color/pink_clr"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:id="@+id/uomItem_cart"
+                        android:textSize="11sp"
+                        android:textColor="@color/lit_green_dark"
+                        android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1"
                     android:orientation="horizontal"
                     android:layout_height="wrap_content">
 
@@ -393,17 +420,12 @@
 
                 </LinearLayout>
 
-                <Space
-                    android:layout_width="0dip"
-                    android:layout_weight="1"
-                    android:layout_height="0dip"/>
-
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_marginTop="5dp"
                     android:id="@+id/ltotal_layout"
-                    android:layout_marginRight="20dp"
+                    android:layout_weight="1"
                     android:orientation="horizontal"
                     android:layout_height="wrap_content">
 

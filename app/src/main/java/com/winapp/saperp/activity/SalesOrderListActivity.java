@@ -1014,6 +1014,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                 salesListModel.setNetQty(detailObject.optString("quantity"));
                                 salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                                 salesListModel.setUnitPrice(detailObject.optString("price"));
+                                salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                 double qty1 = Double.parseDouble(detailObject.optString("quantity"));
                                 double price1 = Double.parseDouble(detailObject.optString("price"));
@@ -1035,6 +1036,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                     salesListModel.setLqty(detailObject.optString("LQty"));
                                     salesListModel.setCqty(detailObject.optString("CQty"));
                                     salesListModel.setNetQty("-"+detailObject.optString("ReturnQty"));
+                                    salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                     double qty12 = Double.parseDouble(detailObject.optString("ReturnQty"));
                                     double price12 = Double.parseDouble(detailObject.optString("Price"));

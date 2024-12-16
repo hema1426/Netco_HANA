@@ -659,14 +659,18 @@ public class NewInvoiceListActivity extends NavigationActivity
                 try {
                     ((TextView) parent.getChildAt(0)).setTextColor(Color.BLUE);
                     ((TextView) parent.getChildAt(0)).setTextSize(12);
-                     if (invoiceStatus.getSelectedItem().equals("UNPAID")) {
-                      //  invoice_status = "O";
-                         fromDatelay.setAlpha(0.4F);
-                         fromDatelay.setEnabled(false);
-                     } else {
-                         fromDatelay.setAlpha(0.9F);
-                         fromDatelay.setEnabled(true);
-                     }
+                    if (invoiceStatus.getSelectedItem().equals("UNPAID")) {
+                        //  invoice_status = "O";
+                        fromDatelay.setAlpha(0.4F);
+                        fromDatelay.setEnabled(false);
+                        fromDate.setClickable(false);
+                        fromDate.setEnabled(false);
+                    } else {
+                        fromDatelay.setAlpha(0.9F);
+                        fromDatelay.setEnabled(true);
+                        fromDate.setClickable(true);
+                        fromDate.setEnabled(true);
+                    }
                 } catch (Exception ed) {
                 }
             }

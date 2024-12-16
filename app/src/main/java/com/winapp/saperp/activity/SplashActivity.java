@@ -163,7 +163,7 @@ public class SplashActivity extends AppCompatActivity {
           String apiUrl=Constants.SHABAN_URL;
          // String apiUrl=Constants.UNICO;
                 //   String apiUrl=Constants.SUPER_STAR_DEMO_new10;
-      //   String apiUrl=Constants.TRANS_ORIENT_DEMO;
+        //String apiUrl=Constants.TRANS_ORIENT_DEMO;
 
                 dbHelper.insertUrl(apiUrl);
                 startActivity(new Intent(SplashActivity.this,LoginActivity.class));

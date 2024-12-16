@@ -6519,6 +6519,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                                 salesListModel.netQty = detailObject.optString("quantity")
                                 salesListModel.cartonPrice = detailObject.optString("cartonPrice")
                                 salesListModel.unitPrice = detailObject.optString("price")
+                                salesListModel.grossPrice = detailObject.optString("grossPrice")
+
                                 val qty1 = detailObject.optString("quantity").toDouble()
                                 val price1 = detailObject.optString("price").toDouble()
                                 val nettotal1 = qty1 * price1

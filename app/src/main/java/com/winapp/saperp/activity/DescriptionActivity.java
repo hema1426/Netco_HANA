@@ -178,7 +178,8 @@ public class DescriptionActivity extends AppCompatActivity {
         }else {
             Log.w("This is not tablet","Success");
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            setContentView(R.layout.cart_selectpdt_next);
+//            setContentView(R.layout.cart_selectpdt_next);
+            setContentView(R.layout.activity_description);
         }
         Log.w("activity_cg",getClass().getSimpleName().toString());
 
@@ -594,7 +595,7 @@ public class DescriptionActivity extends AppCompatActivity {
 
         Gson gson = new Gson();
         ProductsModel model = gson.fromJson(getIntent().getStringExtra("productDetails"), ProductsModel.class);
-
+        Log.w("modelpdtCart",""+model.getProductName());
         SharedPreferences sharedPreferences1 = getSharedPreferences("customerPref",MODE_PRIVATE);
         selectCustomerId = sharedPreferences1.getString("customerId", "");
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
@@ -773,7 +774,8 @@ public class DescriptionActivity extends AppCompatActivity {
                                         focType,
                                         exchangeEditext.getText().toString(),
                                         exchangeType,
-                                        String.valueOf(Utils.twoDecimalPoint(percentApi)),
+                                        discountEditext.getText().toString(),
+                                      //  String.valueOf(Utils.twoDecimalPoint(percentApi)),
                                         returnEditext.getText().toString(),
                                         returnType,"",
                                         String.valueOf(total),

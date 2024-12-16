@@ -60,13 +60,21 @@ public class SalesOrderPrintPreviewAdapter extends RecyclerView.Adapter<SalesOrd
         }
         Log.w("so_total",""+salesList.getTotal());
       //  viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
+
+
+
         if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
             viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
             viewHolder.total.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getTotal())));
         }else{
             if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
-                viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
-                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getTotal())));
+                if (context instanceof SalesOrderListActivity){
+                    viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getGrossPrice())));
+                    viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getTotal())));
+                }else{
+                    viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
+                    viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getTotal())));
+                }
             }
             else{
                 viewHolder.price.setText(salesList.getPricevalue());

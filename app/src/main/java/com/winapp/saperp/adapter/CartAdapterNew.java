@@ -86,14 +86,14 @@ public class CartAdapterNew extends
         private final ProgressBar progressBar;
         LinearLayout removeItemLayout;
         TextView pcsQtyValue;
-        TextView ctnQtyValue;
+        TextView ctnQtyValue , uomValue;
         private ImageView ctnPlus;
         private ImageView ctnMinus;
         private ImageView pcsPlus;
         private ImageView pcsMinus;
         private LinearLayout pcsLayout;
         private LinearLayout ltotalLayout;
-        private TextView cqty;
+        private TextView cqty,uomtitlel;
         private TextView lqty;
         private TextView cprice;
         private TextView lprice;
@@ -114,6 +114,9 @@ public class CartAdapterNew extends
             pcsPlus=view.findViewById(R.id.pcs_plus);
             itemRemove=view.findViewById(R.id.remove_item);
             pcsLayout=view.findViewById(R.id.pcs_layout);
+            uomValue=view.findViewById(R.id.uomItem_cart);
+            uomtitlel =view.findViewById(R.id.uomtitle_item);
+
             // moreButton=view.findViewById(R.id.more_btn);
             progressBar = view.findViewById(R.id.progressBar);
 
@@ -150,11 +153,13 @@ public class CartAdapterNew extends
     @NonNull
     @Override
     public ProfileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (Utils.isTablet(mContext)){
-            itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.new_cart_items, parent, false);
-        }else {
-            itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.cart_mobile_layout, parent, false);
-        }
+//        if (Utils.isTablet(mContext)){
+//            itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.new_cart_items, parent, false);
+//        }else {
+//            itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.cart_mobile_layout, parent, false);
+//        }
+        itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.new_cart_items, parent, false);
+
         return new ProfileViewHolder(itemView);
     }
 
@@ -176,19 +181,30 @@ public class CartAdapterNew extends
                 negativeStockStr=user.get(SessionManager.KEY_NEGATIVE_STOCK);
 
             // display name with Caps letter
-                holder.productName.setText(products.getCART_COLUMN_PNAME().substring(0, 1).toUpperCase() +products.getCART_COLUMN_PNAME().substring(1).toLowerCase());
+                holder.productName.setText(products.getCART_COLUMN_PNAME().substring(0, 1).toUpperCase()
+                        +products.getCART_COLUMN_PNAME().substring(1).toLowerCase());
              //   holder.itemQty.setText(products.getCART_COLUMN_QTY());
                 holder.productRate.setText("$ "+Utils.twoDecimalPoint(Double.parseDouble(products.getSubTotal())));
-           // double  pcspercarton=Double.parseDouble(products.getCART_PCS_PER_CARTON());
-            double  pcspercarton=1;
-                if (pcspercarton>1){
-                    holder.pcsLayout.setVisibility(View.VISIBLE);
-                    holder.ltotalLayout.setVisibility(View.VISIBLE);
-                }else {
+            double  pcspercarton =Double.parseDouble(products.getCART_PCS_PER_CARTON());
+          //  double  pcspercarton=1;
+
+                if(!products.getUomCode().equalsIgnoreCase("CTN") ||
+                        !products.getUomCode().equalsIgnoreCase("PCS")){
+
                     holder.pcsLayout.setVisibility(View.GONE);
                     holder.ltotalLayout.setVisibility(View.INVISIBLE);
-                }
+                    holder.uomtitlel.setText("Qty");
 
+                }else{
+                    holder.uomtitlel.setText("CTN");
+                    if (pcspercarton >1){
+                        holder.pcsLayout.setVisibility(View.VISIBLE);
+                        holder.ltotalLayout.setVisibility(View.VISIBLE);
+                    }else {
+                        holder.pcsLayout.setVisibility(View.GONE);
+                        holder.ltotalLayout.setVisibility(View.INVISIBLE);
+                    }
+                }
               Double d = Double.valueOf(products.getCART_COLUMN_CTN_QTY());
               Integer value = d.intValue();
               holder.ctnQtyValue.setText(String.valueOf(value));
@@ -201,6 +217,7 @@ public class CartAdapterNew extends
 
             double cprice=Double.parseDouble(products.getCART_COLUMN_CTN_PRICE());
             double lprice=Double.parseDouble(products.getCART_UNIT_PRICE());
+            holder.uomValue.setText(String.valueOf(products.getUomCode()));
 
             holder.cprice.setText(String.valueOf(cprice));
             holder.lprice.setText(String.valueOf(lprice));
@@ -277,8 +294,10 @@ public class CartAdapterNew extends
             double data = Double.parseDouble(products.getCART_PCS_PER_CARTON());
             double cn_qty=Double.parseDouble(holder.ctnQtyValue.getText().toString());
             double lqty=Double.parseDouble(holder.pcsQtyValue.getText().toString());
+
             double net_qty=(cn_qty*data)+lqty;
-            Log.e("Net_value_CTN:", String.valueOf(net_qty));
+            Log.e("Net_value_CTN :", String.valueOf(net_qty));
+
             if (lqty==0 && cn_qty==1){
                 showRemoveItemAlert(products.getCART_COLUMN_PID());
             }else {
@@ -347,6 +366,7 @@ public class CartAdapterNew extends
             double lqty=Double.parseDouble(holder.pcsQtyValue.getText().toString());
             double net_qty=(cn_qty*data)+lqty;
             Log.e("Net_value_PCS:", String.valueOf(net_qty));
+
             if (cn_qty==0 && lqty==1) {
                 showRemoveItemAlert(products.getCART_COLUMN_PID());
             }else {

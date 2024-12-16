@@ -239,6 +239,7 @@ public class CartActivity extends AppCompatActivity {
         mCompressor = new FileCompressor(this);
         user = session.getUserDetails();
         sharedPreferenceUtil = new SharedPreferenceUtil(this);
+        Log.w("activity_cg",getClass().getSimpleName().toString()+" - CartAdapterNew");
 
         percentApi = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC, "");
         Log.w("percentApi..", "" + percentApi);

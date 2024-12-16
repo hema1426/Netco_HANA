@@ -208,12 +208,20 @@ public class SalesOrderPrintPreviewModel {
         private String total;
         private String cartonPrice;
         private String unitPrice;
+        private String grossPrice;
         private String pcsperCarton;
         private String itemtax;
         private String subTotal;
         private String pricevalue;
         private String uomCode;
 
+        public String getGrossPrice() {
+            return grossPrice;
+        }
+
+        public void setGrossPrice(String grossPrice) {
+            this.grossPrice = grossPrice;
+        }
 
         public String getUomCode() {
             return uomCode;
