@@ -120,6 +120,14 @@
             android:name=".ReportPreview.RoCustomerOutstandDatePreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".printpreview.StockAdjustPrintPreview"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.StockTakePreviewPrintActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ReportPreview.SapStockSummaryPreviewActivity"
@@ -149,6 +157,21 @@
             android:name=".activity.NewExpensePrintPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.StockAdjustmentListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.NewStockAdjustmentProductAddActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            />
+        <activity
+            android:name=".activity.StockTakeListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.PurchaseInvoiceListActivity"
             android:exported="false"

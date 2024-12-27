@@ -413,7 +413,7 @@ public class CategoriesActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Log.w("AllCustomerUrl:", url);
+                Log.w("AllCustomerUrl:", url+jsonObject);
                 JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
                         response -> {
                             try {

@@ -105,7 +105,7 @@ public class CashInvoiceFragment extends Fragment {
     private static String customerCode;
     private static String userName;
     private static String locationCode;
-    private static String currentDate;
+    private static String currentDate ;
     public static String amountpayable;
     public static DBHelper dbHelper;
     private static FragmentActivity myContext;
@@ -1485,6 +1485,7 @@ public class CashInvoiceFragment extends Fragment {
             receiptHeader.put("ChequeNo",CashCollectionActivity.chequeNo.getText().toString());
             receiptHeader.put("ChequeDateString",chequeDate);
             receiptHeader.put("BankInDate","");
+
             receiptHeader.put("BankInDateString","");
         }else if (CashCollectionActivity.payMethod.equals("CASH")){
             receiptHeader.put("Paymode","Cash");
@@ -1587,6 +1588,7 @@ public class CashInvoiceFragment extends Fragment {
         receiptHeader.put("DetDebitAmount","");
         receiptHeader.put("CustomerTypeCode","");
         receiptHeader.put("IsAdvancePaid",false);
+        receiptHeader.put("image",CashCollectionActivity.imageString);
         receiptHeader.put("TotalCustomerPaidAmount",CashCollectionActivity.netAmount.getText().toString());
         receiptHeader.put("ExcessPaidAmount",CashCollectionActivity.differenceAmount.getText().toString());
         receiptHeader.put("Balance",CashCollectionActivity.differenceAmount.getText().toString());

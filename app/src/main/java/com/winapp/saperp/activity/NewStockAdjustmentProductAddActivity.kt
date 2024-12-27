@@ -1,4 +1,4 @@
-package com.winapp.saperp.salesreturn
+package com.winapp.saperp.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -63,6 +63,7 @@ import com.bumptech.glide.request.target.Target
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -71,32 +72,31 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.winapp.saperp.BuildConfig
 import com.winapp.saperp.R
-import com.winapp.saperp.activity.CreateNewInvoiceActivity
-import com.winapp.saperp.activity.NewInvoiceListActivity
-import com.winapp.saperp.activity.SalesOrderListActivity
-import com.winapp.saperp.adapter.NewSalesReturnProductAdapter
+import com.winapp.saperp.adapter.NewStockAdjustmentProductAdapter
 import com.winapp.saperp.adapter.SelectProductAdapter
 import com.winapp.saperp.db.DBHelper
 import com.winapp.saperp.model.AppUtils
 import com.winapp.saperp.model.CreateInvoiceModel
-import com.winapp.saperp.model.CustomerDetails
 import com.winapp.saperp.model.CustomerModel
 import com.winapp.saperp.model.HomePageModel
 import com.winapp.saperp.model.InvoicePrintPreviewModel
 import com.winapp.saperp.model.ItemGroupList
+import com.winapp.saperp.model.NewLocationModel
 import com.winapp.saperp.model.ProductSummaryModel
 import com.winapp.saperp.model.ProductsModel
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel.SalesList
+import com.winapp.saperp.model.StockAdjustSaveDetail
+import com.winapp.saperp.model.StockAdjustSaveModel
 import com.winapp.saperp.model.UomModel
 import com.winapp.saperp.thermalprinter.PrinterUtils
 import com.winapp.saperp.utils.BarCodeScanner
 import com.winapp.saperp.utils.CaptureSignatureView
+import com.winapp.saperp.utils.CommonMethodKotl.toast
 import com.winapp.saperp.utils.Constants
 import com.winapp.saperp.utils.FileCompressor
 import com.winapp.saperp.utils.ImageUtil
 import com.winapp.saperp.utils.SessionManager
-import com.winapp.saperp.utils.SettingUtils
 import com.winapp.saperp.utils.SharedPreferenceUtil
 import com.winapp.saperp.utils.Utils
 import com.winapp.saperp.zebraprinter.TSCPrinter
@@ -114,10 +114,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.Objects
 
-class NewSalesReturnProductAddActivity : AppCompatActivity() {
+class NewStockAdjustmentProductAddActivity : AppCompatActivity() {
     var returnLayout: LinearLayout? = null
     var showHideButton: ImageView? = null
-    private var productSummaryAdapter: NewSalesReturnProductAdapter? = null
+    private var productSummaryAdapter: NewStockAdjustmentProductAdapter? = null
     private val productSummaryList: ArrayList<ProductSummaryModel>? = null
     var productSummaryView: RecyclerView? = null
     var companyCode: String? = null
@@ -146,10 +146,11 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     var customerNameText: EditText? = null
     var priceText: EditText? = null
     var subTotalValue: TextView? = null
-    var taxValueText: TextView? = null
-    var netTotalValue: TextView? = null
-    var customerDetails: ArrayList<CustomerDetails>? = null
+//    var taxValueText: TextView? = null
+//    var netTotalValue: TextView? = null
+//    var customerDetails: ArrayList<CustomerDetails>? = null
     private var dbHelper: DBHelper? = null
+    private var isEdit: Boolean = false
     private var sharedPreferenceUtil: SharedPreferenceUtil? = null
     private var settingUOMReturnval: String? = "PCS"
     var taxTitle: TextView? = null
@@ -166,12 +167,15 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     var uomChangel: TextView? = null
     var ed_uomTxtl: TextView? = null
     var uomTxtTitl: TextView? = null
+    var location_adjustl: TextView? = null
+    private var locationDetailsl: ArrayList<NewLocationModel.LocationDetails>? = null
     var isCartonQtyEdit = false
     var isQtyEdit = false
     var ischangeUOM = false
     var isUomSetting = true
     private var uomList: ArrayList<UomModel>? = null
     private var uomListEdit: ArrayList<UomModel>? = null
+    var stockAdjustDetailList: ArrayList<StockAdjustSaveDetail>? = null
     var qtyTextWatcher: TextWatcher? = null
     var cartonTextWatcher: TextWatcher? = null
     var lqtyTextWatcher: TextWatcher? = null
@@ -188,12 +192,15 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     var RESULT_CODE = 12
     var scannedBarcode: String? = ""
     var locationCode: String? = null
+    var currentDateString: String? = null
     var stockQtyValue: TextView? = null
     var stockLayout: LinearLayout? = null
     private val cqtyTW: TextWatcher? = null
     private val lqtyTW: TextWatcher? = null
     private var qtyTW: TextWatcher? = null
     var beforeLooseQty: String? = null
+    var fromWarehouseCode: String? = ""
+    var fromWarehouseName: String? = ""
     var ss_Cqty: String? = null
     var isAllowLowStock = false
     var focLayout: LinearLayout? = null
@@ -258,11 +265,12 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_new_sales_return_product_add)
-        supportActionBar!!.title = "Sales Return"
+        setContentView(R.layout.activity_new_stock_adjust_product_add)
+        supportActionBar!!.title = "Stock Adjustment"
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         signatureString = ""
         Log.w("activity_cg", javaClass.simpleName.toString())
+
         session = SessionManager(this)
         imageString = ""
         user = session!!.userDetails
@@ -275,10 +283,11 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         uomChangel = findViewById(R.id.uomChange)
         ed_uomTxtl = findViewById(R.id.ed_uomTxt)
         uomTxtTitl = findViewById(R.id.uomTxtTitle)
+        location_adjustl = findViewById(R.id.location_adjust)
 
-        settingUOMReturnval = sharedPreferenceUtil!!.getStringPreference(sharedPreferenceUtil!!.KEY_SETTING_RETURN_UOM,
-            "")
-        Log.w("settingUOMreturn..",""+settingUOMReturnval)
+//        settingUOMReturnval = sharedPreferenceUtil!!.getStringPreference(sharedPreferenceUtil!!.KEY_SETTING_RETURN_UOM,
+//            "")
+//        Log.w("settingUOMreturn..",""+settingUOMReturnval)
 
         companyCode = user!!.get(SessionManager.KEY_COMPANY_CODE)
         companyName = user!!.get(SessionManager.KEY_COMPANY_NAME)
@@ -304,8 +313,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         stockCount = findViewById(R.id.stock_count)
         qtyValue = findViewById(R.id.qty)
         subTotalValue = findViewById(R.id.balance_value)
-        taxValueText = findViewById(R.id.tax)
-        netTotalValue = findViewById(R.id.net_total)
+//        taxValueText = findViewById(R.id.tax)
+//        netTotalValue = findViewById(R.id.net_total)
         taxTitle = findViewById(R.id.tax_title)
         addProduct = findViewById(R.id.add_product)
         itemCount = findViewById(R.id.item_count)
@@ -353,29 +362,27 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         exchangeEditext!!.setEnabled(false)
         discountEditext!!.setEnabled(false)
         returnEditext!!.setEnabled(false)
-        qtyValue!!.setEnabled(false)
         val c = Calendar.getInstance().time
         println("Current time => $c")
         val df1 = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
         currentDate = df1.format(c)
         val df = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         val formattedDate = df.format(c)
+
         invoiceDate!!.setText(formattedDate)
         if (intent != null) {
-            customerNameText!!.setText(intent.getStringExtra("customerName"))
-            customerCode = intent.getStringExtra("customerCode")
+         //   customerNameText!!.setText(intent.getStringExtra("customerName"))
+        //    customerCode = intent.getStringExtra("customerCode")
             activityFrom = intent.getStringExtra("from")
-            editSoNumber = intent.getStringExtra("editSoNumber")
+          //  editSoNumber = intent.getStringExtra("editSoNumber")
             currentSaveDateTime = intent.getStringExtra("currentDateTime")
             Log.w("GivenActivityFrom::", activityFrom.toString())
-            supportActionBar!!.setTitle("Sales Return")
+            supportActionBar!!.setTitle("Stock Adjustment")
         }
         val jsonObject = JSONObject()
         try {
-            jsonObject.put("User", username)
-            jsonObject.put("CardCode", customerCode)
-//            jsonObject.put("ItemGroupCode", "All")
-            jsonObject.put("LocationCode", locationCode)
+            jsonObject.put("WarehouseCode", locationCode)
+            jsonObject.put("ItemGroupCode", "All")
 
             getAllProducts(jsonObject)
         } catch (e: JSONException) {
@@ -388,10 +395,10 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         }
         val sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE)
         selectCustomerId = sharedPreferences.getString("customerId", "")
-        if (selectCustomerId != null && !selectCustomerId!!.isEmpty()) {
-            customerDetails = dbHelper!!.getCustomer(selectCustomerId)
-            getCustomerDetails(selectCustomerId, false, "")
-        }
+//        if (selectCustomerId != null && !selectCustomerId!!.isEmpty()) {
+//            customerDetails = dbHelper!!.getCustomer(selectCustomerId)
+//            getCustomerDetails(selectCustomerId, false, "")
+//        }
 
 //        val settings = dbHelper!!.settings
 //        if (settings != null) {
@@ -467,56 +474,6 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 }
             }
         })
-        returnQtyText!!.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
-            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
-            override fun afterTextChanged(editable: Editable) {
-                setCalculationView()
-                if (!editable.toString().isEmpty()) {
-                    expiryReturnQty!!.setText(editable.toString())
-                } else {
-                    expiryReturnQty!!.setText("")
-                }
-            }
-        })
-        expiryQtyTextWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable) {
-                if (!qtyValue!!.getText().toString().isEmpty()) {
-                    val netreturnqty = qtyValue!!.getText().toString()
-                    val net_qty = netreturnqty.toInt()
-                    if (!s.toString().isEmpty()) {
-                        val damageqty = s.toString().toInt()
-                        if (net_qty > damageqty) {
-                            val value = net_qty - damageqty
-                            damageReturnQty!!.removeTextChangedListener(damageQtyTextWatcher)
-                            damageReturnQty!!.setText(value.toString())
-                            damageReturnQty!!.addTextChangedListener(damageQtyTextWatcher)
-                        } else if (net_qty == damageqty) {
-                            damageReturnQty!!.removeTextChangedListener(damageQtyTextWatcher)
-                            damageReturnQty!!.setText("0")
-                            damageReturnQty!!.addTextChangedListener(damageQtyTextWatcher)
-                        } else if (net_qty < damageqty) {
-                            expiryReturnQty!!.setText("0")
-                            damageReturnQty!!.removeTextChangedListener(damageQtyTextWatcher)
-                            damageReturnQty!!.setText(netreturnqty)
-                            damageReturnQty!!.addTextChangedListener(damageQtyTextWatcher)
-                            Toast.makeText(
-                                applicationContext,
-                                "Return Qty Exceed...",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } else {
-                        damageReturnQty!!.removeTextChangedListener(damageQtyTextWatcher)
-                        damageReturnQty!!.setText(netreturnqty)
-                        damageReturnQty!!.addTextChangedListener(damageQtyTextWatcher)
-                    }
-                }
-            }
-        }
-        expiryReturnQty!!.addTextChangedListener(expiryQtyTextWatcher)
 
         uomChangel!!.setOnClickListener(){
                 ischangeUOM = true
@@ -553,121 +510,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
 //            }
         }
 
-        /*  expiryReturnQty.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!returnQtyText.getText().toString().isEmpty()){
-                    String netreturnqty=returnQtyText.getText().toString();
-                    int net_qty=Integer.parseInt(netreturnqty);
-                    if(!s.toString().isEmpty()){
-                        int damageqty=Integer.parseInt(s.toString());
-                        if (net_qty > damageqty){
-                            int value=net_qty-damageqty;
-                            damageReturnQty.setText(String.valueOf(value));
-                        }else if (net_qty==damageqty){
-                            damageReturnQty.setText("0");
-                        }else if (net_qty < damageqty){
-                            expiryReturnQty.setText("");
-                            damageReturnQty.setText(netreturnqty);
-                            Toast.makeText(getApplicationContext(),"Return Qty Exceed...",Toast.LENGTH_SHORT).show();
-                        }
-                    }else {
-                        damageReturnQty.setText(netreturnqty);
-                    }
-                }
-            }
-        });*/damageQtyTextWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable) {
-                if (!qtyValue!!.getText().toString().isEmpty()) {
-                    val netreturnqty = qtyValue!!.getText().toString()
-                    val net_qty = netreturnqty.toInt()
-                    if (!s.toString().isEmpty()) {
-                        val damageqty = s.toString().toInt()
-                        if (net_qty > damageqty) {
-                            val value = net_qty - damageqty
-                            expiryReturnQty!!.removeTextChangedListener(expiryQtyTextWatcher)
-                            expiryReturnQty!!.setText(value.toString())
-                            expiryReturnQty!!.addTextChangedListener(expiryQtyTextWatcher)
-                        } else if (net_qty == damageqty) {
-                            expiryReturnQty!!.removeTextChangedListener(expiryQtyTextWatcher)
-                            expiryReturnQty!!.setText("0")
-                            expiryReturnQty!!.addTextChangedListener(expiryQtyTextWatcher)
-                        } else if (net_qty < damageqty) {
-                            damageReturnQty!!.setText("0")
-                            expiryReturnQty!!.removeTextChangedListener(expiryQtyTextWatcher)
-                            expiryReturnQty!!.setText(netreturnqty)
-                            expiryReturnQty!!.addTextChangedListener(expiryQtyTextWatcher)
-                            Toast.makeText(
-                                applicationContext,
-                                "Return Qty Exceed...",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } else {
-                        expiryReturnQty!!.removeTextChangedListener(expiryQtyTextWatcher)
-                        expiryReturnQty!!.setText(netreturnqty)
-                        expiryReturnQty!!.addTextChangedListener(expiryQtyTextWatcher)
-                    }
-                }
-            }
-        }
-        damageReturnQty!!.addTextChangedListener(damageQtyTextWatcher)
-
-        /*        damageReturnQty.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                if (!returnQtyText.getText().toString().isEmpty()){
-                    String netreturnqty=returnQtyText.getText().toString();
-                    int net_qty=Integer.parseInt(netreturnqty);
-                    if(!s.toString().isEmpty()){
-                        int damageqty=Integer.parseInt(s.toString());
-                        if (net_qty > damageqty){
-                            int value=net_qty-damageqty;
-                            expiryReturnQty.setText(String.valueOf(value));
-                        }else if (net_qty==damageqty){
-                            expiryReturnQty.setText("0");
-                        }else if (net_qty < damageqty){
-                            damageReturnQty.setText("");
-                            expiryReturnQty.setText(netreturnqty);
-                            Toast.makeText(getApplicationContext(),"Return Qty Exceed...",Toast.LENGTH_SHORT).show();
-                        }
-                    }else {
-                        expiryReturnQty.setText(netreturnqty);
-                    }
-                }
-            }
-        });*/focEditText!!.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
-            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
-            override fun afterTextChanged(editable: Editable) {
-                //setCalculation();
-                setCalculationView()
-                //setButtonView();
-            }
-        })
         loosePriceTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
@@ -730,26 +573,36 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         e.printStackTrace();
                     }*/
         })
+
+        location_adjustl!!.setOnClickListener(View.OnClickListener {
+            if (locationDetailsl != null && locationDetailsl!!.size > 0) {
+                getfromlocationDialog(locationDetailsl!!)
+            } else {
+                locationList
+            }
+        })
+
         addProduct!!.setOnClickListener(View.OnClickListener {
             val s = productAutoComplete!!.getText().toString()
             if (!qtyValue!!.getText().toString().isEmpty() && !s.isEmpty() && qtyValue!!.getText()
                     .toString() != "0" && qtyValue!!.getText().toString() != "00" &&
                 qtyValue!!.getText().toString() != "000" && qtyValue!!.getText()
-                    .toString() != "0000" && netTotalValue!!.getText().toString() != "0.00"
+                    .toString() != "0000"
             ) {
                 if (addProduct!!.getText().toString() == "Update") {
                     // if (!cartonPrice.getText().toString().isEmpty() && !cartonPrice.getText().toString().equals("0.00") && !cartonPrice.getText().toString().equals("0.0") && !cartonPrice.getText().toString().equals("0")){
                     if (priceText!!.getText() != null && !priceText!!.getText().toString().isEmpty()) {
                         if (priceText!!.getText().toString().toDouble() > 0) {
-                            val minimumsellingprice =
-                                minimumSellingPriceText!!.getText().toString().toDouble()
-                            if (minimumsellingprice <= priceText!!.getText().toString().toDouble()) {
-                                insertProducts()
-                            } else {
-                                showMinimumSellingpriceAlert(
-                                    minimumSellingPriceText!!.getText().toString()
-                                )
-                            }
+                            insertProducts()
+//                            val minimumsellingprice =
+//                                minimumSellingPriceText!!.getText().toString().toDouble()
+//                            if (minimumsellingprice <= priceText!!.getText().toString().toDouble()) {
+//                                insertProducts()
+//                            } else {
+//                                showMinimumSellingpriceAlert(
+//                                    minimumSellingPriceText!!.getText().toString()
+//                                )
+//                            }
                         } else {
                             Toast.makeText(
                                 applicationContext,
@@ -768,14 +621,16 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         if (priceText!!.getText().toString().toDouble() > 0) {
                             val minimumsellingprice =
                                 minimumSellingPriceText!!.getText().toString().toDouble()
-                            if (minimumsellingprice <= priceText!!.getText().toString().toDouble()) {
-                                Log.w("saleReturn..","")
-                                addProduct("Add")
-                            } else {
-                                showMinimumSellingpriceAlert(
-                                    minimumSellingPriceText!!.getText().toString()
-                                )
-                            }
+                            addProduct("Add")
+
+//                            if (minimumsellingprice <= priceText!!.getText().toString().toDouble()) {
+//                                Log.w("saleReturn..","")
+//                                addProduct("Add")
+//                            } else {
+//                                showMinimumSellingpriceAlert(
+//                                    minimumSellingPriceText!!.getText().toString()
+//                                )
+//                            }
                         } else {
                             if (focEditText!!.getText() != null && !focEditText!!.getText().toString()
                                     .isEmpty() && focEditText!!.getText()
@@ -783,7 +638,6 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                                     .toString().isEmpty() && returnQtyText!!.getText()
                                     .toString() != "0"
                             ) {
-                                Log.w("saleReturn1..","")
                                 addProduct("Add")
                             } else {
                                 Toast.makeText(
@@ -814,28 +668,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 }
             }
         })
-        returnAdj!!.setOnClickListener(View.OnClickListener { returnLayoutView!!.setVisibility(View.VISIBLE) })
-        cancelReturn!!.setOnClickListener(View.OnClickListener { returnLayoutView!!.setVisibility(View.GONE) })
-        saveReturn!!.setOnClickListener(View.OnClickListener { /* if (!expiryReturnQty.getText().toString().isEmpty() && !damageReturnQty.getText().toString().isEmpty()){
-                    if (!damageReturnQty.getText().toString().isEmpty()){
-             //           if (Integer.parseInt(damageReturnQty.getText().toString())> 0){
-                            if (Integer.parseInt(expiryReturnQty.getText().toString()) == 0){
-                                dbHelper.updateReturnQty("Delete","0","Expiry",productId);
-                                dbHelper.updateReturnQty("Update",damageReturnQty.getText().toString(),"Damage",productId);
-                            }else if (Integer.parseInt(damageReturnQty.getText().toString())==0){
-                                dbHelper.updateReturnQty("Delete","0","Damage",productId);
-                                dbHelper.updateReturnQty("Update",expiryReturnQty.getText().toString(),"Expiry",productId);
-                            }else {
-                                dbHelper.updateReturnQty("Update",damageReturnQty.getText().toString(),"Damage",productId);
-                                dbHelper.updateReturnQty("Update",expiryReturnQty.getText().toString(),"Expiry",productId);
-                            }
-                      //  }
-                    }
-                }*/
-            expiryReturnQty!!.clearFocus()
-            damageReturnQty!!.clearFocus()
-            returnLayoutView!!.setVisibility(View.GONE)
-        })
+//        returnAdj!!.setOnClickListener(View.OnClickListener { returnLayoutView!!.setVisibility(View.VISIBLE) })
+       // cancelReturn!!.setOnClickListener(View.OnClickListener { returnLayoutView!!.setVisibility(View.GONE) })
         invoiceDate!!.setOnClickListener(View.OnClickListener { getDate(invoiceDate) })
         getProducts()
 
@@ -843,7 +677,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         // Setting the sorting
         sortButton!!.setOnClickListener(View.OnClickListener {
             val menuItemView = findViewById<View>(R.id.fab)
-            val popupMenu = PopupMenu(this@NewSalesReturnProductAddActivity, menuItemView)
+            val popupMenu = PopupMenu(this@NewStockAdjustmentProductAddActivity, menuItemView)
             popupMenu.menuInflater.inflate(R.menu.sort_menu, popupMenu.menu)
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
@@ -930,7 +764,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         mYear = c[Calendar.YEAR]
         mMonth = c[Calendar.MONTH]
         mDay = c[Calendar.DAY_OF_MONTH]
-        val datePickerDialog = DatePickerDialog(this@NewSalesReturnProductAddActivity,
+        val datePickerDialog = DatePickerDialog(this@NewStockAdjustmentProductAddActivity,
             { view, year, monthOfYear, dayOfMonth ->
                 dateEditext!!.text = dayOfMonth.toString() + "-" + (monthOfYear + 1) + "-" + year
                 currentDate = convertDate(
@@ -968,7 +802,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                             uomText!!.setText(model.uomCode)
                             stockCount!!.setText(model.stockQty)
                             pcsPerCarton!!.setText(model.pcsPerCarton)
-                            qtyValue!!.isEnabled = true
+//                            qtyValue!!.isEnabled = true
                             qtyValue!!.setText("")
                             qtyValue!!.requestFocus()
                             openKeyborard(qtyValue)
@@ -995,7 +829,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         uomText!!.setText(model.uomCode)
                         stockCount!!.setText(model.stockQty)
                         pcsPerCarton!!.setText(model.pcsPerCarton)
-                        qtyValue!!.isEnabled = true
+//                        qtyValue!!.isEnabled = true
                         priceText!!.isEnabled = true
                         qtyValue!!.setText("")
                         qtyValue!!.requestFocus()
@@ -1064,7 +898,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     }
 
     fun showExistingProductAlert(productId: String?, productName: String?) {
-        val builder1 = AlertDialog.Builder(this@NewSalesReturnProductAddActivity)
+        val builder1 = AlertDialog.Builder(this@NewStockAdjustmentProductAddActivity)
         builder1.setTitle("Warning !")
         builder1.setMessage("$productName - $productId\nAlready Exist Do you want to replace ? ")
         builder1.setCancelable(false)
@@ -1118,7 +952,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 foc = focEditText!!.text.toString()
             }
             val priceValue = 0.0
-            val net_qty = qty_value.toDouble() - return_qty.toDouble()
+//            val net_qty = qty_value.toDouble() - return_qty.toDouble()
+            val net_qty = qty_value.toDouble()
             val return_amt = return_qty.toDouble() * price_value.toDouble()
             val total = net_qty * price_value.toDouble()
             val sub_total = total - return_amt - discount.toDouble()
@@ -1131,20 +966,22 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             if (!uomText!!.text.toString().isEmpty()) {
                 uom = uomText!!.text.toString()
             }
-            Log.w("uomsalereturn",""+uom)
+            Log.w("uomAdjust",""+uom)
             val insertStatus = dbHelper!!.insertCreateInvoiceCart(
                 productId.toString().trim { it <= ' ' },
                 productName,
                 uom,
                 uom,
                 qty_value,
-                return_qty, net_qty.toString(),
+                return_qty,
+                net_qty.toString(),
                 foc,
                 price_value,
                 stockQtyValue!!.text.toString(), total.toString(),
                 subTotalValue!!.text.toString(),
-                taxValueText!!.text.toString(),
-                netTotalValue!!.text.toString(), "",
+                "",
+                subTotalValue!!.text.toString(),
+                "",
                 "",
                 "",
                 "",
@@ -1152,26 +989,26 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 "","",timeStamp,"")
 
             // Adding Return Qty Table values
-            if (qty_value.toInt() > 0) {
-                dbHelper!!.updateReturnQty("Delete", "0", "Saleable Return", productId)
-                dbHelper!!.updateReturnQty("Delete", "0", "Damaged/Expired", productId)
-                dbHelper!!.insertReturnProduct(
-                    productId,
-                    productName,
-                    expiryReturnQty!!.text.toString(),
-                    "Saleable Return"
-                )
-                dbHelper!!.insertReturnProduct(
-                    productId,
-                    productName,
-                    damageReturnQty!!.text.toString(),
-                    "Damaged/Expired"
-                )
-            }
+//            if (qty_value.toInt() > 0) {
+//                dbHelper!!.updateReturnQty("Delete", "0", "Saleable Return", productId)
+//                dbHelper!!.updateReturnQty("Delete", "0", "Damaged/Expired", productId)
+//                dbHelper!!.insertReturnProduct(
+//                    productId,
+//                    productName,
+//                    expiryReturnQty!!.text.toString(),
+//                    "Saleable Return"
+//                )
+//                dbHelper!!.insertReturnProduct(
+//                    productId,
+//                    productName,
+//                    damageReturnQty!!.text.toString(),
+//                    "Damaged/Expired"
+//                )
+//            }
             if (insertStatus) {
                 subTotalValue!!.text = "0.0"
-                taxValueText!!.text = "0.00"
-                netTotalValue!!.text = "0.0"
+//                taxValueText!!.text = "0.00"
+//                netTotalValue!!.text = "0.0"
                 productAutoComplete!!.setText("")
                 priceText!!.setText("0.00")
                 qtyValue!!.setText("")
@@ -1211,15 +1048,16 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun getProducts() {
+        qtyValue!!.setText("")
         val products = dbHelper!!.allInvoiceProducts
         if (products.size > 0) {
             itemCount!!.text = "Products ( " + products.size + " )"
             productSummaryView!!.layoutManager =
                 LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, false)
-            productSummaryAdapter = NewSalesReturnProductAdapter(
+            productSummaryAdapter = NewStockAdjustmentProductAdapter(
                 this,
                 products,
-                object : NewSalesReturnProductAdapter.CallBack {
+                object : NewStockAdjustmentProductAdapter.CallBack {
                     override fun searchCustomer(letter: String, pos: Int) {}
                     override fun removeItem(pid: String,updateTime: String) {
                         showRemoveItemAlert(pid,updateTime)
@@ -1232,7 +1070,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         productId = model.productCode
                         editTimeStamp = model.updateTime
                         productName = model.productName
-                        qtyValue!!.setText("")
+                      //  qtyValue!!.setText("")
                         val netqty = model.netQty.toDouble()
 
                         /*  if (model.getMinimumSellingPrice()!=null && !model.getMinimumSellingPrice().isEmpty()){
@@ -1240,7 +1078,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                     }else {
                         minimumSellingPriceText.setText("0.00");
                     }*/qtyValue!!.removeTextChangedListener(qtyTW)
-                        qtyValue!!.setText(Utils.getQtyValue(netqty.toString()))
+//                        qtyValue!!.setText(Utils.getQtyValue(netqty.toString()))
+                        qtyValue!!.setText(model.netQty)
                         qtyValue!!.addTextChangedListener(qtyTW)
                         productAutoComplete!!.setText(model.productName + "-" + model.productCode)
                         priceText!!.setText(model.price)
@@ -1248,7 +1087,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         qtyValue!!.requestFocus()
                         qtyValue!!.setSelectAllOnFocus(true)
                         qtyValue!!.setSelection(qtyValue!!.text.length)
-                        qtyValue!!.isEnabled = true
+//                        qtyValue!!.isEnabled = true
                         priceText!!.isEnabled = true
                         productEditId = model.productCode
                         pdtStockVal = model.stockProductQty
@@ -1321,9 +1160,9 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                     clearFields()
                     sDialog.dismissWithAnimation()
                     getProducts()
-                    addProduct!!.setText("Add")
                     setSummaryTotal()
-                    Utils.refreshActionBarMenu(this@NewSalesReturnProductAddActivity)
+                    addProduct!!.setText("Add")
+                    Utils.refreshActionBarMenu(this@NewStockAdjustmentProductAddActivity)
                 }
                 .showCancelButton(true)
                 .setCancelText("No")
@@ -1332,15 +1171,12 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         } catch (ex: Exception) {
         }
     }
-
     fun hideKeyboard() {
         try {
-            val view = this.currentFocus
-            if (view != null) {
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(view.windowToken, 0)
-            }
-        } catch (e: Exception) {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(this.currentFocus!!.windowToken, 0)
+        } catch (e: java.lang.Exception) {
+            // TODO: handle exception
         }
     }
 
@@ -1365,16 +1201,17 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 }
                 val sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE)
                 selectCustomerId = sharedPreferences.getString("customerId", "")
-                customerDetails = dbHelper!!.getCustomer(selectCustomerId)
-                val taxValue = customerDetails!!.get(0).taxPerc
-                val taxType = customerDetails!!.get(0).taxType
+//                customerDetails = dbHelper!!.getCustomer(selectCustomerId)
+//                val taxValue = customerDetails!!.get(0).taxPerc
+//                val taxType = customerDetails!!.get(0).taxType
                 Log.w("GivenEditTax:", net_tax.toString() + "")
                 Log.w("GivenNetTotalValues:", net_total.toString() + "")
-                if (taxType == "I") {
-                    setCalculationSummaryView(net_total)
-                } else {
-                    setCalculationSummaryView(net_sub_total)
-                }
+//                if (taxType == "I") {
+//                    setCalculationSummaryView(net_total)
+//                } else {
+                  //  setCalculationSummaryView(net_sub_total)
+                subTotalValue!!.text = Utils.twoDecimalPoint(net_sub_total)
+              //  }
             }
         } catch (ex: Exception) {
         }
@@ -1382,8 +1219,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
 
     fun clearFields() {
         subTotalValue!!.text = "0.0"
-        taxValueText!!.text = "0.00"
-        netTotalValue!!.text = "0.0"
+//        taxValueText!!.text = "0.00"
+//        netTotalValue!!.text = "0.0"
         productAutoComplete!!.setText("")
         priceText!!.setText("0.00")
         qtyValue!!.setText("")
@@ -1496,77 +1333,76 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         uomSpinnerLayl!!.visibility = View.GONE
     }
 
-    fun setCalculationSummaryView(subTotal: Double) {
-        try {
-            var taxAmount1 = 0.0
-            var netTotal1 = 0.0
-            val sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE)
-            val selectCustomerId = sharedPreferences.getString("customerId", "")
-            if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
-                customerDetails = dbHelper!!.getCustomer(selectCustomerId)
-            }
-            val taxValue = customerDetails!![0].taxPerc
-            val taxType = customerDetails!![0].taxType
-            Log.w("TaxType-Summary:", taxType)
-            Log.w("TaxValue12-Summary:", taxValue)
-            Log.w("SubTotalValues:", subTotal.toString())
-            val Prodtotal = Utils.twoDecimalPoint(subTotal)
-            if (!taxType.matches("".toRegex()) && !taxValue.matches("".toRegex())) {
-                val taxValueCalc = taxValue.toDouble()
-                if (taxType.matches("E".toRegex())) {
-                    taxAmount1 = subTotal * taxValueCalc / 100
-                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
-                    taxValueText!!.text = "" + prodTax
-                    netTotal1 = subTotal + taxAmount1
-                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
-                    netTotalValue!!.text = "" + ProdNetTotal
-                    taxTitle!!.text = "GST ( Exc )"
-                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                } else if (taxType.matches("I".toRegex())) {
-                    taxAmount1 = subTotal * taxValueCalc / (100 + taxValueCalc)
-                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
-                    taxValueText!!.text = "" + prodTax
-                    // netTotal1 = subTotal + taxAmount1;
-                    netTotal1 = subTotal
-                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
-                    netTotalValue!!.text = "" + ProdNetTotal
-                    val dTotalIncl = netTotal1 - taxAmount1
-                    val totalIncl = Utils.twoDecimalPoint(dTotalIncl)
-                    Log.d("totalIncl", "" + totalIncl)
-                    val sub_total = subTotal - taxAmount1
-                    taxTitle!!.text = "GST ( Inc )"
-                    subTotalValue!!.text = Utils.twoDecimalPoint(sub_total)
-                } else if (taxType.matches("Z".toRegex())) {
-                    taxValueText!!.text = "0.0"
-                    // netTotal1 = subTotal + taxAmount;
-                    netTotal1 = subTotal
-                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
-                    netTotalValue!!.text = "" + ProdNetTotal
-                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                    taxTitle!!.text = "GST ( Zero )"
-                } else {
-                    taxValueText!!.text = "0.0"
-                    netTotalValue!!.text = "" + Prodtotal
-                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                    taxTitle!!.text = "GST ( Zero )"
-                }
-            } else if (taxValue.matches("".toRegex())) {
-                taxValueText!!.text = "0.0"
-                netTotalValue!!.text = "" + Prodtotal
-                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                taxTitle!!.text = "GST ( Zero )"
-            } else {
-                taxValueText!!.text = "0.0"
-                netTotalValue!!.text = "" + Prodtotal
-                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                taxTitle!!.text = "GST ( Zero )"
-            }
-        } catch (e: Exception) {
-        }
-    }
-
+//    fun setCalculationSummaryView(subTotal: Double) {
+//        try {
+//            var taxAmount1 = 0.0
+//            var netTotal1 = 0.0
+//            val sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE)
+//            val selectCustomerId = sharedPreferences.getString("customerId", "")
+////            if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
+////                customerDetails = dbHelper!!.getCustomer(selectCustomerId)
+////            }
+////            val taxValue = customerDetails!![0].taxPerc
+////            val taxType = customerDetails!![0].taxType
+////            Log.w("TaxType-Summary:", taxType)
+////            Log.w("TaxValue12-Summary:", taxValue)
+//            Log.w("SubTotalValues:", subTotal.toString())
+//            val Prodtotal = Utils.twoDecimalPoint(subTotal)
+//            if (!taxType.matches("".toRegex()) && !taxValue.matches("".toRegex())) {
+//                val taxValueCalc = taxValue.toDouble()
+//                if (taxType.matches("E".toRegex())) {
+//                    taxAmount1 = subTotal * taxValueCalc / 100
+//                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
+//                    taxValueText!!.text = "" + prodTax
+//                    netTotal1 = subTotal + taxAmount1
+//                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
+//                    netTotalValue!!.text = "" + ProdNetTotal
+//                    taxTitle!!.text = "GST ( Exc )"
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                } else if (taxType.matches("I".toRegex())) {
+//                    taxAmount1 = subTotal * taxValueCalc / (100 + taxValueCalc)
+//                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
+//                    taxValueText!!.text = "" + prodTax
+//                    // netTotal1 = subTotal + taxAmount1;
+//                    netTotal1 = subTotal
+//                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
+//                    netTotalValue!!.text = "" + ProdNetTotal
+//                    val dTotalIncl = netTotal1 - taxAmount1
+//                    val totalIncl = Utils.twoDecimalPoint(dTotalIncl)
+//                    Log.d("totalIncl", "" + totalIncl)
+//                    val sub_total = subTotal - taxAmount1
+//                    taxTitle!!.text = "GST ( Inc )"
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(sub_total)
+//                } else if (taxType.matches("Z".toRegex())) {
+//                    taxValueText!!.text = "0.0"
+//                    // netTotal1 = subTotal + taxAmount;
+//                    netTotal1 = subTotal
+//                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
+//                    netTotalValue!!.text = "" + ProdNetTotal
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                    taxTitle!!.text = "GST ( Zero )"
+//                } else {
+//                    taxValueText!!.text = "0.0"
+//                    netTotalValue!!.text = "" + Prodtotal
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                    taxTitle!!.text = "GST ( Zero )"
+//                }
+//            } else if (taxValue.matches("".toRegex())) {
+//                taxValueText!!.text = "0.0"
+//                netTotalValue!!.text = "" + Prodtotal
+//                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                taxTitle!!.text = "GST ( Zero )"
+//            } else {
+//                taxValueText!!.text = "0.0"
+//                netTotalValue!!.text = "" + Prodtotal
+//                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                taxTitle!!.text = "GST ( Zero )"
+//            }
+//        } catch (e: Exception) {
+//        }
+//    }
     fun setCalculationView() {
-        try {
+       // try {
             val taxAmount = 0.0
             val netTotal = 0.0
             var taxAmount1 = 0.0
@@ -1578,13 +1414,15 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             var net_qty = 0.0
             val sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE)
             val selectCustomerId = sharedPreferences.getString("customerId", "")
-            if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
-                customerDetails = dbHelper!!.getCustomer(selectCustomerId)
-            }
-            val taxValue = customerDetails!![0].taxPerc
-            val taxType = customerDetails!![0].taxType
-            Log.w("TaxType12:", taxType)
-            Log.w("TaxValue12:", taxValue)
+
+//            if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
+//                customerDetails = dbHelper!!.getCustomer(selectCustomerId)
+//            }
+//            val taxValue = customerDetails!![0].taxPerc
+//            val taxType = customerDetails!![0].taxType
+//            Log.w("TaxType12:", taxType)
+           // Log.w("TaxValue12:", taxValue)
+
             var price = priceText!!.text.toString()
             var qty = qtyValue!!.text.toString()
             if (price.matches("".toRegex())) {
@@ -1616,8 +1454,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             } else {
                 tt
             }
-            val sbTtl = Utils.twoDecimalPoint(subTotal)
 
+          subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
 
             /*  if (return_qty!=0){
                 double return_amt=0.0;
@@ -1627,63 +1465,63 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
 
             // sl_total_inclusive.setText("" + sbTtl);
             tt = subTotal
-            Log.w("SubTotalValues:", subTotal.toString())
-            if (!taxType.matches("".toRegex()) && !taxValue.matches("".toRegex())) {
-                val taxValueCalc = taxValue.toDouble()
-                if (taxType.matches("E".toRegex())) {
-                    taxAmount1 = subTotal * taxValueCalc / 100
-                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
-                    taxValueText!!.text = "" + prodTax
-                    netTotal1 = subTotal + taxAmount1
-                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
-                    netTotalValue!!.text = "" + ProdNetTotal
-                    taxTitle!!.text = "GST ( Exc )"
-                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                } else if (taxType.matches("I".toRegex())) {
-                    taxAmount1 = subTotal * taxValueCalc / (100 + taxValueCalc)
-                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
-                    taxValueText!!.text = "" + prodTax
-                    netTotal1 = subTotal
-                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
-                    netTotalValue!!.text = "" + ProdNetTotal
-                    val dTotalIncl = netTotal1 - taxAmount1
-                    val totalIncl = Utils.twoDecimalPoint(dTotalIncl)
-                    Log.d("totalIncl", "" + totalIncl)
-                    val sub_total = subTotal - taxAmount1
-                    taxTitle!!.text = "GST ( Inc )"
-                    subTotalValue!!.text = Utils.twoDecimalPoint(sub_total)
-                } else if (taxType.matches("Z".toRegex())) {
-                    taxValueText!!.text = "0.00"
-                    netTotal1 = subTotal
-                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
-                    netTotalValue!!.text = "" + ProdNetTotal
-                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                    taxTitle!!.text = "GST ( Zero )"
-                } else {
-                    taxValueText!!.text = "0.00"
-                    netTotalValue!!.text = "" + Prodtotal
-                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                    taxTitle!!.text = "GST ( Zero )"
-                }
-            } else if (taxValue.matches("".toRegex())) {
-                taxValueText!!.text = "0.00"
-                netTotalValue!!.text = "" + Prodtotal
-                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                taxTitle!!.text = "GST ( Zero )"
-            } else {
-                taxValueText!!.text = "0.00"
-                netTotalValue!!.text = "" + Prodtotal
-                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
-                taxTitle!!.text = "GST ( Zero )"
-            }
+//            Log.w("SubTotalValues:", subTotal.toString())
+//            if (!taxType.matches("".toRegex()) && !taxValue.matches("".toRegex())) {
+//                val taxValueCalc = taxValue.toDouble()
+//                if (taxType.matches("E".toRegex())) {
+//                    taxAmount1 = subTotal * taxValueCalc / 100
+//                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
+//                    taxValueText!!.text = "" + prodTax
+//                    netTotal1 = subTotal + taxAmount1
+//                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
+//                    netTotalValue!!.text = "" + ProdNetTotal
+//                    taxTitle!!.text = "GST ( Exc )"
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                } else if (taxType.matches("I".toRegex())) {
+//                    taxAmount1 = subTotal * taxValueCalc / (100 + taxValueCalc)
+//                    val prodTax = Utils.twoDecimalPoint(taxAmount1)
+//                    taxValueText!!.text = "" + prodTax
+//                    netTotal1 = subTotal
+//                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
+//                    netTotalValue!!.text = "" + ProdNetTotal
+//                    val dTotalIncl = netTotal1 - taxAmount1
+//                    val totalIncl = Utils.twoDecimalPoint(dTotalIncl)
+//                    Log.d("totalIncl", "" + totalIncl)
+//                    val sub_total = subTotal - taxAmount1
+//                    taxTitle!!.text = "GST ( Inc )"
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(sub_total)
+//                } else if (taxType.matches("Z".toRegex())) {
+//                    taxValueText!!.text = "0.00"
+//                    netTotal1 = subTotal
+//                    val ProdNetTotal = Utils.twoDecimalPoint(netTotal1)
+//                    netTotalValue!!.text = "" + ProdNetTotal
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                    taxTitle!!.text = "GST ( Zero )"
+//                } else {
+//                    taxValueText!!.text = "0.00"
+//                    netTotalValue!!.text = "" + Prodtotal
+//                    subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                    taxTitle!!.text = "GST ( Zero )"
+//                }
+//            } else if (taxValue.matches("".toRegex())) {
+//                taxValueText!!.text = "0.00"
+//                netTotalValue!!.text = "" + Prodtotal
+//                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                taxTitle!!.text = "GST ( Zero )"
+//            } else {
+//                taxValueText!!.text = "0.00"
+//                netTotalValue!!.text = "" + Prodtotal
+//                subTotalValue!!.text = Utils.twoDecimalPoint(subTotal)
+//                taxTitle!!.text = "GST ( Zero )"
+//            }
             setButtonView()
-        } catch (e: Exception) {
-            Log.w("Error_Throwing::", e.message!!)
-        }
+//        } catch (e: Exception) {
+//            Log.w("Error_Throwing::", e.message!!)
+//        }
     }
 
     fun setButtonView() {
-        if (netTotalValue!!.text.toString().toDouble() > 0) {
+        if (subTotalValue!!.text.toString().toDouble() > 0) {
             addProduct!!.alpha = 0.9f
             addProduct!!.isEnabled = true
         } else {
@@ -1703,7 +1541,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     fun getAllProducts(jsonObject: JSONObject) {
         // Initialize a new RequestQueue instance
         val requestQueue = Volley.newRequestQueue(this)
-        val url = Utils.getBaseUrl(this) + "CustomerProductList"
+        val url = Utils.getBaseUrl(this) + "ProductList"
         // Initialize a new JsonArrayRequest instance
         Log.w("Given_SAP_PROUCT_URL:", url + jsonObject.toString())
         productList = ArrayList()
@@ -1962,153 +1800,6 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         //dialog.dismiss();
     }
 
-    fun createSalesOrderJson(copy: Int) {
-
-        // JSONObject rootJsonObject = new JSONObject();
-        val rootJsonObject = JSONObject()
-        val invoiceDetailsArray = JSONArray()
-        var invoiceObject = JSONObject()
-
-        //  {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"CUS\/686","customerName":"VH FACTORY","groupCode":"100",
-        //  "contactPerson":"","creditLimit":"150.000000","currencyCode":"SGD","currencyName":"Singapore Dollar","taxType":"","taxCode":"SR",
-        //  "taxName":"Sales Standard Rated Supplier SR","taxPercentage":"7.000000","balance":"21.600000","outstandingAmount":"128.400000",
-        //  "address":"","street":"","city":"","state":"","zipCode":"","country":"","createDate":"13\/07\/2021","updateDate":"30\/07\/2021",
-        //  "active":"N","remark":""}]}
-        val detailsArray = customerResponse.optJSONArray("responseData")
-        val `object` = detailsArray.optJSONObject(0)
-        try {
-            // Sales Header Add values
-            /*  if (activityFrom.equals("InvoiceEdit")){
-                rootJsonObject.put("invoiceNumber", AddInvoiceActivity.editInvoiceNumber);
-                rootJsonObject.put("mode", "E");
-            }else if (activityFrom.equals("ConvertInvoiceFromDO")){
-                rootJsonObject.put("mode", "I");
-                rootJsonObject.put("soNo","");
-                rootJsonObject.put("doNo",AddInvoiceActivity.editDoNumber);
-                rootJsonObject.put("invoiceNumber", "");
-            }
-            else if (activityFrom.equals("ConvertInvoice")){
-                rootJsonObject.put("mode", "I");
-                rootJsonObject.put("soNo",AddInvoiceActivity.editSoNumber);
-                rootJsonObject.put("invoiceNumber", "");
-            }else {
-                rootJsonObject.put("invoiceNumber", "");
-                rootJsonObject.put("mode", "I");
-            }*/
-            if (activityFrom == "SalesEdit") {
-                rootJsonObject.put("soNumber", editSoNumber.toString())
-                rootJsonObject.put("mode", "E")
-                rootJsonObject.put("status", "O")
-            } else {
-                rootJsonObject.put("soNumber", "")
-                rootJsonObject.put("mode", "I")
-                rootJsonObject.put("status", "")
-            }
-            rootJsonObject.put("soDate", currentDate)
-            rootJsonObject.put("currentDateTime", currentSaveDateTime)
-            rootJsonObject.put("customerCode", `object`["customerCode"])
-            rootJsonObject.put("customerName", `object`["customerName"])
-            rootJsonObject.put("address", `object`["address"])
-            rootJsonObject.put("street", `object`["street"])
-            rootJsonObject.put("city", `object`["city"])
-            rootJsonObject.put("creditLimit", `object`["creditLimit"])
-            rootJsonObject.put("remark", remarkText!!.text.toString())
-            rootJsonObject.put("currencyName", "Singapore Dollar")
-            rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
-            rootJsonObject.put("subTotal", subTotalValue!!.text.toString())
-            rootJsonObject.put("total", subTotalValue!!.text.toString())
-            rootJsonObject.put("netTotal", netTotalValue!!.text.toString())
-            rootJsonObject.put("itemDiscount", "0.00")
-            rootJsonObject.put("billDiscount", "0.00")
-            rootJsonObject.put("totalDiscount", "0")
-            rootJsonObject.put("billDiscountPercentage", "0.00")
-            rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode())
-            rootJsonObject.put("delCustomerName", "")
-            rootJsonObject.put("delAddress1", `object`.optString("delAddress1"))
-            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
-            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
-            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
-            rootJsonObject.put("remark", `object`.optString("remark"))
-            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
-            rootJsonObject.put("taxType", `object`.optString("taxType"))
-            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
-            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
-            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
-            rootJsonObject.put("currencyValue", "")
-            rootJsonObject.put("CurrencyRate", "1")
-            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
-            rootJsonObject.put("createUser", username)
-            rootJsonObject.put("modifyUser", username)
-            rootJsonObject.put("companyName", companyName)
-            rootJsonObject.put("stockUpdated", "1")
-            rootJsonObject.put("invoiceType", "M")
-            rootJsonObject.put("companyCode", companyCode)
-            rootJsonObject.put("locationCode", locationCode)
-            rootJsonObject.put("signature", signatureString)
-            rootJsonObject.put("latitude", current_latitude)
-            rootJsonObject.put("longitude", current_longitude)
-
-            // Sales Details Add to the Objects
-            val localCart = dbHelper!!.allInvoiceProducts
-            var index = 1
-            for (model in localCart) {
-                invoiceObject = JSONObject()
-                /*   if (activityFrom.equals("InvoiceEdit")){
-                    rootJsonObject.put("invoiceNumber", AddInvoiceActivity.editInvoiceNumber);
-                }else {
-                    rootJsonObject.put("invoiceNumber", "");
-                }*/invoiceObject.put("companyCode", companyCode)
-                invoiceObject.put("invoiceDate", currentDate)
-                invoiceObject.put("slNo", index)
-                invoiceObject.put("productCode", model.productCode)
-                invoiceObject.put("productName", model.productName)
-                invoiceObject.put("qty", model.actualQty.toString())
-                // convert into int
-                invoiceObject.put("price", Utils.twoDecimalPoint(model.price.toDouble()))
-                invoiceObject.put("total", Utils.twoDecimalPoint(model.total.toDouble()))
-                invoiceObject.put("itemDiscount", "0.00")
-                invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
-                invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
-                invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                invoiceObject.put("taxType", `object`.optString("taxType"))
-                invoiceObject.put("taxPerc", `object`.optString("taxPercentage"))
-                var return_subtotal = 0.0
-                if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
-                    return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
-                }
-                assert(model.returnQty != null)
-                if (!model.returnQty.isEmpty() && model.returnQty.toString() != "null") {
-                    invoiceObject.put("returnLQty", model.returnQty)
-                    invoiceObject.put("returnQty", model.returnQty)
-                } else {
-                    invoiceObject.put("returnLQty", "0")
-                    invoiceObject.put("returnQty", "0")
-                }
-                if (!model.focQty.toString().isEmpty() && model.focQty != "null") {
-                    invoiceObject.put("focQty", model.focQty)
-                } else {
-                    invoiceObject.put("focQty", "0")
-                }
-                invoiceObject.put("returnSubTotal", return_subtotal.toString() + "")
-                invoiceObject.put("returnNetTotal", return_subtotal.toString() + "")
-                invoiceObject.put("taxCode", `object`.optString("taxCode"))
-                invoiceObject.put("uomCode", model.uomCode)
-                invoiceObject.put("itemRemarks", "")
-                invoiceObject.put("locationCode", locationCode)
-                invoiceObject.put("createUser", username)
-                invoiceObject.put("modifyUser", username)
-                invoiceDetailsArray.put(invoiceObject)
-                index++
-            }
-            rootJsonObject.put("PostingSalesOrderDetails", invoiceDetailsArray)
-            Log.w("RootJsonForSave:", rootJsonObject.toString())
-            saveSalesOrder(rootJsonObject, "SalesOrder", copy)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-            Log.w("Given_Error:", Objects.requireNonNull(e.message)!!)
-        }
-    }
-
     fun viewCloseBottomSheet() {
         // hideKeyboard();
         productNameEditext!!.setText("")
@@ -2168,7 +1859,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         selectProductAdapter = SelectProductAdapter(this, filteredProducts) { model ->
             productsModel = model
             productId = productsModel!!.productCode
-            qtyValue!!.isEnabled = true
+//            qtyValue!!.isEnabled = true
             // Need to implement the product price concept in SAP
             /*  try {
                         getProductPrice(productId);
@@ -2188,7 +1879,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             uomText!!.setText(model.uomCode)
             stockCount!!.setText(model.stockQty)
             pcsPerCarton!!.setText(model.pcsPerCarton)
-            qtyValue!!.isEnabled = true
+//            qtyValue!!.isEnabled = true
             qtyValue!!.requestFocus()
             //  behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             openKeyborard(qtyValue)
@@ -2271,7 +1962,12 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             R.id.action_save -> {
                 val localCart = dbHelper!!.allInvoiceProducts
                 if (localCart.size > 0) {
-                    showSaveAlert()
+                    if(!fromWarehouseName.equals("")) {
+                        showSaveAlert()
+                    }else{
+                        toast("Select Location !")
+                    }
+
                 } else {
                     Toast.makeText(
                         applicationContext,
@@ -2284,7 +1980,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             }
             R.id.action_scan_menu -> {
                 scannedBarcode = ""
-                val intent = Intent(this@NewSalesReturnProductAddActivity, BarCodeScanner::class.java)
+                val intent = Intent(this@NewStockAdjustmentProductAddActivity, BarCodeScanner::class.java)
                 startActivityForResult(intent, RESULT_CODE)
                 true
             }
@@ -2292,198 +1988,6 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
         //  return super.onOptionsItemSelected(item);
-    }
-
-    fun createInvoiceJson(copy: Int) {
-
-        // JSONObject rootJsonObject = new JSONObject();
-        val rootJsonObject = JSONObject()
-        val invoiceDetailsArray = JSONArray()
-        var returnProductArray = JSONArray()
-        var returnProductObject = JSONObject()
-        var invoiceObject = JSONObject()
-
-        //  {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"CUS\/686","customerName":"VH FACTORY","groupCode":"100",
-        //  "contactPerson":"","creditLimit":"150.000000","currencyCode":"SGD","currencyName":"Singapore Dollar","taxType":"","taxCode":"SR",
-        //  "taxName":"Sales Standard Rated Supplier SR","taxPercentage":"7.000000","balance":"21.600000","outstandingAmount":"128.400000",
-        //  "address":"","street":"","city":"","state":"","zipCode":"","country":"","createDate":"13\/07\/2021","updateDate":"30\/07\/2021",
-        //  "active":"N","remark":""}]}
-        val detailsArray = customerResponse.optJSONArray("responseData")
-        val `object` = detailsArray.optJSONObject(0)
-        try {
-            // Sales Header Add values
-            /*  if (activityFrom.equals("InvoiceEdit")){
-                rootJsonObject.put("invoiceNumber", AddInvoiceActivity.editInvoiceNumber);
-                rootJsonObject.put("mode", "E");
-            }else if (activityFrom.equals("ConvertInvoiceFromDO")){
-                rootJsonObject.put("mode", "I");
-                rootJsonObject.put("soNo","");
-                rootJsonObject.put("doNo",AddInvoiceActivity.editDoNumber);
-                rootJsonObject.put("invoiceNumber", "");
-            }
-            else if (activityFrom.equals("ConvertInvoice")){
-                rootJsonObject.put("mode", "I");
-                rootJsonObject.put("soNo",AddInvoiceActivity.editSoNumber);
-                rootJsonObject.put("invoiceNumber", "");
-            }else {
-                rootJsonObject.put("invoiceNumber", "");
-                rootJsonObject.put("mode", "I");
-            }*/
-            if (activityFrom == "ConvertInvoice") {
-                rootJsonObject.put("mode", "I")
-                rootJsonObject.put("soNo", editSoNumber)
-                rootJsonObject.put("invoiceNumber", "")
-            } else {
-                rootJsonObject.put("invoiceNumber", "")
-                rootJsonObject.put("mode", "I")
-            }
-            rootJsonObject.put("currentDateTime", currentSaveDateTime)
-            rootJsonObject.put("invoiceDate", currentDate)
-            rootJsonObject.put("customerCode", `object`["customerCode"])
-            rootJsonObject.put("customerName", `object`["customerName"])
-            rootJsonObject.put("address", `object`["address"])
-            rootJsonObject.put("street", `object`["street"])
-            rootJsonObject.put("city", `object`["city"])
-            rootJsonObject.put("creditLimit", `object`["creditLimit"])
-            rootJsonObject.put("remark", remarkText!!.text.toString())
-            rootJsonObject.put("currencyName", "Singapore Dollar")
-            rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
-            rootJsonObject.put("subTotal", subTotalValue!!.text.toString())
-            rootJsonObject.put("total", subTotalValue!!.text.toString())
-            rootJsonObject.put("netTotal", netTotalValue!!.text.toString())
-            rootJsonObject.put("itemDiscount", "0.00")
-            rootJsonObject.put("billDiscount", "0.00")
-            rootJsonObject.put("Paymode", "")
-            rootJsonObject.put("ChequeDateString", "")
-            rootJsonObject.put("BankCode", "")
-            rootJsonObject.put("AccountNo", "")
-            rootJsonObject.put("ChequeNo", "")
-
-            /*  if (customerResponse.optString("CurrencyCode").equals("SGD")){
-                rootJsonObject.put("FTotal", totalValue);
-                rootJsonObject.put("FItemDiscount", itemDiscountAmount);
-                rootJsonObject.put("FBillDiscount", billDiscountAmount);
-                rootJsonObject.put("FSubTotal", subTotalValue);
-                rootJsonObject.put("FTax", taxValue);
-                rootJsonObject.put("FNetTotal", netTotalValue);
-            }else {
-                rootJsonObject.put("FTotal", "0");
-                rootJsonObject.put("FItemDiscount", "0");
-                rootJsonObject.put("FBillDiscount", "0");
-                rootJsonObject.put("FSubTotal", "0");
-                rootJsonObject.put("FTax", "0");
-                rootJsonObject.put("FNetTotal", "0");
-            }*/rootJsonObject.put("totalDiscount", "0")
-            rootJsonObject.put("billDiscountPercentage", "0.00")
-            rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode())
-            rootJsonObject.put("delCustomerName", "")
-            rootJsonObject.put("delAddress1", `object`.optString("delAddress1"))
-            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
-            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
-            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
-            rootJsonObject.put("remark", `object`.optString("remark"))
-            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
-            rootJsonObject.put("taxType", `object`.optString("taxType"))
-            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
-            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
-            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
-            rootJsonObject.put("currencyValue", "")
-            rootJsonObject.put("CurrencyRate", "1")
-            rootJsonObject.put("status", "0")
-            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
-            rootJsonObject.put("createUser", username)
-            rootJsonObject.put("modifyUser", username)
-            rootJsonObject.put("companyName", companyName)
-            rootJsonObject.put("stockUpdated", "1")
-            rootJsonObject.put("invoiceType", "M")
-            rootJsonObject.put("companyCode", companyCode)
-            rootJsonObject.put("locationCode", locationCode)
-            rootJsonObject.put("signature", signatureString)
-            rootJsonObject.put("latitude", current_latitude)
-            rootJsonObject.put("longitude", current_longitude)
-
-            // Sales Details Add to the Objects
-            val localCart = dbHelper!!.allInvoiceProducts
-            var index = 1
-            for (model in localCart) {
-                invoiceObject = JSONObject()
-                /*   if (activityFrom.equals("InvoiceEdit")){
-                    rootJsonObject.put("invoiceNumber", AddInvoiceActivity.editInvoiceNumber);
-                }else {
-                    rootJsonObject.put("invoiceNumber", "");
-                }*/invoiceObject.put("invoiceNumber", "")
-                invoiceObject.put("companyCode", companyCode)
-                invoiceObject.put("invoiceDate", currentDate)
-                invoiceObject.put("slNo", index)
-                invoiceObject.put("productCode", model.productCode)
-                invoiceObject.put("productName", model.productName)
-                // convert into int
-                invoiceObject.put("price", Utils.twoDecimalPoint(model.price.toDouble()))
-                invoiceObject.put("total", Utils.twoDecimalPoint(model.total.toDouble()))
-                invoiceObject.put("itemDiscount", "0.00")
-                invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
-                invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
-                invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                invoiceObject.put("taxType", `object`.optString("taxType"))
-                invoiceObject.put("taxPerc", `object`.optString("taxPercentage"))
-                var return_subtotal = 0.0
-                if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
-                    return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
-                }
-                assert(model.returnQty != null)
-                if (!model.returnQty.isEmpty() && model.returnQty.toString() != "null") {
-                    invoiceObject.put("returnLQty", model.returnQty)
-                    invoiceObject.put("returnQty", model.returnQty)
-                    invoiceObject.put("qty", model.actualQty.toString())
-                } else {
-                    invoiceObject.put("returnLQty", "0")
-                    invoiceObject.put("returnQty", "0")
-                    invoiceObject.put("qty", model.actualQty.toString())
-                }
-                if (!model.focQty.toString().isEmpty() && model.focQty != "null") {
-                    invoiceObject.put("focQty", model.focQty)
-                } else {
-                    invoiceObject.put("focQty", "0")
-                }
-                invoiceObject.put("returnSubTotal", Utils.twoDecimalPoint(return_subtotal))
-                invoiceObject.put("returnNetTotal", Utils.twoDecimalPoint(return_subtotal))
-                invoiceObject.put("taxCode", `object`.optString("taxCode"))
-                invoiceObject.put("returnReason", "")
-                invoiceObject.put("uomCode", model.uomCode)
-                invoiceObject.put("itemRemarks", "")
-                invoiceObject.put("locationCode", locationCode)
-                invoiceObject.put("createUser", username)
-                invoiceObject.put("modifyUser", username)
-                val returnProducts = dbHelper!!.getReturnProducts(model.productCode)
-                returnProductArray = JSONArray()
-                if (returnProducts.size > 0) {
-                    for (returnProductsModel in returnProducts) {
-                        Log.w(
-                            "ReturnProductsValues:",
-                            returnProductsModel.productCode + "-" + returnProductsModel.productName + "--" + returnProductsModel.returnQty
-                        )
-                        if (returnProductsModel.returnQty.toInt() > 0) {
-                            returnProductObject = JSONObject()
-                            returnProductObject.put(
-                                "ReturnReason",
-                                returnProductsModel.returnReason
-                            )
-                            returnProductObject.put("ReturnQty", returnProductsModel.returnQty)
-                            returnProductArray.put(returnProductObject)
-                        }
-                    }
-                }
-                invoiceObject.put("ReturnDetails", returnProductArray)
-                invoiceDetailsArray.put(invoiceObject)
-                index++
-            }
-            rootJsonObject.put("PostingInvoiceDetails", invoiceDetailsArray)
-            Log.w("RootJsonForSave:", rootJsonObject.toString())
-            saveSalesOrder(rootJsonObject, "Invoice", copy)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-            Log.w("Given_Error:", Objects.requireNonNull(e.message)!!)
-        }
     }
 
     fun showSaveAlert() {
@@ -2505,8 +2009,16 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             val copyPlus = customLayout.findViewById<Button>(R.id.increase)
             val copyMinus = customLayout.findViewById<Button>(R.id.decrease)
             val signatureButton = customLayout.findViewById<Button>(R.id.btn_signature)
-            val copyLayout = customLayout.findViewById<LinearLayout>(R.id.print_layout)
+            val printLayout = customLayout.findViewById<LinearLayout>(R.id.print_layout)
+            val attachement_layoutInvl = customLayout.findViewById<LinearLayout>(R.id.attachement_layoutInv)
+            val signature_layoutl = customLayout.findViewById<LinearLayout>(R.id.signature_layout)
             selectImagel = customLayout.findViewById(R.id.select_imageInv)
+
+            signature_layoutl!!.visibility = View.GONE
+            attachement_layoutInvl!!.visibility = View.GONE
+            printLayout!!.visibility = View.GONE
+            signatureButton!!.visibility = View.GONE
+            invoicePrintCheck!!.visibility = View.GONE
 
             selectImagel!!.setOnClickListener {
                 if (selectImagel!!.getTag() == "view_image") {
@@ -2524,16 +2036,16 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 selectImagel!!.setTag("select_image")
             }
             //invoicePrintCheck.setVisibility(View.GONE);
-            if (activityFrom == "sales_return") {
-                saveTitle!!.setText("Save Sales Return")
-                saveMessage!!.setText("Are you sure want to save Sales Return?")
-                invoicePrintCheck!!.setText("Sales Return Print")
+           // if (activityFrom == "sales_return") {
+                saveTitle!!.setText("Save Stock Adjustment")
+                saveMessage!!.setText("Are you sure want to save  Stock Adjustment?")
+                invoicePrintCheck!!.setText(" Stock Adjustment Print")
                 invoicePrintCheck!!.setChecked(false)
                 isPrintEnable = false
-            } else {
-                invoicePrintCheck!!.setChecked(true)
-                isPrintEnable = true
-            }
+//            } else {
+//                invoicePrintCheck!!.setChecked(true)
+//                isPrintEnable = true
+            //}
             invoicePrintCheck!!.setOnClickListener(View.OnClickListener {
                 if (invoicePrintCheck!!.isChecked()) {
                     isPrintEnable = true
@@ -2542,9 +2054,10 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 }
             })
             okButton!!.setOnClickListener(View.OnClickListener { view1: View? ->
-                try {
-                    createSalesReturnJson()
-                    alert!!.dismiss()
+               try {
+                   createStockAdjusJson()
+                   alert!!.dismiss()
+
                 } catch (exception: Exception) {
                 }
             })
@@ -2583,7 +2096,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         acceptButton.isEnabled = false
         acceptButton.alpha = 0.4f
         val mSig = CaptureSignatureView(
-            this@NewSalesReturnProductAddActivity,
+            this@NewStockAdjustmentProductAddActivity,
             null
         ) {
             acceptButton.isEnabled = true
@@ -2616,7 +2129,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     fun saveSalesOrder(jsonBody: JSONObject, action: String, copy: Int) {
         try {
             pDialog = SweetAlertDialog(
-                this@NewSalesReturnProductAddActivity,
+                this@NewStockAdjustmentProductAddActivity,
                 SweetAlertDialog.PROGRESS_TYPE
             )
             pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
@@ -2920,9 +2433,9 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                     val itemCode = itemGroup!![i].groupCode
                     Log.e("selectspinn", "" + itemCode)
                   //  if (itemCode != "Select Brand") {
-                        jsonObject.put("User", username)
-                        jsonObject.put("CardCode", customerCode)
-                        jsonObject.put("ItemGroupCode", itemCode)
+                    val jsonObject = JSONObject()
+                    jsonObject.put("WarehouseCode", locationCode)
+                    jsonObject.put("ItemGroupCode", "All")
                         getAllProducts(jsonObject)
                   //  }
                 } catch (e: JSONException) {
@@ -2935,6 +2448,111 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             }
         }
     }
+    @get:Throws(JSONException::class)
+    private val locationList: Unit
+        private get() {
+            val requestQueue = Volley.newRequestQueue(this)
+            val url = Utils.getBaseUrl(this) + "WarehouseList"
+            // Initialize a new JsonArrayRequest instance
+            Log.w("Given_url_location:", url)
+            pDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
+            pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
+            pDialog!!.setTitleText("Loading Location...")
+            pDialog!!.setCancelable(false)
+            pDialog!!.show()
+
+            locationDetailsl = ArrayList()
+            val jsonObjectRequest: JsonObjectRequest = object : JsonObjectRequest(Method.GET, url,
+                null,
+                Response.Listener { response: JSONObject ->
+                    try {
+                        Log.w("locationlist:", response.toString())
+                        pDialog!!.dismiss()
+                        val statusCode = response.optString("statusCode")
+                        val statusMessage = response.optString("statusMessage")
+                        if (statusCode == "1") {
+                            val locationModel = NewLocationModel()
+                            val locationArray = response.optJSONArray("responseData")
+                            for (i in 0 until locationArray.length()) {
+                                val jsonObject = locationArray.getJSONObject(i)
+                                val locationDetails = NewLocationModel.LocationDetails()
+                                locationDetails.locationName = jsonObject.optString("whsName")
+                                locationDetails.locationCode = jsonObject.optString("whsCode")
+                                locationDetailsl!!.add(locationDetails)
+                            }
+                            if (locationDetailsl!!.size > 0) {
+                                locationModel.setLocationDetailsArrayList(locationDetailsl)
+                                Utils.setLocationList(locationDetailsl)
+                                getfromlocationDialog(locationDetailsl!!)
+                            }
+                            Log.w("locatretun1:", "" + Utils.getLocationList().size)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }, Response.ErrorListener { error: VolleyError ->
+                    // Do something when error occurred
+                    pDialog!!.dismiss()
+                    Log.w("Error_throwing:", error.toString())
+                }) {
+                override fun getHeaders(): Map<String, String> {
+                    val params = HashMap<String, String>()
+                    val creds = String.format(
+                        "%s:%s",
+                        Constants.API_SECRET_CODE,
+                        Constants.API_SECRET_PASSWORD
+                    )
+                    val auth = "Basic " + Base64.encodeToString(creds.toByteArray(), Base64.DEFAULT)
+                    params["Authorization"] = auth
+                    return params
+                }
+            }
+            jsonObjectRequest.setRetryPolicy(object : RetryPolicy {
+                override fun getCurrentTimeout(): Int {
+                    return 50000
+                }
+
+                override fun getCurrentRetryCount(): Int {
+                    return 50000
+                }
+
+                @Throws(VolleyError::class)
+                override fun retry(error: VolleyError) {
+                }
+            })
+            // Add JsonArrayRequest to the RequestQueue
+            requestQueue.add(jsonObjectRequest)
+        }
+
+
+    fun getfromlocationDialog(locationDetailsArrayList: java.util.ArrayList<NewLocationModel.LocationDetails>) {
+        val builderSingle = AlertDialog.Builder(this)
+        builderSingle.setTitle("Select Location")
+        val arrayAdapter = ArrayAdapter<String>(this, R.layout.selection_single_dialog)
+        for (i in locationDetailsArrayList.indices) {
+            arrayAdapter.add(locationDetailsArrayList[i].getLocationName())
+        }
+        val checkedItem = -1
+        builderSingle.setSingleChoiceItems(
+            arrayAdapter, checkedItem
+        ) { dialog, which -> // user checked an item
+            val strName = arrayAdapter.getItem(which)
+            location_adjustl!!.setText(strName)
+            for (i in locationDetailsArrayList.indices) {
+                if (strName == locationDetailsArrayList[i].getLocationName()) {
+                    fromWarehouseCode = locationDetailsArrayList[i].getLocationCode()
+                    fromWarehouseName = locationDetailsArrayList[i].getLocationName()
+                }
+            }
+            dialog.dismiss()
+        }
+        builderSingle.setNegativeButton(
+            "cancel"
+        ) { dialog, which -> dialog.dismiss() }
+        builderSingle.setCancelable(false)
+        builderSingle.show()
+    }
+
     private fun dispatchTakePictureIntent() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
@@ -2971,7 +2589,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         startActivityForResult(pickPhoto, REQUEST_GALLERY_PHOTO)
     }
     fun showImage() {
-        val builder = AlertDialog.Builder(this@NewSalesReturnProductAddActivity)
+        val builder = AlertDialog.Builder(this@NewStockAdjustmentProductAddActivity)
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.image_view_layout, null)
         val imageView = dialogView.findViewById<ImageView>(R.id.invoice_image)
@@ -3018,7 +2636,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             "Take Photo",  /* "Choose from Library",*/
             "Cancel"
         )
-        val builder = AlertDialog.Builder(this@NewSalesReturnProductAddActivity)
+        val builder = AlertDialog.Builder(this@NewStockAdjustmentProductAddActivity)
         builder.setItems(
             items
         ) { dialog: DialogInterface, item: Int ->
@@ -3158,9 +2776,9 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     fun redirectActivity() {
         val intent: Intent
         intent = if (activityFrom == "iv" || activityFrom == "ConvertInvoice") {
-            Intent(this@NewSalesReturnProductAddActivity, NewInvoiceListActivity::class.java)
+            Intent(this@NewStockAdjustmentProductAddActivity, NewInvoiceListActivity::class.java)
         } else {
-            Intent(this@NewSalesReturnProductAddActivity, SalesOrderListActivity::class.java)
+            Intent(this@NewStockAdjustmentProductAddActivity, SalesOrderListActivity::class.java)
         }
         startActivity(intent)
         finish()
@@ -3189,7 +2807,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     }
 
     fun showDeleteAlert() {
-        val builder1 = AlertDialog.Builder(this@NewSalesReturnProductAddActivity)
+        val builder1 = AlertDialog.Builder(this@NewStockAdjustmentProductAddActivity)
         builder1.setMessage("Data Will be Cleared are you sure want to back?")
         builder1.setCancelable(false)
         builder1.setPositiveButton(
@@ -3995,13 +3613,13 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
 
         // uomText.setText(model.getUomCode());
         stockCount!!.setText(model.stockQty)
-
         pcsPerCarton!!.setText(model.pcsPerCarton)
-        qtyValue!!.isEnabled = true
+//        qtyValue!!.isEnabled = true
         qtyValue!!.requestFocus()
         priceText!!.visibility = View.VISIBLE
         priceText!!.isEnabled = true
         stockCount!!.visibility = View.GONE
+
         //  behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         openKeyborard(qtyValue)
 
@@ -4063,202 +3681,64 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         return check
     }
 
-    fun createSalesReturnJson() {
+    fun createStockAdjusJson() {
         val c = Calendar.getInstance().time
         println("Current time => $c")
         val df = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
         currentDateString = df.format(c)
         val df3 = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
         currentDate = df3.format(c)
-        val rootJsonObject = JSONObject()
-        val srHeaderDetails = JSONObject()
-        val srBatchDetails = JSONObject()
-        var returnProductArray = JSONArray()
-        val saleDetailsArray = JSONArray()
-        var returnProductObject = JSONObject()
-        val srBatchArray = JSONArray()
-        var saleObject = JSONObject()
+        stockAdjustDetailList = arrayListOf()
 
-        //  salesReturnNo = SalesReturnList.salesReturnNo;
+        val df5 = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        var currentDate1:String = df5.format(c)
 
-
-        // {"SRNumber":"","Mode":"I","SRDate":"20210827","customerCode":"C1006","customerName":"A S KUMAR","address":"","street":"","city":"",
-        // "creditLimit":"0.000000","remark":"","currencyName":"Singapore Dollar","taxTotal":"3.50","subTotal":"50.00","total":"50.00",
-        // "netTotal":"53.50","itemDiscount":"0.00","billDiscount":"0.00","totalDiscount":null,"billDiscountPercentage":"0","deliveryCode":"0",
-        // "DelCustomerName":"","delAddress1":"","delAddress2":null,"delAddress3":null,"delPhoneNo":"","haveTax":"","taxType":"Z","taxPerc":"",
-        // "taxCode":"ZR","currencyCode":"SGD","currencyValue":"","CurrencyRate":"1","status":"","postalCode":"","createUser":"User1",
-        // "modifyUser":"User1","companyName":null,"stockUpdated":null,"SOType":null,"companyCode":"AATHI_LIVE_DB","locationCode":"HQ","DONo":null,
-        // "signature":"",
-        //
-        // "PostingDeliveryOrderDetails":[{"companyCode":"AATHI_LIVE_DB","SRDate":"20210827","slNo":"1","productCode":"SKU-AAFZ-0001",
-        // "productName":"ASHOKA BHATURA 325 GM","cartonQty":"5","unitQty":"0","qty":"5.0","pcsPerCarton":"1","price":"10.00","cartonPrice":"10.00",
-        // "retailPrice":"10.00","total":"50.0","itemDiscount":"0","totalTax":"3.50","subTotal":"50.00","netTotal":"53.50","taxType":"Z","taxPerc":"",
-        // "returnLQty":"0","returnQty":"0","focQty":"0","exchangeQty":"0","returnSubTotal":"0.0","returnNetTotal":"0.0","taxCode":"ZR","uomCode":"PCS",
-        // "itemRemarks":"","locationCode":"01","createUser":"User1","modifyUser":"User1"}]}
-        try {
-            // Sales Header Add values
-            val detailsArray = customerResponse.optJSONArray("responseData")
-            val `object` = detailsArray.optJSONObject(0)
-
-            /* if (activityFrom.equals("SREdit")){
-                rootJsonObject.put("SRNumber", AddInvoiceActivity.editSoNumber);
-                rootJsonObject.put("mode", "E");
-                rootJsonObject.put("status", "O");
-            }else {
-                rootJsonObject.put("soNumber", "");
-                rootJsonObject.put("mode", "I");
-                rootJsonObject.put("status", "");
-            }*/rootJsonObject.put("SRNumber", "")
-            rootJsonObject.put("mode", "I")
-            rootJsonObject.put("status", "")
-            rootJsonObject.put("SRDate", currentDateString)
-            rootJsonObject.put("currentDateTime", currentSaveDateTime)
-            rootJsonObject.put("customerCode", `object`.optString("customerCode"))
-            rootJsonObject.put("customerName", `object`.optString("customerName"))
-            rootJsonObject.put("address", `object`.optString("address"))
-            rootJsonObject.put("street", `object`.optString("street"))
-            rootJsonObject.put("city", `object`.optString("city"))
-            rootJsonObject.put("creditLimit", `object`.optString("creditLimit"))
-            rootJsonObject.put("remark", "")
-            rootJsonObject.put("currencyName", "Singapore Dollar")
-            rootJsonObject.put("total", netTotalValue!!.text.toString())
-            rootJsonObject.put("itemDiscount", "0.00")
-            rootJsonObject.put("billDiscount", "0.00")
-            rootJsonObject.put("billDiscountPercentage", "0.00")
-            rootJsonObject.put("subTotal", subTotalValue!!.text.toString())
-            rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
-            rootJsonObject.put("netTotal", netTotalValue!!.text.toString())
-            rootJsonObject.put("DeliveryCode", SettingUtils.getDeliveryAddressCode())
-            rootJsonObject.put("delCustomerName", "")
-            rootJsonObject.put("currentDateTime", Utils.getCurrentDateTime())
-            rootJsonObject.put("delAddress1", `object`.optString("delAddress1"))
-            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
-            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
-            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
-            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
-            rootJsonObject.put("taxType", `object`.optString("taxType"))
-            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
-            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
-            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
-            rootJsonObject.put("currencyValue", "")
-            rootJsonObject.put("currencyRate", "1")
-            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
-            rootJsonObject.put("createUser", username)
-            rootJsonObject.put("modifyUser", username)
-            rootJsonObject.put("companyCode", companyCode)
-            rootJsonObject.put("locationCode", locationCode)
-            rootJsonObject.put("signature", signatureString)
-            rootJsonObject.put("latitude", current_latitude)
-            rootJsonObject.put("longitude", current_longitude)
-            rootJsonObject.put("uomCode", "PCS")
-
-            // Sales Details Add to the Objects
-            val localCart = dbHelper!!.allInvoiceProducts
-            Log.w("Given_local_cart_size:", localCart.size.toString())
-
-            //  "PostingSalesOrderDetails":[{"companyCode":"WINAPP_DEMO","soDate":"20210806","slNo":1,"productCode":"FG\/001245","productName":
-            //  "RUM","cartonQty":"0","unitQty":"5","qty":"5.0","pcsPerCarton":"100","price":"5.00","cartonPrice":"500","retailPrice":"500",
-            //  "total":"25.0","itemDiscount":"0","totalTax":"0.0","subTotal":"25.0","netTotal":"25.00","taxType":"I","taxPerc":"","returnLQty":"0",
-            //  "returnQty":"0","focQty":"0","exchangeQty":"0","returnSubTotal":"0.0","returnNetTotal":"0.0","taxCode":"","uomCode":"Ctn",
-            //  "itemRemarks":"","locationCode":"01","createUser":"User1","modifyUser":"User1"}]}
-            var index = 1
+        val localCart = dbHelper!!.allInvoiceProducts
+        Log.w("Given_local_cart_size:", localCart.size.toString())
+        var model1 : StockAdjustSaveDetail? = null
+        if(localCart.size > 0) {
             for (model in localCart) {
-                saleObject = JSONObject()
-                saleObject.put("companyCode", companyCode)
-                saleObject.put("slNo", index)
-                saleObject.put("productCode", model.productCode)
-                saleObject.put("productName", model.productName)
-                saleObject.put("cartonQty", model.actualQty)
-                saleObject.put("unitQty", model.actualQty)
-                saleObject.put("qty", model.actualQty.toString())
-                saleObject.put("price", Utils.twoDecimalPoint(model.price.toDouble()))
-                saleObject.put("pcsPerCarton", "1")
-                saleObject.put("cartonPrice", "0.00")
-                saleObject.put("total", Utils.twoDecimalPoint(model.total.toDouble()))
-                saleObject.put("itemDiscount", "0.00")
-                saleObject.put("itemDiscountPercentage", "0")
-                saleObject.put("totalTax", model.gstAmount)
-                saleObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
-                saleObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                saleObject.put("taxType", `object`.optString("taxType"))
-                saleObject.put("taxPerc", `object`.optString("taxPercentage"))
-                saleObject.put("focQty", "0")
-                var return_subtotal = 0.0
-                if (model.actualQty != null && !model.actualQty.isEmpty() && model.actualQty != "null") {
-                    return_subtotal = model.actualQty.toDouble() * model.price.toDouble()
-                }
-                assert(model.actualQty != null)
-                if (!model.actualQty.isEmpty() && model.actualQty.toString() != "null") {
-                    saleObject.put("returnLQty", model.actualQty)
-                    saleObject.put("returnQty", model.actualQty)
-                } else {
-                    saleObject.put("returnLQty", "0")
-                    saleObject.put("returnQty", "0")
-                }
-                saleObject.put("exchangeQty", "0")
-                saleObject.put("returnSubTotal", return_subtotal.toString() + "")
-                saleObject.put("returnNetTotal", return_subtotal.toString() + "")
-                saleObject.put("taxCode", `object`.optString("taxCode"))
-                //                saleObject.put("uomCode",model.getUomCode());
-                saleObject.put("uomCode", model.uomCode)
-                saleObject.put("retailPrice", "0.00")
-                saleObject.put("DamageStock", "")
-                saleObject.put("itemRemarks", "")
-                saleObject.put("locationCode", locationCode)
-                saleObject.put("createUser", username)
-                saleObject.put("modifyUser", username)
-                val returnProducts = dbHelper!!.getReturnProducts(model.productCode)
-                returnProductArray = JSONArray()
-                if (returnProducts.size > 0) {
-                    for (returnProductsModel in returnProducts) {
-                        Log.w(
-                            "ReturnProductsValues:",
-                            returnProductsModel.productCode + "-" + returnProductsModel.productName + "--" + returnProductsModel.returnQty
-                        )
-                        if (returnProductsModel.returnQty != null && !returnProductsModel.returnQty.isEmpty() && returnProductsModel.returnQty.toInt() > 0) {
-                            returnProductObject = JSONObject()
-                            returnProductObject.put(
-                                "ReturnReason",
-                                returnProductsModel.returnReason
-                            )
-                            returnProductObject.put("ReturnQty", returnProductsModel.returnQty)
-                            returnProductArray.put(returnProductObject)
-                        }
-                    }
-                }
-                saleObject.put("ReturnDetails", returnProductArray)
-                saleDetailsArray.put(saleObject)
-                index++
+                    model1 = StockAdjustSaveDetail(
+                    arrayListOf(),
+                    model.productCode,
+                    Utils.twoDecimalPoint(model.price.toDouble()),
+                    model.uomCode,
+                        fromWarehouseCode!!,
+                    Utils.twoDecimalPoint(model.netQty.toDouble())
+                )
+                stockAdjustDetailList!!.add(model1!!)
             }
-            rootJsonObject.put("PostingSalesReturnDetails", saleDetailsArray)
-            Log.w("RootSalesReturn:", rootJsonObject.toString())
-            saveSalesReturn(rootJsonObject, 1)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-            Log.w("Given_Error:", Objects.requireNonNull(e.message)!!)
         }
+
+        val reqModel = StockAdjustSaveModel(
+            currentDate1,
+            stockAdjustDetailList!!
+        )
+        savetockAdjust(reqModel,1)
+
+        Log.w("gson_adjust_saveee", ".." + Gson().toJson(reqModel).toString())
     }
 
-    fun saveSalesReturn(jsonBody: JSONObject, noofCopyPrint: Int) {
+    fun savetockAdjust(jsonBody: StockAdjustSaveModel, noofCopyPrint: Int) {
         try {
             pDialog = SweetAlertDialog(
-                this@NewSalesReturnProductAddActivity,
+                this@NewStockAdjustmentProductAddActivity,
                 SweetAlertDialog.PROGRESS_TYPE
             )
             pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
-            pDialog!!.setTitleText("Saving Sales Return...")
+            pDialog!!.setTitleText("Saving Stock Adjustment...")
             pDialog!!.setCancelable(false)
             pDialog!!.show()
-            val requestQueue = Volley.newRequestQueue(this@NewSalesReturnProductAddActivity)
-            Log.w("GivenSalesReturn:", jsonBody.toString())
-            val URL = Utils.getBaseUrl(applicationContext) + "PostingSalesReturn"
-            Log.w("Given_SalesReturnApi:", URL)
+            val requestQueue = Volley.newRequestQueue(this@NewStockAdjustmentProductAddActivity)
+            Log.w("GivenStockAdjust:", jsonBody.toString())
+            val URL = Utils.getBaseUrl(applicationContext) + "PostingGoodsReceipt"
+            Log.w("Given_StockAdjustApi:", URL)
             val salesOrderRequest: JsonObjectRequest = object : JsonObjectRequest(
                 Method.POST,
                 URL,
-                jsonBody,
+                null,
                 Response.Listener { response: JSONObject ->
-                    Log.w("Sales_returnResponse:", response.toString())
+                    Log.w("StockAdj_Res:", response.toString())
                     try {
                         //   {"statusCode":1,"statusMessage":"Sales Return Created Successfully","responseData":{"docNum":"1000005","error":null}}
                         val statusCode = response.optString("statusCode")
@@ -4277,11 +3757,11 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                             Utils.clearCustomerSession(applicationContext)
                             AppUtils.setProductsList(null)
                             pDialog!!.dismiss()
-                            SalesReturnList.isEdit = false
+                            isEdit = false
                             if (isPrintEnable) {
                                 val intent = Intent(
                                     applicationContext,
-                                    NewSalesReturnListActivity::class.java
+                                    NewStockAdjustmentProductAddActivity::class.java
                                 )
                                 intent.putExtra("srNumber", salesReturnNumber)
                                 intent.putExtra("noOfCopy", noofCopyPrint.toString())
@@ -4290,7 +3770,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                             } else {
                                 val intent = Intent(
                                     applicationContext,
-                                    NewSalesReturnListActivity::class.java
+                                    NewStockAdjustmentProductAddActivity::class.java
                                 )
                                 startActivity(intent)
                                 finish()
@@ -4311,14 +3791,14 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                     Log.w("SR_Error:", error.toString())
                     pDialog!!.dismiss()
                 }) {
+
                 override fun getBody(): ByteArray {
-                    return jsonBody.toString().toByteArray()
+                    return Gson().toJson(jsonBody).toString().toByteArray()
                 }
 
                 override fun getBodyContentType(): String {
                     return "application/json"
                 }
-
                 override fun getHeaders(): Map<String, String> {
                     val params = HashMap<String, String>()
                     val creds = String.format(
@@ -4354,7 +3834,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     private fun sentSalesOrderDataPrint(copy: Int) {
         if (printerType == "TSC Printer") {
             val printer =
-                TSCPrinter(this@NewSalesReturnProductAddActivity, printerMacId, "SalesOrder")
+                TSCPrinter(this@NewStockAdjustmentProductAddActivity, printerMacId, "SalesOrder")
             printer.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList)
             printer.setOnCompletionListener {
                 Utils.setSignature("")
@@ -4366,7 +3846,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             }
         } else if (printerType == "Zebra Printer") {
             val zebraPrinterActivity =
-                ZebraPrinterActivity(this@NewSalesReturnProductAddActivity, printerMacId)
+                ZebraPrinterActivity(this@NewStockAdjustmentProductAddActivity, printerMacId)
             zebraPrinterActivity.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList)
         }
     }
@@ -4394,8 +3874,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         var current_longitude = "0.00"
         var currentDate: String? = null
         var customerResponse = JSONObject()
-        private var currentDateString: String? = null
         var salesReturnNo: String? = null
+
         @RequiresApi(api = Build.VERSION_CODES.O)
         private fun convertDate(strDate: String): String {
             @SuppressLint("SimpleDateFormat") val inputFormat: DateFormat =

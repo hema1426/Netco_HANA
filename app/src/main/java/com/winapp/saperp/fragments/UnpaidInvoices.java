@@ -1,6 +1,7 @@
 package com.winapp.saperp.fragments;
 
 import static com.winapp.saperp.activity.NewInvoiceListActivity.isLastSales;
+import static com.winapp.saperp.activity.NewInvoiceListActivity.userPermission;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -60,6 +61,7 @@ public class UnpaidInvoices extends Fragment {
     private RecyclerView invoiceListView;
     private UnPaidInvoiceAdapter invoiceAdapter;
     private ArrayList<InvoiceModel> invoiceList;
+    String usernamel="";
     private SweetAlertDialog pDialog;
     int pageNo=1;
     private SessionManager session;
@@ -133,7 +135,12 @@ public class UnpaidInvoices extends Fragment {
         SimpleDateFormat df1 = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
         currentDate = df1.format(c);
         invoiceList=new ArrayList<>();
-        getInvoices(companyId,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        if (userPermission.equalsIgnoreCase("True")) {
+            usernamel = "All" ;
+        }else {
+            usernamel  = username;
+        }
+        getInvoices(companyId,usernamel,String.valueOf(pageNo),"ALL",currentDate,currentDate);
 
         invoiceListView.setHasFixedSize(true);
         invoiceListView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
@@ -251,7 +258,7 @@ public class UnpaidInvoices extends Fragment {
     }
 
 
-    public void getInvoices(String companyCode,String pageNo,String action,String fromdate,String todate) {
+    public void getInvoices(String companyCode,String username,String pageNo,String action,String fromdate,String todate) {
         try {
             Log.w("LoadingAction:",action);
             // Initialize a new RequestQueue instance

@@ -183,7 +183,7 @@ public class SalesReturnActivity extends NavigationActivity implements View.OnCl
                 }
             }
         }
-        Log.w("locatretun:",""+Utils.getLocationList());
+      //  Log.w("locatretun:",""+Utils.getLocationList());
 
         locationList = Utils.getLocationList();
         if(locationList.size() > 0){

@@ -161,6 +161,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
     private Spinner salesManSpinner;
     private String selectedUser="";
     public static String shortCodeStr = "" ;
+    public String userPermission = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,6 +217,8 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
 
         shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
                 .KEY_SHORT_CODE,"");
+        userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
+
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -626,6 +629,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                         String toDateString = new SimpleDateFormat("yyyyMMdd").format(toDate);
                         System.out.println(fromDateString+"-"+toDateString); // 2011-01-18
                         String invoice_status="";
+                        String usernamel="";
                         if (salesOrderStatusSpinner.getSelectedItem().equals("ALL")){
                             invoice_status="";
                         }else if (salesOrderStatusSpinner.getSelectedItem().equals("CLOSED")){
@@ -633,7 +637,12 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                         }else if (salesOrderStatusSpinner.getSelectedItem().equals("OPEN")){
                             invoice_status="O";
                         }
-                        setFilterSearch(SalesOrderListActivity.this,companyId,selectedCustomerId,invoice_status,fromDateString,toDateString);
+                        if (userPermission.equalsIgnoreCase("True")) {
+                            usernamel = "All" ;
+                        }else {
+                            usernamel  = userName;
+                        }
+                        setFilterSearch(SalesOrderListActivity.this,usernamel,companyId,selectedCustomerId,invoice_status,fromDateString,toDateString);
                     } catch (JSONException | ParseException e) {
                         e.printStackTrace();
                     }
@@ -1684,16 +1693,17 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
         requestQueue.add(jsonObjectRequest);
     }
 
-    public void setFilterSearch(Context context, String companyId, String customerCode, String status, String fromdate, String todate) throws JSONException {
+    public void setFilterSearch(Context context,String userName, String companyId, String customerCode, String status, String fromdate, String todate) throws JSONException {
         // Initialize a new RequestQueue instance
         RequestQueue requestQueue = Volley.newRequestQueue(this);
        // {"CustomerCode":"","ReceiptNo":"","StartDate":"","EndDate":,"CompanyCode":"1"}
         JSONObject jsonObject=new JSONObject();
-        if (selectedUser!=null && !selectedUser.isEmpty()){
-            jsonObject.put("User",selectedUser);
-        }else {
-            jsonObject.put("User",userName);
-        }
+//        if (selectedUser!=null && !selectedUser.isEmpty()){
+//            jsonObject.put("User",selectedUser);
+//        }else {
+//            jsonObject.put("User",userName);
+//        }
+        jsonObject.put("User",userName);
         jsonObject.put("CustomerCode",customerCode);
         jsonObject.put("FromDate",fromdate);
         jsonObject.put("ToDate", todate);

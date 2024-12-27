@@ -92,7 +92,8 @@ public class Constants {
     // ALS Demo
     public static String ALS_DEMO ="http://43.228.126.114:80/api/";
 
-
+    // thongai_url -- dec 24
+    public static String thongai_url ="http://18.140.91.24:128/api/";
     // Dawood Demo
     public static String DAWOOD_DEMO ="http://129.150.58.169:95/api/";
 

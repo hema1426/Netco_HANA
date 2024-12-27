@@ -2,11 +2,14 @@ package com.winapp.saperp.utils
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.winapp.saperp.R
+import com.winapp.saperp.thermalprinter.App
 
 object CommonMethodKotl {
     var mDialog: Dialog? = null
@@ -30,6 +33,14 @@ object CommonMethodKotl {
             dialog.dismiss()
         }
         alertDialogBuilder.show()
+    }
+    fun toast(context: Context, msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
+
+
+    fun toast( msg: String) {
+        Toast.makeText(App.getContext(), msg, Toast.LENGTH_SHORT).show()
     }
 
     fun showProgressDialog(activity: Activity) {

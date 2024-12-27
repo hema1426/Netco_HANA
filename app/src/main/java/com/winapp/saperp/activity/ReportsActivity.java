@@ -599,7 +599,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                                     startActivity(intent);
                                 }
                                 break;
-                            case "Invoice By Summary":
+                            case "Sales Summary":
                                 dialog.dismiss();
                                 progressDialog.setMessage("Printing in Progress...!");
                                 progressDialog.show();

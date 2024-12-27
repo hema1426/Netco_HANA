@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.winapp.saperp.R;
 import com.winapp.saperp.activity.AddInvoiceActivityOld;
 import com.winapp.saperp.activity.CreateNewInvoiceActivity;
+import com.winapp.saperp.activity.NewStockAdjustmentProductAddActivity;
 import com.winapp.saperp.activity.ProductAnalyzeActivity;
 import com.winapp.saperp.activity.SearchProductActivity;
 import com.winapp.saperp.activity.StockProductsActivity;
@@ -123,7 +124,10 @@ public class SelectProductAdapter extends RecyclerView.Adapter<SelectProductAdap
             public void onClick(View view) {
                 getLowStockSetting();
                 if (Double.parseDouble(model.getStockQty()) == 0 || Double.parseDouble(model.getStockQty()) < 0) {
-                    if (context instanceof SalesReturnActivity || context instanceof NewSalesReturnProductAddActivity || context instanceof TransferProductAddActivity){
+                    if (context instanceof SalesReturnActivity ||
+                            context instanceof NewSalesReturnProductAddActivity ||
+                            context instanceof NewStockAdjustmentProductAddActivity ||
+                            context instanceof TransferProductAddActivity){
                         callBack.searchProduct(model);
                     }else {
                         if (context instanceof AddInvoiceActivityOld){
@@ -168,7 +172,11 @@ public class SelectProductAdapter extends RecyclerView.Adapter<SelectProductAdap
             }
         });
 
-        if (context instanceof NewSalesReturnProductAddActivity || context instanceof TransferProductAddActivity || context instanceof CreateNewInvoiceActivity || context instanceof StockProductsActivity || context instanceof SearchProductActivity || context instanceof SalesReturnActivity || AddInvoiceActivityOld.activityFrom.equals("SalesOrder") ||
+        if (context instanceof NewSalesReturnProductAddActivity || context instanceof TransferProductAddActivity
+                || context instanceof CreateNewInvoiceActivity || context instanceof StockProductsActivity
+                || context instanceof SearchProductActivity || context instanceof SalesReturnActivity ||
+                context instanceof NewStockAdjustmentProductAddActivity ||
+                AddInvoiceActivityOld.activityFrom.equals("SalesOrder") ||
                 AddInvoiceActivityOld.activityFrom.equals("SalesEdit") ||
                 AddInvoiceActivityOld.activityFrom.equals("ReOrderSales") ){
             viewHolder.productInfo.setVisibility(View.GONE);
@@ -195,7 +203,11 @@ public class SelectProductAdapter extends RecyclerView.Adapter<SelectProductAdap
                 if (model.getStockQty()!=null && !model.getStockQty().isEmpty() && !model.getStockQty().equals("null")){
                     Log.w("stokpdtqty",""+model.getStockQty());
                     if (Double.parseDouble(model.getStockQty()) == 0 || Double.parseDouble(model.getStockQty()) < 0 ) {
-                        if (context instanceof SalesReturnActivity || context instanceof NewSalesReturnProductAddActivity || context instanceof TransferProductAddActivity){                    Log.w("stokpdtqty",""+model.getStockQty());
+                        if (context instanceof SalesReturnActivity
+                                || context instanceof NewSalesReturnProductAddActivity
+                                || context instanceof TransferProductAddActivity ||
+                                context instanceof NewStockAdjustmentProductAddActivity){
+                            Log.w("stokpdtqty",""+model.getStockQty());
 
                             callBack.searchProduct(model);
                         }else {

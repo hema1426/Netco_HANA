@@ -2,8 +2,8 @@ TRANS_ORIENT_DEMO
 TO01
 12345
 ------
-Username: V1
-Password: 12345
+Username: V1  --dec
+Password: 1234
 
 V1 V11234
 
@@ -12,6 +12,8 @@ ST01
 Yn7876z
 {"Username":"SuperStar01","Password":"SS123"}
 
+
+thongai -- SALES   1234
 
 aug 24
 {
@@ -45,6 +47,11 @@ fuxin
 Username - ctc230004.1
 Pwd - 1234
 c12345
+
+
+good receipt -- stock adjustment
+invertory --
+
 
 raymanng
 Username - ctc230003.1

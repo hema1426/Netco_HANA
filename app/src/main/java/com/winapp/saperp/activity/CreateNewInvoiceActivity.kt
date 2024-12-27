@@ -954,7 +954,13 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                 showSignatureAlert();
             }
         });*/btnCancel!!.setOnClickListener(View.OnClickListener { viewCloseBottomSheet() })
-        searchProduct!!.setOnClickListener(View.OnClickListener { viewCloseBottomSheet() })
+        searchProduct!!.setOnClickListener(View.OnClickListener {
+            if (addProduct!!.text.contains("Update")) {
+                Toast.makeText(this, "Update previous product", Toast.LENGTH_SHORT).show()
+            } else {
+                viewCloseBottomSheet()
+            }
+        })
 
         downarrow_billLayl!!.setOnClickListener {
 //            bill_disc_amt_ed!!.setText(pref_bill_disc_amt)
@@ -5465,6 +5471,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                                 Intent(applicationContext, DeliveryOrderListActivity::class.java)
                             startActivity(intent)
                             finish()
+                            dbHelper!!.removeAllInvoiceItems()
+
                             /*  if (isPrintEnable){
                             // {"statusCode":1,"statusMessage":"Delivery Order Created Successfully","responseData":{"docNum":"11","error":null}}
                             try {

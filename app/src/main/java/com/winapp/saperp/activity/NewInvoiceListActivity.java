@@ -309,7 +309,7 @@ public class NewInvoiceListActivity extends NavigationActivity
     private ArrayList<UserListModel> usersList;
     public String locationCode;
     public static String shortCodeStr = "" ;
-
+    public static String userPermission = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -346,6 +346,7 @@ public class NewInvoiceListActivity extends NavigationActivity
         invoiceView = findViewById(R.id.invoice_view);
         paidView = findViewById(R.id.paid_view);
         invoiceListView = findViewById(R.id.invoiceList);
+
         session = new SessionManager(this);
         user = session.getUserDetails();
         companyId = user.get(SessionManager.KEY_COMPANY_CODE);
@@ -373,6 +374,8 @@ public class NewInvoiceListActivity extends NavigationActivity
 
         shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
             .KEY_SHORT_CODE,"");
+        userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
+
         customerView = findViewById(R.id.customerList);
         totalCustomers = findViewById(R.id.total_customers);
         cancelSheet = findViewById(R.id.cancel_sheet);
@@ -735,6 +738,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                         String toDateString = new SimpleDateFormat("yyyyMMdd").format(toDate);
                         System.out.println(fromDateString + "-" + toDateString); // 2011-01-18
                         String invoice_status = "";
+                        String usernamel = "";
                         if (invoiceStatus.getSelectedItem().equals("ALL")) {
                             invoice_status = "";
                         } else if (invoiceStatus.getSelectedItem().equals("PAID")) {
@@ -743,10 +747,15 @@ public class NewInvoiceListActivity extends NavigationActivity
                             invoice_status = "O";
                             fromDateString = "" ;
                         }
-                        if (selectedUser != null && !selectedUser.isEmpty()) {
-                            username = selectedUser;
+//                        if (selectedUser != null && !selectedUser.isEmpty()) {
+//                            username = selectedUser;
+//                        }
+                        if (userPermission.equalsIgnoreCase("True")) {
+                            usernamel = "All" ;
+                        }else {
+                            usernamel  = username;
                         }
-                        invoices.filterSearch(NewInvoiceListActivity.this, username, selectCustomerCode, invoice_status, fromDateString, toDateString, locationCode);
+                        invoices.filterSearch(NewInvoiceListActivity.this, usernamel, selectCustomerCode, invoice_status, fromDateString, toDateString, locationCode);
                     } catch (JSONException | ParseException e) {
                         e.printStackTrace();
                     }
@@ -1670,6 +1679,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                                         JSONObject object = products.getJSONObject(i);
                                         String lqty = "0.0";
                                         String cqty = "0.0";
+                                        String return_qty = "0";
                                         if (!object.optString("unitQty").equals("null")) {
                                             lqty = object.optString("unitQty");
                                         }
@@ -1677,8 +1687,11 @@ public class NewInvoiceListActivity extends NavigationActivity
                                         if (!object.optString("quantity").equals("null")) {
                                             cqty = object.optString("quantity");
                                         }
+                                        if (!object.optString("quantity").equals("null")) {
+                                            return_qty = object.optString("returnQty");
+                                        }
                                         double priceValue = 0.0;
-                                        String return_qty = "0";
+
                                         double net_qty = Double.parseDouble(cqty) - Double.parseDouble(return_qty);
                                         String price_value = object.optString("price");
                                         //String price_value=object.optString("grossPrice");
@@ -2028,6 +2041,7 @@ public class NewInvoiceListActivity extends NavigationActivity
             if (searchFilterView.getVisibility() == View.VISIBLE) {
                 searchFilterView.setVisibility(View.GONE);
                 customerNameText.setText("");
+                selectCustomerCode = "";
                 isSearchCustomerNameClicked = false;
                 if (behavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -2035,6 +2049,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                 //slideUp(searchFilterView);
             } else {
                 customerNameText.setText("");
+                selectCustomerCode = "";
                 isSearchCustomerNameClicked = false;
                 searchFilterView.setVisibility(View.VISIBLE);
                 if (behavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {

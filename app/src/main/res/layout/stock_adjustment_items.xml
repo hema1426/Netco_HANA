@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/main_layout"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:id="@+id/item_code"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text="Code"
+            android:textSize="12sp"
+            />
+
+        <View
+            android:layout_width="1dip"
+            android:background="#f2f2f2"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:gravity="center"
+            android:layout_weight="2"
+
+            android:textStyle="bold"
+            android:id="@+id/product"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text="Item Descrition"
+            android:textSize="12sp"
+            />
+        <View
+            android:layout_width="1dip"
+            android:background="#f2f2f2"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:id="@+id/uom_return"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text=""
+            android:textSize="12sp"
+            />
+        <View
+            android:layout_width="1dip"
+            android:background="#f2f2f2"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:id="@+id/actual_qty"
+            android:visibility="gone"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text="Rtn-Qty"
+            android:textSize="12sp"
+            />
+
+        <View
+            android:layout_width="1dip"
+            android:background="#f2f2f2"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:layout_gravity="top"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:id="@+id/net_qty"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text="Net Qty"
+            android:textSize="12sp"
+            />
+        <View
+            android:layout_width="1dip"
+            android:background="#f2f2f2"
+            android:visibility="gone"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:id="@+id/price"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text="Price"
+            android:textSize="12sp"
+            />
+
+        <View
+            android:layout_width="1dip"
+            android:background="#f2f2f2"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:id="@+id/net_total"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:background="@drawable/table_content_cell_bg"
+            android:text="Net Total"
+            android:textSize="12sp"
+
+            />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:background="#f3f3f3"
+        android:layout_height="1dip"/>
+</LinearLayout>

@@ -16,6 +16,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="12sp"
             android:gravity="center"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <TextView
@@ -87,7 +88,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="12sp"
             android:singleLine="true"
-            android:text="LOADING SHEET"
+            android:text="Stock Take"
             android:textColor="@color/colorPrimary"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -141,7 +142,7 @@
                             android:textSize="12sp" />
 
                         <TextView
-                            android:id="@+id/transfer_no"
+                            android:id="@+id/take_no"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
@@ -153,7 +154,7 @@
                     </LinearLayout>
 
                     <TextView
-                        android:id="@+id/transfer_date"
+                        android:id="@+id/take_date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -172,7 +173,8 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                >
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -185,7 +187,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:text="From Location :"
+                        android:text="Location :"
                         android:textColor="@color/black"
                         android:textSize="10sp"
                         android:textStyle="normal" />
@@ -196,38 +198,10 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:singleLine="true"
-                        android:text="loc"
+                        android:text=""
                         android:textColor="@color/black"
                         android:textSize="10sp"
                         android:textStyle="normal" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginTop="5sp"
-                    android:layout_marginRight="5sp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="To Location :"
-                        android:textColor="@color/black"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/to_loc"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:singleLine="true"
-                        android:text="loc"
-                        android:textColor="@color/black"
-                        android:textSize="10sp" />
 
                 </LinearLayout>
 
@@ -235,33 +209,6 @@
         </LinearLayout>
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5sp"
-        android:layout_marginTop="5sp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/fromloc_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="10sp"
-            android:textStyle="normal" />
-
-            <TextView
-                android:id="@+id/toloc_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:gravity="end"
-                android:text=""
-                android:textColor="@color/black"
-                android:textSize="10sp" />
-    </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -329,11 +276,10 @@
 
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_transferlist"
+                android:id="@+id/rv_takelist"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                tools:listitem="@layout/transfer_preview_print_item"/>
+                android:layout_height="match_parent"
+                tools:listitem="@layout/take_preview_print_item"/>
 
 
             <View
@@ -341,17 +287,6 @@
                 android:layout_height="1dp"
                 android:layout_marginTop="10sp"
                 android:background="@color/lit_grey" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_marginLeft="5sp"
-                android:layout_marginTop="10sp"
-                android:singleLine="true"
-                android:text="Customer Signature &amp; Company Stamp"
-                android:textColor="@color/black"
-                android:textSize="12sp" />
 
         </LinearLayout>
     </LinearLayout>

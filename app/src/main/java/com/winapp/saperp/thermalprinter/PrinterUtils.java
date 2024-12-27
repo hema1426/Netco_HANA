@@ -1159,8 +1159,6 @@ public class PrinterUtils extends AppCompatActivity {
                             }
                         }
                     }
-
-
 //                        if (!invoiceHeaderDetails.get(0).getAddress().isEmpty()) {
 //                            Log.w("GivenPrintAddress:", invoiceHeaderDetails.get(0).getAddress().toString());
 //                            y += LINE_SPACING;
@@ -1169,7 +1167,6 @@ public class PrinterUtils extends AppCompatActivity {
 //                            } else {
 //                                String address1 = invoiceHeaderDetails.get(0).getAddress().substring(0, 42);
 //                                String address2 = invoiceHeaderDetails.get(0).getAddress().substring(42);
-//
 //                                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "ADDR: " + address1 + "\"\n\n");
 //                                y += 30;
 //                                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + address2 + "\"\n\n");

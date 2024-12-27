@@ -360,7 +360,26 @@ open class NavigationActivity : AppCompatActivity() {
                 startActivity(intent)
                 drawerLayout!!.closeDrawers()
                 return@OnNavigationItemSelectedListener true
-            } else if (itemId == R.id.navigation_expense) {
+            }
+            else if (itemId == R.id.navigation_stock_take) {
+                val intent: Intent
+                intent = Intent(this@NavigationActivity, StockTakeListActivity::class.java)
+                intent.putExtra("docNum", "")
+                intent.putExtra("transferType", "")
+                startActivity(intent)
+                drawerLayout!!.closeDrawers()
+                return@OnNavigationItemSelectedListener true
+            }else if (itemId == R.id.navigation_stock_adjust) {
+                val intent: Intent
+                intent = Intent(this@NavigationActivity, StockAdjustmentListActivity::class.java)
+                intent.putExtra("docNum", "")
+                intent.putExtra("transferType", "")
+                startActivity(intent)
+                drawerLayout!!.closeDrawers()
+                return@OnNavigationItemSelectedListener true
+            }
+
+            else if (itemId == R.id.navigation_expense) {
                 val intent: Intent
                 intent = Intent(this@NavigationActivity, NewExpenseModuleListActivity::class.java)
                 intent.putExtra("docNum", "")
@@ -438,6 +457,10 @@ open class NavigationActivity : AppCompatActivity() {
         )
         sharedPreferenceUtil!!.setStringPreference(
             sharedPreferenceUtil!!.KEY_USER_MIDDLE_NAME,
+            ""
+        )
+        sharedPreferenceUtil!!.setStringPreference(
+            sharedPreferenceUtil!!.KEY_ADMIN_PERMISSION,
             ""
         )
     }

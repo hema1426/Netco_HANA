@@ -1,6 +1,7 @@
 package com.winapp.saperp.fragments;
 
 import static com.winapp.saperp.activity.NewInvoiceListActivity.isLastSales;
+import static com.winapp.saperp.activity.NewInvoiceListActivity.userPermission;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -91,6 +92,7 @@ public class AllInvoices extends Fragment {
     String username="";
     String locationCode="";
     String currentDate="";
+    String usernamel="";
 
     public Button createNewInvoice;
 
@@ -140,7 +142,14 @@ public class AllInvoices extends Fragment {
         System.out.println("Current time => " + c);
         SimpleDateFormat df1 = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
         currentDate = df1.format(c);
-        getInvoices(companyId,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+
+        if (userPermission.equalsIgnoreCase("True")) {
+            usernamel = "All" ;
+        }else {
+            usernamel  = username;
+        }
+        Log.w("userrna",""+usernamel);
+        getInvoices(companyId,usernamel,String.valueOf(pageNo),"ALL",currentDate,currentDate);
 
         if(isLastSales.equalsIgnoreCase("True")){
             totalSalesLayout.setVisibility(View.VISIBLE);
@@ -231,20 +240,23 @@ public class AllInvoices extends Fragment {
 
     }
 
-    public void getInvoices(String companyCode,String pageNo,String action,String fromdate,String todate) {
+    public void getInvoices(String companyCode,String userName,String pageNo,String action,String fromdate,String todate) {
         try {
             Log.w("LoadingAction:",action);
             // Initialize a new RequestQueue instance
             RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
             // Initialize a new JsonArrayRequest instance
             JSONObject jsonObject=new JSONObject();
-            jsonObject.put("User",username);
+
+            jsonObject.put("User",userName);
             jsonObject.put("LocationCode",locationCode);
             jsonObject.put("CustomerCode","");
             jsonObject.put("FromDate",fromdate);
             jsonObject.put("ToDate", todate);
             jsonObject.put("DocStatus","");
+
             String url = Utils.getBaseUrl(getActivity()) + "InvoiceList";
+
             Log.w("Given_url_AllInvoices:", url+"/"+jsonObject.toString());
             pDialog = new SweetAlertDialog(getActivity(), SweetAlertDialog.PROGRESS_TYPE);
             pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
@@ -448,7 +460,7 @@ public class AllInvoices extends Fragment {
     public  void filterCancel() {
       //  setFilterAdapter(displayInvoiceList);
         invoiceList=new ArrayList<>();
-        getInvoices(companyId,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        getInvoices(companyId,usernamel,String.valueOf(pageNo),"ALL",currentDate,currentDate);
     }
 
     public  void filterSearch(Context context,String username, String customerCode, String invoiceStatus, String fromdate, String todate,String location) throws JSONException {

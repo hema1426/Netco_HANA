@@ -177,8 +177,6 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
                 }
             });
 
-
-
             ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -187,7 +185,7 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
                         ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("show");
                         ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_up_24));
                         try {
-                            if (salesOrderModel.getSalesList().size()>0){
+                            if (salesOrderModel.getSalesList() != null && salesOrderModel.getSalesList().size()>0){
                                 setSalesAdapter(viewHolder,position,salesOrderModel.getSalesList());
                                 ((SalesOrderViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
                                 ((SalesOrderViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
@@ -207,7 +205,6 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
                 }
             });
 
-
             if (salesOrderModel.isShow()){
                 ((SalesOrderViewHolder) viewHolder).bottomLayout.setVisibility(View.VISIBLE);
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("show");
@@ -224,7 +221,6 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("hide");
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_down_24));
             }
-
 
         } else if ( viewHolder instanceof LoadingViewHolder) {
             LoadingViewHolder loadingViewHolder = (LoadingViewHolder)  viewHolder;
@@ -331,7 +327,7 @@ public class SalesOrderAdapterNew extends RecyclerView.Adapter<RecyclerView.View
         RequestQueue requestQueue = Volley.newRequestQueue(mContext);
         String url= Utils.getBaseUrl(mContext) +"SalesOrderDetails";
         // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:",url);
+        Log.w("Given_url:",url+jsonObject);
         salesOrdernewList =new ArrayList<>();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.POST,
