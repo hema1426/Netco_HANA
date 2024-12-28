@@ -459,10 +459,10 @@ open class NavigationActivity : AppCompatActivity() {
             sharedPreferenceUtil!!.KEY_USER_MIDDLE_NAME,
             ""
         )
-        sharedPreferenceUtil!!.setStringPreference(
-            sharedPreferenceUtil!!.KEY_ADMIN_PERMISSION,
-            ""
-        )
+//        sharedPreferenceUtil!!.setStringPreference(
+//            sharedPreferenceUtil!!.KEY_ADMIN_PERMISSION,
+//            ""
+//        )
     }
 
     override fun onBackPressed() {

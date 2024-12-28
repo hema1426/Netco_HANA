@@ -143,13 +143,14 @@ public class AllInvoices extends Fragment {
         SimpleDateFormat df1 = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
         currentDate = df1.format(c);
 
-        if (userPermission.equalsIgnoreCase("True")) {
-            usernamel = "All" ;
-        }else {
-            usernamel  = username;
-        }
+//        if (userPermission.equalsIgnoreCase("True")) {
+//            usernamel = "All" ;
+//        }else {
+//            usernamel  = username;
+//        }
+
         Log.w("userrna",""+usernamel);
-        getInvoices(companyId,usernamel,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        getInvoices(companyId,username,String.valueOf(pageNo),"ALL",currentDate,currentDate);
 
         if(isLastSales.equalsIgnoreCase("True")){
             totalSalesLayout.setVisibility(View.VISIBLE);
@@ -460,7 +461,7 @@ public class AllInvoices extends Fragment {
     public  void filterCancel() {
       //  setFilterAdapter(displayInvoiceList);
         invoiceList=new ArrayList<>();
-        getInvoices(companyId,usernamel,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        getInvoices(companyId,username,String.valueOf(pageNo),"ALL",currentDate,currentDate);
     }
 
     public  void filterSearch(Context context,String username, String customerCode, String invoiceStatus, String fromdate, String todate,String location) throws JSONException {

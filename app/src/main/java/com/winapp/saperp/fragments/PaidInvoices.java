@@ -127,12 +127,12 @@ public class PaidInvoices extends Fragment {
         currentDate = df1.format(c);
         invoiceList=new ArrayList<>();
 
-        if (userPermission.equalsIgnoreCase("True")) {
-            usernamel = "All" ;
-        }else {
-            usernamel  = username;
-        }
-        getInvoices(companyId,usernamel,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+//        if (userPermission.equalsIgnoreCase("True")) {
+//            usernamel = "All" ;
+//        }else {
+//            usernamel  = username;
+//        }
+        getInvoices(companyId,username,String.valueOf(pageNo),"ALL",currentDate,currentDate);
 
         invoiceListView.setHasFixedSize(true);
 

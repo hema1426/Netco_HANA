@@ -160,6 +160,7 @@
         <item
             android:icon="@drawable/ic_baseline_transform_24"
             android:id="@+id/navigation_stock_adjust"
+            android:visible="false"
             android:title="Stock Adjustment" />
 
 
@@ -169,7 +170,7 @@
         <item
             android:icon="@drawable/ic_baseline_transform_24"
             android:id="@+id/navigation_stock_take"
-            android:visible="true"
+            android:visible="false"
             android:title="Stock Take" />
 
     </group>

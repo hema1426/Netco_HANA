@@ -374,7 +374,7 @@ public class NewInvoiceListActivity extends NavigationActivity
 
         shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
             .KEY_SHORT_CODE,"");
-        userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
+       // userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
 
         customerView = findViewById(R.id.customerList);
         totalCustomers = findViewById(R.id.total_customers);
@@ -750,12 +750,12 @@ public class NewInvoiceListActivity extends NavigationActivity
 //                        if (selectedUser != null && !selectedUser.isEmpty()) {
 //                            username = selectedUser;
 //                        }
-                        if (userPermission.equalsIgnoreCase("True")) {
-                            usernamel = "All" ;
-                        }else {
-                            usernamel  = username;
-                        }
-                        invoices.filterSearch(NewInvoiceListActivity.this, usernamel, selectCustomerCode, invoice_status, fromDateString, toDateString, locationCode);
+//                        if (userPermission.equalsIgnoreCase("True")) {
+//                            usernamel = "All" ;
+//                        }else {
+//                            usernamel  = username;
+//                        }
+                        invoices.filterSearch(NewInvoiceListActivity.this, username, selectCustomerCode, invoice_status, fromDateString, toDateString, locationCode);
                     } catch (JSONException | ParseException e) {
                         e.printStackTrace();
                     }

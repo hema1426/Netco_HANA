@@ -217,7 +217,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
 
         shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
                 .KEY_SHORT_CODE,"");
-        userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
+       // userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
 
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
@@ -637,12 +637,12 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                         }else if (salesOrderStatusSpinner.getSelectedItem().equals("OPEN")){
                             invoice_status="O";
                         }
-                        if (userPermission.equalsIgnoreCase("True")) {
-                            usernamel = "All" ;
-                        }else {
-                            usernamel  = userName;
-                        }
-                        setFilterSearch(SalesOrderListActivity.this,usernamel,companyId,selectedCustomerId,invoice_status,fromDateString,toDateString);
+//                        if (userPermission.equalsIgnoreCase("True")) {
+//                            usernamel = "All" ;
+//                        }else {
+//                            usernamel  = userName;
+//                        }
+                        setFilterSearch(SalesOrderListActivity.this,userName,companyId,selectedCustomerId,invoice_status,fromDateString,toDateString);
                     } catch (JSONException | ParseException e) {
                         e.printStackTrace();
                     }

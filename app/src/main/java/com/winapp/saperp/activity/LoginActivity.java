@@ -294,8 +294,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 String salesManOffice=object.optString("salesPersonOfficeNo");
                                 String negativeStock =object.optString("allowNegativeStock");
                                 String userMiddlename =object.optString("userMiddleName");
-                                String adminPermission =object.optString("adminPermission");
-
+//                                String adminPermission =object.optString("adminPermission");
+//
 
                                 String invUOM =object.optString("invoiceDefaultUOM");
                                 String salesUOM =object.optString("salesOrderDefaultUOM");
@@ -314,7 +314,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_LAST_PRICE, lastPrice);
                                 sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_TOTAL_SALES, totalSales);
                                 sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_USER_MIDDLE_NAME, userMiddlename);
-                                sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION, adminPermission);
+//                                sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION, adminPermission);
 
                                 session.createLoginSession(
                                         username,password,rollname,locationCode,"1",ispermission,
