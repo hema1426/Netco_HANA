@@ -2180,6 +2180,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                 exchange,
                 minimumSellingPricel,pdtStockVal,timeStamp,isItemFOCApi
             )
+
             Log.w("itemds_inv",""+exchange+".. "+
                     sharedPref_billdisc!!.getString("billDisc_amt", ""))
 

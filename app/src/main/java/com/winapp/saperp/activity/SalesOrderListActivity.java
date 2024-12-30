@@ -1447,8 +1447,19 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                     }
                                     double priceValue=0.0;
                                     String return_qty="0";
+                                    String price_value= "0";
+
                                     double net_qty=Double.parseDouble(cqty) - Double.parseDouble(return_qty);
-                                    String price_value=object.optString("price");
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                    if(tax_type.equalsIgnoreCase("E")){
+                                         price_value=object.optString("price");
+                                    }else{
+                                         price_value=object.optString("grossPrice");
+                                    }
+                                    }else{
+                                        price_value=object.optString("price");
+                                    }
+
                                     //String price_value=object.optString("grossPrice");
 
                                     double return_amt=(Double.parseDouble(return_qty)*Double.parseDouble(price_value));

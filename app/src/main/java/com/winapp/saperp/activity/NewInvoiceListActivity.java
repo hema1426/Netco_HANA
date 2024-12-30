@@ -1731,6 +1731,17 @@ public class NewInvoiceListActivity extends NavigationActivity
                                                 object.optString("stockInHand"), String.valueOf(timeStamp),
                                                 object.optString("itemAllowFOC")
                                                 );
+                                        if (Double.parseDouble(return_qty) > 0) {
+                                            dbHelper.updateReturnQty("Delete", "0", "Saleable Return",
+                                                    object.optString("productCode"));
+                                            dbHelper.updateReturnQty("Delete", "0", "Damaged/Expired",
+                                                    object.optString("productCode"));
+
+                                            dbHelper.insertReturnProduct(object.optString("productCode"),object.optString("productName"),
+                                                    return_qty, "Saleable Return");
+//                                            dbHelper.insertReturnProduct(object.optString("productCode"),object.optString("productName"),
+//                                                    return_qty, "Damaged/Expired");
+                                        }
 
                                         myEdit.putString("billDisc_amt", salesObject.optString("billDiscount"));
                                         myEdit.putString("billDisc_percent", salesObject.optString("discountPercentage"));
