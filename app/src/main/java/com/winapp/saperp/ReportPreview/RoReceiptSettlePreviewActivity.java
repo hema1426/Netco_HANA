@@ -97,6 +97,8 @@ public class RoReceiptSettlePreviewActivity extends AppCompatActivity {
 //    private TextView discount_amt;
 //    private TextView net_amt;
     double currencytotal = 0.0;
+    private ArrayList<SettlementReceiptDetailModel.invoiceDetailSettlement> invoiceDetailSettlementList ;
+
     double expensetotal = 0.0;
     double expensetotalapi = 0.0;
     double denominattotalapi = 0.0;
@@ -237,6 +239,24 @@ public class RoReceiptSettlePreviewActivity extends AppCompatActivity {
                                    model.setBankCode(receiptObject.optString("bankCode"));
                                    model.setChequeNo(receiptObject.optString("chequeNo"));
 
+                                JSONArray invoiceArray = receiptObject.optJSONArray("receiptInvoiceDetails");
+                                invoiceDetailSettlementList =new ArrayList<>();
+
+                                if(invoiceArray.length() > 0) {
+                                    for (int k = 0; k < invoiceArray.length(); k++) {
+                                        JSONObject obj = invoiceArray.optJSONObject(k);
+                                        SettlementReceiptDetailModel.invoiceDetailSettlement modela =
+                                                new SettlementReceiptDetailModel.invoiceDetailSettlement();
+                                        modela.setInvoiceNo(obj.optString("invoiceNo"));
+                                        modela.setInvoiceDate(obj.optString("invoiceDate"));
+                                        modela.setPaidAmt(obj.optString("paidAmount"));
+                                        modela.setTotal(obj.optString("paidAmount"));
+                                        modela.setType(obj.optString("invType"));
+
+                                        invoiceDetailSettlementList.add(modela);
+                                    }
+                                    model.setInvoiceDetailSettlementList(invoiceDetailSettlementList);
+                                }
                                 settlementReceiptDetailModelList.add(model);
                             }
                         }

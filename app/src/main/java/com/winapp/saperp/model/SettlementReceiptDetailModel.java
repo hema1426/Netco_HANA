@@ -15,6 +15,15 @@ public class SettlementReceiptDetailModel {
     private String bankCode;
     private String chequeNo;
     private String chequeDate;
+    private ArrayList<invoiceDetailSettlement> invoiceDetailSettlementList;
+
+    public ArrayList<invoiceDetailSettlement> getInvoiceDetailSettlementList() {
+        return invoiceDetailSettlementList;
+    }
+
+    public void setInvoiceDetailSettlementList(ArrayList<invoiceDetailSettlement> invoiceDetailSettlementList) {
+        this.invoiceDetailSettlementList = invoiceDetailSettlementList;
+    }
 
     public String getReceiptNo() {
         return receiptNo;
@@ -102,6 +111,56 @@ public class SettlementReceiptDetailModel {
 
     public void setChequeDate(String chequeDate) {
         this.chequeDate = chequeDate;
+    }
+
+    public static class invoiceDetailSettlement {
+
+        // Define the variables for the Currency
+        private String invoiceNo;
+        private String invoiceDate;
+        private String total;
+        private String paidAmt;
+        private String type;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getInvoiceNo() {
+            return invoiceNo;
+        }
+
+        public void setInvoiceNo(String invoiceNo) {
+            this.invoiceNo = invoiceNo;
+        }
+
+        public String getInvoiceDate() {
+            return invoiceDate;
+        }
+
+        public void setInvoiceDate(String invoiceDate) {
+            this.invoiceDate = invoiceDate;
+        }
+
+        public String getTotal() {
+            return total;
+        }
+
+        public void setTotal(String total) {
+            this.total = total;
+        }
+
+        public String getPaidAmt() {
+            return paidAmt;
+        }
+
+        public void setPaidAmt(String paidAmt) {
+            this.paidAmt = paidAmt;
+        }
     }
 
 }

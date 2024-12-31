@@ -124,6 +124,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
     public TextView noOfCopyText;
     public String companyCode;
     public String locationCode;
+    private ArrayList<SettlementReceiptDetailModel.invoiceDetailSettlement> invoiceDetailSettlementList ;
+
     int minteger = 1;
     private ArrayList<ReportSalesSummaryModel> reportSalesSummaryList;
     private ArrayList<ReportSalesSummaryModel.ReportSalesSummaryDetails> reportSalesSummaryDetailsList;
@@ -1052,10 +1054,26 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                         model.setChequeDate(receiptObject.optString("chequeDate"));
                         model.setBankCode(receiptObject.optString("bankCode"));
                         model.setChequeNo(receiptObject.optString("chequeNo"));
+                            JSONArray invoiceArray = receiptObject.optJSONArray("receiptInvoiceDetails");
+                            invoiceDetailSettlementList =new ArrayList<>();
+
+                            if(invoiceArray.length() > 0) {
+                                for (int j = 0; j < invoiceArray.length(); j++) {
+                                    JSONObject obj = invoiceArray.optJSONObject(j);
+                                    SettlementReceiptDetailModel.invoiceDetailSettlement modela =
+                                            new SettlementReceiptDetailModel.invoiceDetailSettlement();
+                                    modela.setInvoiceNo(obj.optString("invoiceNo"));
+                                    modela.setInvoiceDate(obj.optString("invoiceDate"));
+                                    modela.setPaidAmt(obj.optString("paidAmount"));
+                                    modela.setTotal(obj.optString("paidAmount"));
+                                    modela.setType(obj.optString("invType"));
+
+                                    invoiceDetailSettlementList.add(modela);
+                                }
+                                model.setInvoiceDetailSettlementList(invoiceDetailSettlementList);
+                            }
 
                             settlementReceiptDetailModelList.add(model);
-
-
                         }
 
                         JSONArray denominationArray = detailObject.optJSONArray("reportSettlementWithReceiptDenomination");

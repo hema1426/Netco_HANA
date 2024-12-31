@@ -2121,6 +2121,7 @@ public class TSCPrinter {
                 int y = 0;
                 int currencyListl = 0;
                 int expenseListl = 0;
+                int invListl = 0;
                 int settleHeight = 0;
                 height = 85;
                 double currencytotal = 0.0;
@@ -2140,14 +2141,18 @@ public class TSCPrinter {
 
                     if (receiptModel.getPaymode().equalsIgnoreCase("Cheque")) {
                         receiptDetailsModels1.add(receiptModel) ;
-
+                    }
+                    if (receiptModel.getInvoiceDetailSettlementList().size() > 0) {
+                        invListl  = receiptModel.getInvoiceDetailSettlementList().size();
                     }
                 }
                 settleHeight = receiptDetailsModels1.size() * 20;
+
+
                 Log.w("settlheig",""+settleHeight);
 
                 finalHeight = height + (receiptModelDetailList.size() * 11) + (currencyListl * list_height)
-                        + (expenseListl * list_height) + invoiveSubTotalHeight+settleHeight;                ;
+                        + (expenseListl * list_height) + invoiveSubTotalHeight+settleHeight + (invListl * 20);                ;
 
 //                finalHeight = height + 10 + (receiptList.size() * list_height);
                 //finalHeight = getPrintSize(finalHeight, "false", "false", "false", "false", "false", "false");
@@ -2250,6 +2255,25 @@ public class TSCPrinter {
                             TscDll.sendcommand("TEXT 250," + y + ",\"Poppins.TTF\",0,8,8,\"" + receiptModel.getChequeNo() + "\"\n");
                             TscDll.sendcommand("TEXT 420," + y + ",\"Poppins.TTF\",0,8,8,\"" + receiptModel.getChequeDate() + "\"\n");
                         }
+                        if (receiptModel.getInvoiceDetailSettlementList().size() > 0) {
+                            y += 30;
+                            TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                            TscDll.sendcommand("TEXT 160," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv Date" + "\"\n");
+                            TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Type" + "\"\n");
+                            TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Total" + "\"\n");
+                            y += 30;
+                            //  TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+                            TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "-------------------------------------------------" + "\"\n");
+                            for (SettlementReceiptDetailModel.invoiceDetailSettlement invoiceModel :
+                                    receiptModel.getInvoiceDetailSettlementList()) {
+                                y += 30;
+                                TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + invoiceModel.getInvoiceNo() + "\"\n");
+                                TscDll.sendcommand("TEXT 160," + y + ",\"Poppins.TTF\",0,8,8,\"" + invoiceModel.getInvoiceDate() + "\"\n");
+                                TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + invoiceModel.getType() + "\"\n");
+                                TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + invoiceModel.getPaidAmt() + "\"\n");
+                            }
+                        }
+
                         y += LINE_SPACING;
                         TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
@@ -2313,7 +2337,7 @@ public class TSCPrinter {
                     y += LINE_SPACING;
                     TscDll.sendcommand("BAR 0," + y + ",800,2\n");
                 }
-                 expensetotal1 = 0.0 ;
+                expensetotal1 = 0.0 ;
                 if (expenseList.size() > 0) {
 
                     for (SettlementReceiptModel.Expense expense : expenseList) {
@@ -2333,26 +2357,26 @@ public class TSCPrinter {
                     int indexexpen = 1;
                     expensetotal = 0.0;
 
-                        for (SettlementReceiptModel.Expense expense : expenseList) {
-
-                            y += 30;
-                            TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + indexexpen + "\"\n");
-                            TscDll.sendcommand("TEXT 60," + y + ",\"Poppins.TTF\",0,8,8,\"" + expense.getExpeneName() + "\"\n");
-                            TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(expense.getExpenseTotal())) + "\"\n");
-
-                            expensetotal += Double.parseDouble(expense.getExpenseTotal());
-                            indexexpen++;
-                        }
-
-                        y += LINE_SPACING;
-                        TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+                    for (SettlementReceiptModel.Expense expense : expenseList) {
 
                         y += 30;
-                        TscDll.sendcommand("TEXT 180," + y + ",\"Bold.TTF\",0,8,8,\"" + "Expense Total:$" + "\"\n");
-                        TscDll.sendcommand("TEXT 470," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(expensetotal) + "\"\n");
+                        TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + indexexpen + "\"\n");
+                        TscDll.sendcommand("TEXT 60," + y + ",\"Poppins.TTF\",0,8,8,\"" + expense.getExpeneName() + "\"\n");
+                        TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(expense.getExpenseTotal())) + "\"\n");
 
-                        y += LINE_SPACING;
-                        TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+                        expensetotal += Double.parseDouble(expense.getExpenseTotal());
+                        indexexpen++;
+                    }
+
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+
+                    y += 30;
+                    TscDll.sendcommand("TEXT 180," + y + ",\"Bold.TTF\",0,8,8,\"" + "Expense Total:$" + "\"\n");
+                    TscDll.sendcommand("TEXT 470," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(expensetotal) + "\"\n");
+
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
                 }
 
                 double net_amount = Double.parseDouble(receiptModelList.get(0).getTotalCashAmount()) - expensetotal;

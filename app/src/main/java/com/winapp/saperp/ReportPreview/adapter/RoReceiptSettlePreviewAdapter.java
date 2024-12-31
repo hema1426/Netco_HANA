@@ -11,9 +11,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.winapp.saperp.R;
+import com.winapp.saperp.adapter.InvoiceAdapter;
+import com.winapp.saperp.adapter.InvoicePrintPreviewAdapter;
+import com.winapp.saperp.model.InvoicePrintPreviewModel;
 import com.winapp.saperp.model.SettlementReceiptDetailModel;
 import com.winapp.saperp.model.SettlementReceiptModel;
 
@@ -65,6 +69,8 @@ public class RoReceiptSettlePreviewAdapter extends RecyclerView.Adapter<RoReceip
         public TextView bankcode;
         public TextView chequeno;
         public TextView chequedate;
+        public LinearLayout invoicelay;
+        public RecyclerView rv_setle_invlist;
 
         MyViewHolder(View itemView) {
             super(itemView);
@@ -78,6 +84,8 @@ public class RoReceiptSettlePreviewAdapter extends RecyclerView.Adapter<RoReceip
             this.bankcode = (TextView) itemView.findViewById(R.id.bankcode_setle);
             this.chequeno = (TextView) itemView.findViewById(R.id.cheque_no_setle);
             this.chequedate = (TextView) itemView.findViewById(R.id.cheque_date_setle);
+            this.invoicelay = (LinearLayout) itemView.findViewById(R.id.inv_laysetle);
+            this.rv_setle_invlist = (RecyclerView) itemView.findViewById(R.id.rv_setle_inv_list);
         }
 
         public void updateList(ArrayList<SettlementReceiptDetailModel> list) {
@@ -104,6 +112,21 @@ public class RoReceiptSettlePreviewAdapter extends RecyclerView.Adapter<RoReceip
                 banklay.setVisibility(View.GONE);
             }
 
+            if (settlementItem.getInvoiceDetailSettlementList().size() >0) {
+                invoicelay.setVisibility(View.VISIBLE);
+                setInvoiceAdapter(settlementItem.getInvoiceDetailSettlementList());
+            }else{
+                invoicelay.setVisibility(View.GONE);
+            }
+
+        }
+
+        public void setInvoiceAdapter(ArrayList<SettlementReceiptDetailModel.invoiceDetailSettlement> invoiceList){
+            rv_setle_invlist.setHasFixedSize(true);
+            rv_setle_invlist.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+            ROReceiptSettleInvoiceAdapter adapter=new ROReceiptSettleInvoiceAdapter(context,invoiceList);
+            rv_setle_invlist.setAdapter(adapter);
+            // notifyDataSetChanged();
         }
 
     }
