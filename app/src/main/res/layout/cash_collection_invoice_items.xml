@@ -74,7 +74,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/pink_clr"
                 android:text="12/08/2020"
-                android:textSize="@dimen/_9sdp" />
+                android:textSize="11sp" />
 
         </LinearLayout>
 

@@ -379,16 +379,30 @@ public class NewInvoicePrintPreviewActivity extends AppCompatActivity {
                             if (detailObject.optString("bP_CatalogNo") != null) {
                                 invoiceListModel.setCustomerItemCode(detailObject.optString("bP_CatalogNo"));
                             }
+
                             invoiceListModel.setReturnQty(detailObject.optString("returnQty"));
                             invoiceListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                             invoiceListModel.setUomCode(detailObject.optString("uomCode"));
                             invoiceListModel.setUnitPrice(detailObject.optString("price"));
                             double qty = Double.parseDouble(detailObject.optString("quantity"));
-                            double price = Double.parseDouble(detailObject.optString("price"));
+                            double price = 0.0 ;
+
+                            if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                if(object.optString("taxType").equalsIgnoreCase("E")){
+                                    price = Double.parseDouble(detailObject.optString("price"));
+                                    invoiceListModel.setPricevalue(String.valueOf(price));
+                                }else{
+                                    price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                    invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                }
+                            }else{
+                                price = Double.parseDouble(detailObject.optString("price"));
+                                invoiceListModel.setPricevalue(String.valueOf(price));
+                            }
 
                             double nettotal = qty * price;
                             invoiceListModel.setTotal(String.valueOf(nettotal));
-                            invoiceListModel.setPricevalue(String.valueOf(price));
+//                            invoiceListModel.setPricevalue(String.valueOf(price));
 
                             invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
                             invoiceListModel.setItemtax(detailObject.optString("totalTax"));

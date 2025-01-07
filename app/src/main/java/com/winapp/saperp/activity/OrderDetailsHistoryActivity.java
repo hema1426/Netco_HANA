@@ -34,6 +34,7 @@ import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.SessionManager;
+import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
 
 import org.json.JSONArray;
@@ -78,7 +79,8 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
     private String locationCode;
     private DBHelper dbHelper;
     private SharedPreferences.Editor myEdit;
-
+    public static String shortCodeStr = "" ;
+    private SharedPreferenceUtil sharedPreferenceUtil;
     private String userName;
     private String order_date;
     private String customer_name;
@@ -102,6 +104,10 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
         dbHelper=new DBHelper(this);
         session=new SessionManager(this);
         user=session.getUserDetails();
+        sharedPreferenceUtil = new SharedPreferenceUtil(this);
+
+        shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
+                .KEY_SHORT_CODE,"");
 
         sharedPref_billdisc = getSharedPreferences("BillDiscPref", MODE_PRIVATE);
         myEdit = sharedPref_billdisc.edit();
@@ -540,7 +546,7 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         //  model.setPcsQty(lqty);
                                         model1.setPcsPerCarton(object.optString("pcsPerCarton"));
                                         model1.setCartonPrice(object.optString("cartonQty"));
-                                        model1.setLoosePrice(object.optString("price"));
+//                                        model1.setLoosePrice(object.optString("price"));
                                         model1.setTax(object.optString("totalTax"));
                                         model1.setSubTotal(object.optString("subTotal"));
                                         model1.setExchangeQty("0.00");
@@ -552,7 +558,21 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         model1.setMinimumSellingPrice(salesObject.optString("minimumSellingPrice"));
                                         model1.setBillDiscPercentage("0.00");
                                         double qty = Double.parseDouble(object.optString("quantity"));
-                                        double price = Double.parseDouble(object.optString("price"));
+                                        double price = 0.0;
+
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(salesObject.optString("taxType").equalsIgnoreCase("E")){
+                                                model1.setLoosePrice(object.optString("price"));
+                                                price = Double.parseDouble(object.optString("price"));
+                                            }else{
+                                                model1.setLoosePrice(object.optString("grossPrice"));
+                                                price = Double.parseDouble(object.optString("grossPrice"));
+                                            }
+                                        }else{
+                                            model1.setLoosePrice(object.optString("price"));
+                                            price = Double.parseDouble(object.optString("price"));
+                                        }
+
                                         double nettotal = qty * price;
 
                                         model1.setNetAmount(String.valueOf(nettotal));
@@ -673,6 +693,7 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         if (!object.optString("quantity").equals("null")) {
                                             cqty = object.optString("quantity");
                                         }
+
 //                                        invoiceListModel.setProductCode(detailObject.optString("productCode"));
 //                                        invoiceListModel.setDescription(detailObject.optString("productName"));
 //                                        invoiceListModel.setLqty(detailObject.optString("unitQty"));
@@ -699,7 +720,8 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
 //                                        invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
 //                                        invoiceListModel.setItemtax(detailObject.optString("totalTax"));
 //                                        invoiceListModel.setSubTotal(detailObject.optString("subTotal"));
-//
+                                        double price = 0.0 ;
+
                                         OrderDetailsAdapter.OrderDetailsModel model1 = new OrderDetailsAdapter.OrderDetailsModel();
                                         model1.setProductId(object.optString("productCode"));
                                         model1.setProductName(object.optString("productName"));
@@ -710,10 +732,24 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         model1.setCtnQty(cqty);
                                         model1.setStockQty(object.optString("stockInHand"));
 
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(salesObject.optString("taxType").equalsIgnoreCase("E")){
+                                                model1.setLoosePrice(object.optString("price"));
+                                                price = Double.parseDouble(object.optString("price"));
+                                            }else{
+                                                model1.setLoosePrice(object.optString("grossPrice"));
+                                                price = Double.parseDouble(object.optString("grossPrice"));
+
+                                            }
+                                        }else{
+                                            model1.setLoosePrice(object.optString("price"));
+                                            price = Double.parseDouble(object.optString("price"));
+                                        }
+
                                       //  model.setPcsQty(lqty);
                                         model1.setPcsPerCarton(object.optString("pcsPerCarton"));
                                         model1.setCartonPrice(object.optString("cartonQty"));
-                                        model1.setLoosePrice(object.optString("price"));
+
                                         model1.setTax(object.optString("totalTax"));
                                         model1.setSubTotal(object.optString("subTotal"));
                                         model1.setExchangeQty(object.optString("exc_Qty"));
@@ -725,7 +761,7 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
                                         model1.setMinimumSellingPrice(salesObject.optString("minimumSellingPrice"));
                                         model1.setBillDiscPercentage(salesObject.optString("billDiscountPercentage"));
                                         double qty = Double.parseDouble(object.optString("quantity"));
-                                        double price = Double.parseDouble(object.optString("price"));
+
                                         double nettotal = qty * price;
                                         model1.setNetAmount(String.valueOf(nettotal));
                                         model1.setProductCheck(false);

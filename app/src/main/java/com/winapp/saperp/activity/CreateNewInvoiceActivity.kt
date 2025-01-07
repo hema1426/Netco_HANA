@@ -6231,8 +6231,19 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                             val qty1 = detailObject.optString("quantity").toDouble()
                             val price1 = detailObject.optString("price").toDouble()
                             val nettotal1 = qty1 * price1
-                            invoiceListModel.total = detailObject.optString("total")
-                            invoiceListModel.pricevalue = price1.toString()
+
+                                if (shortCodeStr.equals("FUXIN", ignoreCase = true)) {
+                                    if (`object`.optString("taxType").equals("E", ignoreCase = true)) {
+                                        invoiceListModel.pricevalue = price1.toString()
+                                    } else {
+                                        invoiceListModel.pricevalue = detailObject.optString("grossPrice")
+                                    }
+                                } else {
+                                    invoiceListModel.pricevalue = price1.toString()
+                                }
+
+                                invoiceListModel.total = detailObject.optString("total")
+//                            invoiceListModel.pricevalue = price1.toString()
                             invoiceListModel.uomCode = detailObject.optString("uomCode")
                             invoiceListModel.pcsperCarton = detailObject.optString("pcsPerCarton")
                             invoiceListModel.itemtax = detailObject.optString("totalTax")

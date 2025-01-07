@@ -58,6 +58,7 @@ import com.winapp.saperp.model.SalesOrderPrintPreviewModel;
 import com.winapp.saperp.printpreview.DOPrintPreview;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.SessionManager;
+import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
 import com.winapp.saperp.zebraprinter.TSCPrinter;
 import com.winapp.saperp.zebraprinter.ZebraPrinterActivity;
@@ -151,7 +152,8 @@ public class DeliveryOrderListActivity extends NavigationActivity implements Del
     String isFound="true";
     private Button createSalesOrder;
     private int customerSelectCode=24;
-
+    public static String shortCodeStr = "" ;
+    private SharedPreferenceUtil sharedPreferenceUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +170,10 @@ public class DeliveryOrderListActivity extends NavigationActivity implements Del
         companyId=user.get(SessionManager.KEY_COMPANY_CODE);
         userName=user.get(SessionManager.KEY_USER_NAME);
         locationCode=user.get((SessionManager.KEY_LOCATION_CODE));
+
+        sharedPreferenceUtil = new SharedPreferenceUtil(this);
+        shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
+                .KEY_SHORT_CODE,"");
 
         sharedPref_billdisc = getSharedPreferences("BillDiscPref", MODE_PRIVATE);
         myEdit = sharedPref_billdisc.edit();
@@ -566,291 +572,6 @@ public class DeliveryOrderListActivity extends NavigationActivity implements Del
         customerPredEdit.apply();
     }
 
-
-
-    private void getSalesOrderDetails(String soNumber,int copy) throws JSONException {
-        // Initialize a new RequestQueue instance
-        JSONObject jsonObject=new JSONObject();
-        //  jsonObject.put("CompanyCode",companyId);
-        jsonObject.put("SalesOrderNo", soNumber);
-        // jsonObject.put("LocationCode",locationCode);
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url= Utils.getBaseUrl(this) +"SalesOrderDetails";
-        // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:",url);
-        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Generating Print Preview...");
-        pDialog.setCancelable(false);
-        pDialog.show();
-        salesOrderHeaderDetails =new ArrayList<>();
-        salesPrintList =new ArrayList<>();
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonObject,
-                response -> {
-                    try{
-                        // {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"WinApp","customerName":"WinApp","soNumber":"3",
-                        // "soStatus":"O","soDate":"6\/8\/2021 12:00:00 am","netTotal":"26.750000","balanceAmount":"26.750000",
-                        // "totalDiscount":"0.000000","paidAmount":"0.000000","contactPersonCode":"","createDate":"7\/8\/2021 12:00:00 am",
-                        // "updateDate":"7\/8\/2021 12:00:00 am","remark":"","fDocTotal":"0.000000","fTaxAmount":"0.000000",
-                        // "receivedAmount":"0.000000","total":"26.750000","fTotal":"0.000000","iTotalDiscount":"0.000000",
-                        // "taxTotal":"1.750000","iPaidAmount":"0.000000","currencyCode":"SGD","currencyName":"Singapore Dollar",
-                        // "companyCode":"WINAPP_DEMO","docEntry":"3","address1":"SingaporeShipTo1   Changi 890323 SG","taxPercentage":"0.000000",
-                        // "discountPercentage":"0.000000",
-                        //
-                        //
-                        // "salesOrderDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO","soNo":"3",
-                        // "productCode":"FG\/001245","productName":"Milk","quantity":"5.000000","cartonQty":"1.000000",
-                        // "price":"5.000000","currency":"SGD","taxRate":"0.000000","discountPercentage":"0.000000",
-                        // "lineTotal":"26.750000","fRowTotal":"0.000000","warehouseCode":"01","salesEmployeeCode":"-1","accountCode":"400000",
-                        // "taxStatus":"Y","unitPrice":"5.000000","customerCategoryNo":"","barCodes":"","totalTax":"1.750000",
-                        // "fTaxAmount":"0.000000","taxCode":"","taxType":"E","taxPerc":"0.000000","uoMCode":null,"soDate":"6\/8\/2021 12:00:00 am",
-                        // "dueDate":"6\/8\/2021 12:00:00 am","createDate":"7\/8\/2021 12:00:00 am","updateDate":"7\/8\/2021 12:00:00 am",
-                        // "createdUser":"manager","uomCode":"Ctn","uoMName":"Carton","cartonPrice":"3000.000000","piecePrice":"0.000000",
-                        // "pcsPerCarton":"100.000000","lPrice":"100.000000","unitQty":"1.000000","retailPrice":"100.000000"}]}]}
-                        Log.w("Sales_Details:",response.toString());
-                        String statusCode=response.optString("statusCode");
-                        if (statusCode.equals("1")){
-                            JSONArray responseData=response.getJSONArray("responseData");
-                            JSONObject object=responseData.optJSONObject(0);
-
-                            SalesOrderPrintPreviewModel model=new SalesOrderPrintPreviewModel();
-                            model.setSoNumber(object.optString("soNumber"));
-                            model.setSoDate(object.optString("soDate"));
-                            model.setCustomerCode(object.optString("customerCode"));
-                            model.setCustomerName(object.optString("customerName"));
-                            model.setAddress(object.optString("address1") + object.optString("address2") + object.optString("address3"));
-                            model.setAddress2(object.optString("address2"));
-                            model.setAddress3(object.optString("address3"));
-                            //model.setDeliveryAddress("No Address");
-                            model.setSubTotal(object.optString("subTotal"));
-                            model.setNetTax(object.optString("taxTotal"));
-                            model.setNetTotal(object.optString("netTotal"));
-                            model.setTaxType(object.optString("taxType"));
-                            model.setTaxValue(object.optString("taxPerc"));
-                            model.setOutStandingAmount(object.optString("outstandingAmount"));
-                            model.setBillDiscount(object.optString("billDiscount"));
-                            model.setItemDiscount(object.optString("totalDiscount"));
-
-                            JSONArray detailsArray=object.optJSONArray("salesOrderDetails");
-                            for (int i=0;i<detailsArray.length();i++){
-                                JSONObject detailObject=detailsArray.optJSONObject(i);
-                                SalesOrderPrintPreviewModel.SalesList salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                salesListModel.setProductCode(detailObject.optString("productCode"));
-                                salesListModel.setDescription(detailObject.optString("productName"));
-                                salesListModel.setLqty(detailObject.optString("unitQty"));
-                                salesListModel.setCqty(detailObject.optString("cartonQty"));
-                                salesListModel.setNetQty(detailObject.optString("quantity"));
-                                salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                salesListModel.setUnitPrice(detailObject.optString("price"));
-                                salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
-
-                                double qty1 = Double.parseDouble(detailObject.optString("cartonQty"));
-                                double price1 = Double.parseDouble(detailObject.optString("cartonPrice"));
-                                double nettotal1 = qty1 * price1;
-                                salesListModel.setTotal(String.valueOf(nettotal1));
-                                salesListModel.setPricevalue(String.valueOf(price1));
-
-                                salesListModel.setUomCode(detailObject.optString("uomCode"));
-                                salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                salesListModel.setItemtax(detailObject.optString("totalTax"));
-                                salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                salesPrintList.add(salesListModel);
-
-
-                                if (!detailObject.optString("ReturnQty").isEmpty() && Double.parseDouble(detailObject.optString("ReturnQty")) > 0) {
-                                    salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                    salesListModel.setProductCode(detailObject.optString("ProductCode"));
-                                    salesListModel.setDescription(detailObject.optString("ProductName"));
-                                    salesListModel.setLqty(detailObject.optString("LQty"));
-                                    salesListModel.setCqty(detailObject.optString("CQty"));
-                                    salesListModel.setNetQty("-"+detailObject.optString("ReturnQty"));
-                                    salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
-
-                                    double qty12 = Double.parseDouble(detailObject.optString("ReturnQty"));
-                                    double price12 = Double.parseDouble(detailObject.optString("Price"));
-                                    double nettotal12 = qty12 * price12;
-                                    salesListModel.setTotal(String.valueOf(nettotal12));
-                                    salesListModel.setPricevalue(String.valueOf(price12));
-
-                                    salesListModel.setUomCode(detailObject.optString("UOMCode"));
-                                    salesListModel.setCartonPrice(detailObject.optString("CartonPrice"));
-                                    salesListModel.setUnitPrice(detailObject.optString("Price"));
-                                    salesListModel.setPcsperCarton(detailObject.optString("PcsPerCarton"));
-                                    salesListModel.setItemtax(detailObject.optString("Tax"));
-                                    salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                    salesPrintList.add(salesListModel);
-                                }
-
-
-
-
-
-
-
-                             /*   if (Double.parseDouble(detailObject.optString("unitQty"))>0){
-                                    SalesOrderPrintPreviewModel.SalesList salesListModel =new SalesOrderPrintPreviewModel.SalesList();
-                                    salesListModel.setProductCode(detailObject.optString("productCode"));
-                                    salesListModel.setDescription( detailObject.optString("productName"));
-                                    salesListModel.setLqty(detailObject.optString("unitQty"));
-                                    salesListModel.setCqty(detailObject.optString("cartonQty"));
-                                    salesListModel.setNetQty(detailObject.optString("unitQty"));
-                                    salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                    salesListModel.setUnitPrice(detailObject.optString("price"));
-                                    double qty=Double.parseDouble(detailObject.optString("unitQty"));
-                                    double price=Double.parseDouble(detailObject.optString("price"));
-
-                                    double nettotal=qty * price;
-                                    salesListModel.setTotal(String.valueOf(nettotal));
-                                    salesListModel.setPricevalue(String.valueOf(price));
-
-                                    salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                    salesListModel.setItemtax(detailObject.optString("totalTax"));
-                                    salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                    salesPrintList.add(salesListModel);
-
-
-                                    if (Double.parseDouble(detailObject.optString("cartonQty")) > 0) {
-                                        salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                        salesListModel.setProductCode(detailObject.optString("productCode"));
-                                        salesListModel.setDescription(detailObject.optString("productName"));
-                                        salesListModel.setLqty(detailObject.optString("unitQty"));
-                                        salesListModel.setCqty(detailObject.optString("cartonQty"));
-                                        salesListModel.setNetQty(detailObject.optString("cartonQty"));
-
-                                        double qty1 = Double.parseDouble(detailObject.optString("cartonQty"));
-                                        double price1 = Double.parseDouble(detailObject.optString("cartonPrice"));
-                                        double nettotal1 = qty1 * price1;
-                                        salesListModel.setTotal(String.valueOf(nettotal1));
-                                        salesListModel.setPricevalue(String.valueOf(price1));
-
-                                        salesListModel.setUomCode(detailObject.optString("uomCode"));
-                                        salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                        salesListModel.setUnitPrice(detailObject.optString("price"));
-                                        salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                        salesListModel.setItemtax(detailObject.optString("totalTax"));
-                                        salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                        salesPrintList.add(salesListModel);
-                                    }
-
-                                    if (!detailObject.optString("ReturnQty").isEmpty() && Double.parseDouble(detailObject.optString("ReturnQty")) > 0) {
-                                        salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                        salesListModel.setProductCode(detailObject.optString("ProductCode"));
-                                        salesListModel.setDescription(detailObject.optString("ProductName"));
-                                        salesListModel.setLqty(detailObject.optString("unitQty"));
-                                        salesListModel.setCqty(detailObject.optString("cartonQty"));
-                                        salesListModel.setNetQty(detailObject.optString("returnQty"));
-
-                                        double qty1 = Double.parseDouble(detailObject.optString("returnQty"));
-                                        double price1 = Double.parseDouble(detailObject.optString("price"));
-                                        double nettotal1 = qty1 * price1;
-                                        salesListModel.setTotal(String.valueOf(nettotal1));
-                                        salesListModel.setPricevalue(String.valueOf(price1));
-
-                                        salesListModel.setUomCode(detailObject.optString("uomCode"));
-                                        salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                        salesListModel.setUnitPrice(detailObject.optString("price"));
-                                        salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                        salesListModel.setItemtax(detailObject.optString("totalTax"));
-                                        salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                        salesPrintList.add(salesListModel);
-                                    }
-
-                                }else {
-                                    if (Double.parseDouble(detailObject.optString("cartonQty")) > 0) {
-                                        SalesOrderPrintPreviewModel.SalesList salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                        salesListModel.setProductCode(detailObject.optString("productCode"));
-                                        salesListModel.setDescription(detailObject.optString("productName"));
-                                        salesListModel.setLqty(detailObject.optString("unitQty"));
-                                        salesListModel.setCqty(detailObject.optString("cartonQty"));
-                                        salesListModel.setNetQty(detailObject.optString("quantity"));
-                                        salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                        salesListModel.setUnitPrice(detailObject.optString("price"));
-
-                                        double qty1 = Double.parseDouble(detailObject.optString("cartonQty"));
-                                        double price1 = Double.parseDouble(detailObject.optString("cartonPrice"));
-                                        double nettotal1 = qty1 * price1;
-                                        salesListModel.setTotal(String.valueOf(nettotal1));
-                                        salesListModel.setPricevalue(String.valueOf(price1));
-
-                                        salesListModel.setUomCode(detailObject.optString("uomCode"));
-                                        salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                        salesListModel.setItemtax(detailObject.optString("totalTax"));
-                                        salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                        salesPrintList.add(salesListModel);
-
-
-                                        if (!detailObject.optString("ReturnQty").isEmpty() && Double.parseDouble(detailObject.optString("ReturnQty")) > 0) {
-                                            salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                            salesListModel.setProductCode(detailObject.optString("ProductCode"));
-                                            salesListModel.setDescription(detailObject.optString("ProductName"));
-                                            salesListModel.setLqty(detailObject.optString("LQty"));
-                                            salesListModel.setCqty(detailObject.optString("CQty"));
-                                            salesListModel.setNetQty("-"+detailObject.optString("ReturnQty"));
-
-                                            double qty12 = Double.parseDouble(detailObject.optString("ReturnQty"));
-                                            double price12 = Double.parseDouble(detailObject.optString("Price"));
-                                            double nettotal12 = qty12 * price12;
-                                            salesListModel.setTotal(String.valueOf(nettotal12));
-                                            salesListModel.setPricevalue(String.valueOf(price12));
-
-                                            salesListModel.setUomCode(detailObject.optString("UOMCode"));
-                                            salesListModel.setCartonPrice(detailObject.optString("CartonPrice"));
-                                            salesListModel.setUnitPrice(detailObject.optString("Price"));
-                                            salesListModel.setPcsperCarton(detailObject.optString("PcsPerCarton"));
-                                            salesListModel.setItemtax(detailObject.optString("Tax"));
-                                            salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                            salesPrintList.add(salesListModel);
-                                        }
-
-                                    }*/
-                                model.setSalesList(salesPrintList);
-                                salesOrderHeaderDetails.add(model);
-                            }
-                            sentPrintDate(copy);
-                            pDialog.dismiss();
-                        }else {
-
-                        }
-
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }, error -> {
-            // Do something when error occurred
-            pDialog.dismiss();
-            Log.w("Error_throwing:",error.toString());
-        }){
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                return params;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonObjectRequest);
-    }
-
-
     private void sentPrintDate(int copy) throws IOException {
         if (printerType.equals("TSC Printer")){
             //        dialog.dismiss();
@@ -1235,18 +956,6 @@ public class DeliveryOrderListActivity extends NavigationActivity implements Del
                                 for (int i=0;i<products.length();i++){
                                     JSONObject object=products.getJSONObject(i);
 
-                                    //  "salesOrderDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO",
-                                    //  "soNo":"8","productCode":"FG\/001245","productName":"Milk","quantity":"5.000000","cartonQty":"1.000000",
-                                    //  "price":"99.000000","currency":"SGD","taxRate":"0.000000","discountPercentage":"1.000000","lineTotal":"529.650000",
-                                    //  "fRowTotal":"0.000000","warehouseCode":"01","salesEmployeeCode":"-1","accountCode":"400000","taxStatus":"Y",
-                                    //  "unitPrice":"100.000000","customerCategoryNo":"","barCodes":"","totalTax":"34.650000","fTaxAmount":"0.000000",
-                                    //  "taxCode":"SR","taxType":"E","taxPerc":"0.000000","uoMCode":null,"soDate":"12\/8\/2021 12:00:00 am",
-                                    //  "dueDate":"12\/8\/2021 12:00:00 am","createDate":"12\/8\/2021 12:00:00 am","updateDate":"12\/8\/2021 12:00:00 am",
-                                    //  "createdUser":"manager","uomCode":"Ctn","uoMName":"Carton","cartonPrice":"3000.000000","piecePrice":"0.000000",
-                                    //  "pcsPerCarton":"100.000000","lPrice":"100.000000","unitQty":"1.000000","retailPrice":"100.000000",
-                                    //  "netTotal":"495.000000","subTotal":"500.00000000000","purchaseTaxPerc":"1.000000","purchaseTaxRate":"7.000000",
-                                    //  "taxAmount":"34.650000","purchaseTaxCode":"SR","total":"529.650000","itemDiscount":"5.000000"}]}]}
-
                                     String lqty="0.0";
                                     String cqty="0.0";
                                     if (!object.optString("unitQty").equals("null")){
@@ -1260,7 +969,17 @@ public class DeliveryOrderListActivity extends NavigationActivity implements Del
                                     String return_qty="0";
                                     double net_qty=Double.parseDouble(cqty) - Double.parseDouble(return_qty);
                                     // String price_value=object.optString("price");
-                                    String price_value=object.optString("price");
+                                    String price_value="";
+
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(tax_type.equalsIgnoreCase("E")){
+                                            price_value = object.optString("price");
+                                        }else{
+                                            price_value = object.optString("grossPrice");
+                                        }
+                                    }else{
+                                        price_value = object.optString("price");
+                                    }
 
                                   //  double return_amt=(Double.parseDouble(return_qty)*Double.parseDouble(price_value));
                                     //double total1=(net_qty * Double.parseDouble(price_value));

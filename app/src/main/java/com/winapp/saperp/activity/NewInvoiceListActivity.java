@@ -1211,12 +1211,16 @@ public class NewInvoiceListActivity extends NavigationActivity
             //   editInvoiceLayout.setVisibility(View.GONE);
             cashCollectionLayout.setVisibility(View.GONE);
             deleteInvoiceLayout.setVisibility(View.GONE);
+            duplicateInvoiceLayout.setVisibility(View.GONE);
+
             invoiceStatusValue = "P";
 
         } else if (invoiceStatus.equals("Partial")) {
             //   editInvoiceLayout.setVisibility(View.GONE);
             cashCollectionLayout.setVisibility(View.VISIBLE);
             deleteInvoiceLayout.setVisibility(View.GONE);
+            duplicateInvoiceLayout.setVisibility(View.GONE);
+
             invoiceStatusValue = "PR";
         } else if (invoiceStatus.equals("Open") || invoiceStatus.equals("O")) {
             // editInvoiceLayout.setVisibility(View.VISIBLE);
@@ -1340,18 +1344,6 @@ public class NewInvoiceListActivity extends NavigationActivity
                                 for (int i = 0; i < products.length(); i++) {
                                     JSONObject object = products.getJSONObject(i);
 
-                                    //  "salesOrderDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO",
-                                    //  "soNo":"8","productCode":"FG\/001245","productName":"Milk","quantity":"5.000000","cartonQty":"1.000000",
-                                    //  "price":"99.000000","currency":"SGD","taxRate":"0.000000","discountPercentage":"1.000000","lineTotal":"529.650000",
-                                    //  "fRowTotal":"0.000000","warehouseCode":"01","salesEmployeeCode":"-1","accountCode":"400000","taxStatus":"Y",
-                                    //  "unitPrice":"100.000000","customerCategoryNo":"","barCodes":"","totalTax":"34.650000","fTaxAmount":"0.000000",
-                                    //  "taxCode":"SR","taxType":"E","taxPerc":"0.000000","uoMCode":null,"soDate":"12\/8\/2021 12:00:00 am",
-                                    //  "dueDate":"12\/8\/2021 12:00:00 am","createDate":"12\/8\/2021 12:00:00 am","updateDate":"12\/8\/2021 12:00:00 am",
-                                    //  "createdUser":"manager","uomCode":"Ctn","uoMName":"Carton","cartonPrice":"3000.000000","piecePrice":"0.000000",
-                                    //  "pcsPerCarton":"100.000000","lPrice":"100.000000","unitQty":"1.000000","retailPrice":"100.000000",
-                                    //  "netTotal":"495.000000","subTotal":"500.00000000000","purchaseTaxPerc":"1.000000","purchaseTaxRate":"7.000000",
-                                    //  "taxAmount":"34.650000","purchaseTaxCode":"SR","total":"529.650000","itemDiscount":"5.000000"}]}]}
-
                                     String lqty = "0.0";
                                     String cqty = "0.0";
                                     if (!object.optString("unitQty").equals("null")) {
@@ -1364,8 +1356,17 @@ public class NewInvoiceListActivity extends NavigationActivity
 //                                    if (object.optString("bP_CatalogNo") != null) {
 //                                        invoiceListModel.setCustomerItemCode(object.optString("bP_CatalogNo"));
 //                                    }
+                                    double actualPrice = 0.0 ;
 
-                                    double actualPrice = Double.parseDouble(object.optString("unitPrice"));
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(tax_type.equalsIgnoreCase("E")){
+                                            actualPrice = Double.parseDouble(object.optString("unitPrice"));
+                                        }else{
+                                            actualPrice = Double.parseDouble(object.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        actualPrice = Double.parseDouble(object.optString("unitPrice"));
+                                    }
 
                                     if (createInvoiceSetting.equals("true")) {
 
@@ -1695,6 +1696,15 @@ public class NewInvoiceListActivity extends NavigationActivity
                                         double net_qty = Double.parseDouble(cqty) - Double.parseDouble(return_qty);
                                         String price_value = object.optString("price");
                                         //String price_value=object.optString("grossPrice");
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(tax_type.equalsIgnoreCase("E")){
+                                                price_value=object.optString("price");
+                                            }else{
+                                                price_value=object.optString("grossPrice");
+                                            }
+                                        }else{
+                                            price_value=object.optString("price");
+                                        }
 
                                         double return_amt = (Double.parseDouble(return_qty) * Double.parseDouble(price_value));
                                         double total1 = (net_qty * Double.parseDouble(price_value));
@@ -1740,6 +1750,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                                             dbHelper.insertReturnProduct(object.optString("productCode"),object.optString("productName"),
                                                     return_qty, "Saleable Return");
 //                                            dbHelper.insertReturnProduct(object.optString("productCode"),object.optString("productName"),
+//                                                    return_qty, "Damaged/Expired");
 //                                                    return_qty, "Damaged/Expired");
                                         }
 
@@ -3420,17 +3431,6 @@ public class NewInvoiceListActivity extends NavigationActivity
         invoiceHeaderDetails = new ArrayList<>();
         invoicePrintList = new ArrayList<>();
         salesReturnList = new ArrayList<>();
-        // {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"WinApp","customerName":"WinApp","invoiceNumber":"33",
-        // "invoiceStatus":"O","invoiceDate":"6\/8\/2021 12:00:00 am","netTotal":"26.750000","balanceAmount":"26.750000","totalDiscount":
-        // "0.000000","paidAmount":"0.000000","contactPersonCode":"","createDate":"6\/8\/2021 12:00:00 am","updateDate":"6\/8\/2021 12:00:00 am",
-        // "remark":"","fDocTotal":"0.000000","fTaxAmount":"0.000000","receivedAmount":"0.000000","total":"26.750000","fTotal":"0.000000",
-        // "iTotalDiscount":"0.000000","taxTotal":"1.750000","iPaidAmount":"0.000000","currencyCode":"SGD","currencyName":"Singapore Dollar",
-        // "companyCode":"WINAPP_DEMO","docEntry":"20","invoiceDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO","invoiceNo":"33",
-        // "productCode":"FG\/001245","productName":"RUM","quantity":"5.000000","price":"5.000000","currency":"SGD","taxRate":"0.000000",
-        // "discountPercentage":"0.000000","lineTotal":"26.750000","fRowTotal":"0.000000","warehouseCode":"01","salesEmployeeCode":"-1",
-        // "accountCode":"400000","taxStatus":"Y","unitPrice":"5.000000","customerCategoryNo":"","barCodes":"","totalTax":"1.750000",
-        // "fTaxAmount":"0.000000","taxCode":"","taxType":"Y","taxPerc":"0.000000","uoMCode":null,"invoiceDate":"6\/8\/2021 12:00:00 am",
-        // "dueDate":"6\/8\/2021 12:00:00 am","createDate":"6\/8\/2021 12:00:00 am","updateDate":"6\/8\/2021 12:00:00 am","createdUser":"manager"}]}]}
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
                 response -> {
                     try {
@@ -3503,13 +3503,25 @@ public class NewInvoiceListActivity extends NavigationActivity
                                     invoiceListModel.setReturnQty(detailObject.optString("returnQty"));
                                     invoiceListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                                     invoiceListModel.setUnitPrice(detailObject.optString("price"));
-                                    double qty = Double.parseDouble(detailObject.optString("quantity"));
-                                    double price = Double.parseDouble(detailObject.optString("price"));
                                     invoiceListModel.setUomCode(detailObject.optString("uomCode"));
+                                    double qty = Double.parseDouble(detailObject.optString("quantity"));
+                                    double price = 0.0 ;
 
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            price = Double.parseDouble(detailObject.optString("price"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price));
+
+                                        }else{
+                                            invoiceListModel.setPricevalue(object.optString("grossPrice"));
+                                            price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        price = Double.parseDouble(detailObject.optString("price"));
+                                        invoiceListModel.setPricevalue(String.valueOf(price));
+                                    }
                                     double nettotal = qty * price;
                                     invoiceListModel.setTotal(String.valueOf(nettotal));
-                                    invoiceListModel.setPricevalue(String.valueOf(price));
 
                                     invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
                                     invoiceListModel.setItemtax(detailObject.optString("totalTax"));

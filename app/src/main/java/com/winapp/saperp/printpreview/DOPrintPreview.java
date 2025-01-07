@@ -1,5 +1,7 @@
 package com.winapp.saperp.printpreview;
 
+import static com.winapp.saperp.activity.DeliveryOrderListActivity.shortCodeStr;
+
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -168,6 +170,7 @@ public class DOPrintPreview extends AppCompatActivity implements OnPageChangeLis
         company_address3 = user.get(SessionManager.KEY_ADDRESS3);
         company_phone=user.get(SessionManager.KEY_PHONE_NO);
         company_gst=user.get(SessionManager.KEY_COMPANY_REG_NO);
+        Log.w("activity_cg",getClass().getSimpleName().toString());
 
         invoiceListView = findViewById(R.id.invoiceList);
         invoiceNumberText = findViewById(R.id.sr_no);
@@ -286,30 +289,6 @@ public class DOPrintPreview extends AppCompatActivity implements OnPageChangeLis
                         Log.w("DoDetails:", response.toString());
                         if (response.length() > 0) {
 
-                          //  {"statusCode":1,"statusMessage":"Success",
-                            //  "responseData":[{"customerCode":"C1002","customerName":"1+1MINI MART","doNumber":"2","doStatus":"O",
-                            //  "doDate":"20\/8\/2021 12:00:00 am","netTotal":"80.250000","balanceAmount":"80.250000","totalDiscount":"0.000000",
-                            //  "paidAmount":"0.000000","contactPersonCode":"0","createDate":"20\/8\/2021 12:00:00 am",
-                            //  "updateDate":"20\/8\/2021 12:00:00 am","remark":"","fDocTotal":"0.000000","fTaxAmount":"0.000000",
-                            //  "receivedAmount":"0.000000","total":"80.250000","fTotal":"0.000000","iTotalDiscount":"0.000000",
-                            //  "taxTotal":"5.250000","iPaidAmount":"0.000000","currencyCode":"SGD","currencyName":"Singapore Dollar",
-                            //  "companyCode":"AATHI_LIVE_DB","docEntry":"2","address1":"","taxPercentage":"0.000000",
-                            //  "discountPercentage":"0.000000","subTotal":"75.000000","taxType":"E","taxCode":"EX","taxPerc":"7.000000",
-                            //  "billDiscount":"0.000000","signFlag":"N","signature":"",
-
-                            //  "deliveryOrderDetails":[{"slNo":"1",
-                            //  "companyCode":"AATHI_LIVE_DB","doNo":"2","productCode":"SKU-AAFZ-0001","productName":"ASHOKA BHATURA 325 GM",
-                            //  "quantity":"5.000000","cartonQty":"1.000000","price":"15.000000","currency":"SGD","taxRate":"0.000000",
-                            //  "discountPercentage":"0.000000","lineTotal":"80.250000","fRowTotal":"0.000000","warehouseCode":"01",
-                            //  "salesEmployeeCode":"-1","accountCode":"410101","taxStatus":"Y","unitPrice":"15.000000","customerCategoryNo":"",
-                            //  "barCodes":"","totalTax":"5.250000","fTaxAmount":"0.000000","taxCode":"","taxType":"E","taxPerc":"0.000000",
-                            //  "uoMCode":null,"doDate":"20\/8\/2021 12:00:00 am","dueDate":"20\/8\/2021 12:00:00 am",
-                            //  "createDate":"20\/8\/2021 12:00:00 am","updateDate":"20\/8\/2021 12:00:00 am","createdUser":"manager",
-                            //  "uomCode":"PCS","uoMName":"PCS","cartonPrice":"0.000000","piecePrice":"0.000000","pcsPerCarton":"1.000000",
-                            //  "lPrice":"0.000000","unitQty":"1.000000","retailPrice":"0.000000","netTotal":"75.000000",
-                            //  "subTotal":"75.00000000000","purchaseTaxPerc":"0.000000","purchaseTaxRate":"7.000000","taxAmount":"5.250000",
-                            //  "purchaseTaxCode":"","total":"80.250000","itemDiscount":"0.000000"}]}]}
-
                             String statusCode=response.optString("statusCode");
                             if (statusCode.equals("1")){
                                 JSONArray headerArray=response.optJSONArray("responseData");
@@ -355,11 +334,25 @@ public class DOPrintPreview extends AppCompatActivity implements OnPageChangeLis
                                     invoiceListModel.setSaleType("");
 
                                         double qty = Double.parseDouble(detailObject.optString("quantity"));
-                                        double price = Double.parseDouble(detailObject.optString("price"));
+                                    double price = 0.0 ;
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            price = Double.parseDouble(detailObject.optString("price"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price));
+                                        }else{
+                                            price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                            invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        price = Double.parseDouble(detailObject.optString("price"));
+                                        invoiceListModel.setPricevalue(String.valueOf(price));
+                                    }
+                                      //  double price = Double.parseDouble(detailObject.optString("price"));
 
                                         double nettotal = qty * price;
                                         invoiceListModel.setTotal(String.valueOf(nettotal));
-                                        invoiceListModel.setPricevalue(String.valueOf(price));
+//                                        invoiceListModel.setPricevalue(String.valueOf(price));
+
                                         invoiceListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                                         invoiceListModel.setUnitPrice(detailObject.optString("price"));
                                         invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));

@@ -173,6 +173,7 @@ public class CartActivity extends AppCompatActivity {
     private static ArrayList<InvoicePrintPreviewModel> invoiceHeaderDetails;
     private static ArrayList<InvoicePrintPreviewModel.InvoiceList> invoicePrintList;
     public static View summaryLayout;
+    public static String shortCodeStr = "" ;
     public ImageView showMore;
     public ImageView closeShowmore;
     public TextView subTotalTextValue;
@@ -244,6 +245,8 @@ public class CartActivity extends AppCompatActivity {
         percentApi = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC, "");
         Log.w("percentApi..", "" + percentApi);
         signatureString = "";
+        shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
+                .KEY_SHORT_CODE,"");
 
         companyCode = user.get(SessionManager.KEY_COMPANY_CODE);
         userName = user.get(SessionManager.KEY_USER_NAME);
@@ -2621,10 +2624,24 @@ public class CartActivity extends AppCompatActivity {
                                         invoiceListModel.setNetQty("-" + object.optString("ReturnQty"));
 
                                         double qty1 = Double.parseDouble(object.optString("ReturnQty"));
-                                        double price1 = Double.parseDouble(object.optString("Price"));
+                                        double price1 = 0.0 ;
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(response.optString("taxType").equalsIgnoreCase("E")){
+                                                price1 = Double.parseDouble(object.optString("price"));
+                                                invoiceListModel.setPricevalue(String.valueOf(price1));
+
+                                            }else{
+                                                invoiceListModel.setPricevalue(object.optString("grossPrice"));
+                                                price1 = Double.parseDouble(object.optString("grossPrice"));
+                                            }
+                                        }else{
+                                            price1 = Double.parseDouble(object.optString("price"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price1));
+                                        }
+
                                         double nettotal1 = qty1 * price1;
                                         invoiceListModel.setTotal("-" + String.valueOf(nettotal1));
-                                        invoiceListModel.setPricevalue(String.valueOf(price1));
+//                                        invoiceListModel.setPricevalue(String.valueOf(price1));
 
                                         invoiceListModel.setUomCode(object.optString("UOMCode"));
                                         invoiceListModel.setCartonPrice(object.optString("CartonPrice"));
@@ -2645,10 +2662,24 @@ public class CartActivity extends AppCompatActivity {
                                         invoiceListModel.setNetQty(object.optString("CQty"));
 
                                         double qty1 = Double.parseDouble(object.optString("CQty"));
-                                        double price1 = Double.parseDouble(object.optString("CartonPrice"));
+//                                        double price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                        double price1 = 0.0 ;
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(response.optString("taxType").equalsIgnoreCase("E")){
+                                                price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                                invoiceListModel.setPricevalue(String.valueOf(price1));
+
+                                            }else{
+                                                invoiceListModel.setPricevalue(object.optString("grossPrice"));
+                                                price1 = Double.parseDouble(object.optString("grossPrice"));
+                                            }
+                                        }else{
+                                            price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price1));
+                                        }
                                         double nettotal1 = qty1 * price1;
                                         invoiceListModel.setTotal(String.valueOf(nettotal1));
-                                        invoiceListModel.setPricevalue(String.valueOf(price1));
+                                     //   invoiceListModel.setPricevalue(String.valueOf(price1));
 
                                         invoiceListModel.setUomCode(object.optString("UOMCode"));
                                         invoiceListModel.setCartonPrice(object.optString("CartonPrice"));
@@ -2670,10 +2701,24 @@ public class CartActivity extends AppCompatActivity {
                                         invoiceListModel.setNetQty(object.optString("CQty"));
 
                                         double qty1 = Double.parseDouble(object.optString("CQty"));
-                                        double price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                     //   double price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                        double price1 = 0.0 ;
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(response.optString("taxType").equalsIgnoreCase("E")){
+                                                price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                                invoiceListModel.setPricevalue(String.valueOf(price1));
+
+                                            }else{
+                                                invoiceListModel.setPricevalue(object.optString("grossPrice"));
+                                                price1 = Double.parseDouble(object.optString("grossPrice"));
+                                            }
+                                        }else{
+                                            price1 = Double.parseDouble(object.optString("CartonPrice"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price1));
+                                        }
                                         double nettotal1 = qty1 * price1;
                                         invoiceListModel.setTotal(String.valueOf(nettotal1));
-                                        invoiceListModel.setPricevalue(String.valueOf(price1));
+                                      //  invoiceListModel.setPricevalue(String.valueOf(price1));
 
                                         invoiceListModel.setUomCode(object.optString("UOMCode"));
                                         invoiceListModel.setCartonPrice(object.optString("CartonPrice"));
@@ -2693,10 +2738,24 @@ public class CartActivity extends AppCompatActivity {
                                             invoiceListModel.setNetQty("-" + object.optString("ReturnQty"));
 
                                             double qty12 = Double.parseDouble(object.optString("ReturnQty"));
-                                            double price12 = Double.parseDouble(object.optString("Price"));
+                                           // double price12 = Double.parseDouble(object.optString("Price"));
+                                            double price12 = 0.0 ;
+                                            if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                                if(response.optString("taxType").equalsIgnoreCase("E")){
+                                                    price12 = Double.parseDouble(object.optString("CartonPrice"));
+                                                    invoiceListModel.setPricevalue(String.valueOf(price12));
+
+                                                }else{
+                                                    invoiceListModel.setPricevalue(object.optString("grossPrice"));
+                                                    price12 = Double.parseDouble(object.optString("grossPrice"));
+                                                }
+                                            }else{
+                                                price12 = Double.parseDouble(object.optString("CartonPrice"));
+                                                invoiceListModel.setPricevalue(String.valueOf(price12));
+                                            }
                                             double nettotal12 = qty12 * price12;
                                             invoiceListModel.setTotal("-" + String.valueOf(nettotal12));
-                                            invoiceListModel.setPricevalue(String.valueOf(price12));
+                                         //   invoiceListModel.setPricevalue(String.valueOf(price12));
 
                                             invoiceListModel.setUomCode(object.optString("UOMCode"));
                                             invoiceListModel.setCartonPrice(object.optString("CartonPrice"));

@@ -55,6 +55,7 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.saperp.R;
+import com.winapp.saperp.activity.NewInvoiceListActivity;
 import com.winapp.saperp.adapter.SalesOrderPrintPreviewAdapter;
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel;
 import com.winapp.saperp.tscprinter.TSCPrinterActivity;
@@ -167,6 +168,7 @@ public class SalesOrderPrintPreview extends AppCompatActivity implements OnPageC
         locationCode=user.get((SessionManager.KEY_LOCATION_CODE));
         company_phone=user.get(SessionManager.KEY_PHONE_NO);
         company_gst=user.get(SessionManager.KEY_COMPANY_REG_NO);
+        Log.w("activity_cg",getClass().getSimpleName().toString());
 
         salesListView =findViewById(R.id.salesList);
         soNumberText =findViewById(R.id.so_no);
@@ -394,11 +396,23 @@ public class SalesOrderPrintPreview extends AppCompatActivity implements OnPageC
                                     salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                     double qty=Double.parseDouble(detailObject.optString("quantity"));
-                                    double price=Double.parseDouble(detailObject.optString("price"));
+                                    double price= 0.0 ;
 
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            price = Double.parseDouble(detailObject.optString("price"));
+                                            salesListModel.setPricevalue(String.valueOf(price));
+                                        }else{
+                                            price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                            salesListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        price = Double.parseDouble(detailObject.optString("price"));
+                                        salesListModel.setPricevalue(String.valueOf(price));
+                                    }
                                     double nettotal=qty * price;
                                     salesListModel.setTotal(String.valueOf(nettotal));
-                                    salesListModel.setPricevalue(String.valueOf(price));
+                                 //   salesListModel.setPricevalue(String.valueOf(price));
 
                                     salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
                                     salesListModel.setItemtax(detailObject.optString("totalTax"));

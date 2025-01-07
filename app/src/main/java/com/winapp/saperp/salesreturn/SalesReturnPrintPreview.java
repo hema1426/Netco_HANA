@@ -1,5 +1,7 @@
 package com.winapp.saperp.salesreturn;
 
+import static com.winapp.saperp.salesreturn.NewSalesReturnListActivity.shortCodeStr;
+
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -113,6 +115,8 @@ public class SalesReturnPrintPreview extends AppCompatActivity {
         company_address1=user.get(SessionManager.KEY_ADDRESS1);
         company_address2=user.get(SessionManager.KEY_ADDRESS2);
         company_address3=user.get(SessionManager.KEY_ADDRESS3);
+        Log.w("activity_cg",getClass().getSimpleName().toString());
+
         invoiceListView=findViewById(R.id.invoiceList);
         srNumberText =findViewById(R.id.sr_no);
         srDateText =findViewById(R.id.sr_date);
@@ -228,7 +232,17 @@ public class SalesReturnPrintPreview extends AppCompatActivity {
                                     salesReturnModel.setCqty(detailsObject.optString("cartonQty"));
                                     salesReturnModel.setNetqty(detailsObject.optString("quantity"));
                                     salesReturnModel.setCartonPrice(detailsObject.optString("price"));
-                                    salesReturnModel.setPrice(detailsObject.optString("price"));
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            salesReturnModel.setPrice(detailsObject.optString("price"));
+                                        }else{
+                                            salesReturnModel.setPrice(detailsObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        salesReturnModel.setPrice(detailsObject.optString("price"));
+                                    }
+
+//                                    salesReturnModel.setPrice(detailsObject.optString("price"));
                                     salesReturnModel.setPcspercarton(detailsObject.optString("pcsPerCarton"));
                                     salesReturnModel.setTax(detailsObject.optString("totalTax"));
 //                                    salesReturnModel.setTotal(detailsObject.optString("netTotal"));

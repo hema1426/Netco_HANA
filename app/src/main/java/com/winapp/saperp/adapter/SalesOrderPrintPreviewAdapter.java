@@ -58,14 +58,12 @@ public class SalesOrderPrintPreviewAdapter extends RecyclerView.Adapter<SalesOrd
         }else {
             viewHolder.qtyValue.setText((int)Double.parseDouble(salesList.getNetQty())+"");
         }
-        Log.w("so_total",""+salesList.getTotal());
-      //  viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
-
-
+        //  viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
 
         if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
             viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
             viewHolder.total.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getTotal())));
+            Log.w("so_price",""+salesList.getPricevalue()+shortCodeStr);
         }else{
             if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
                 if (context instanceof SalesOrderListActivity){

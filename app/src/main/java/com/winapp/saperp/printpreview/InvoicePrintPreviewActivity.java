@@ -61,6 +61,7 @@ import com.winapp.saperp.tscprinter.TSCPrinterActivity;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.ImageUtil;
 import com.winapp.saperp.utils.SessionManager;
+import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
 import com.winapp.saperp.zebraprinter.TSCPrinter;
 import com.winapp.saperp.zebraprinter.ZebraPrinterActivity;
@@ -94,6 +95,8 @@ public class InvoicePrintPreviewActivity extends AppCompatActivity implements On
     private RecyclerView invoiceListView;
     private InvoicePrintPreviewAdapter adapter;
     private TextView invoiceNumberText;
+    public static String shortCodeStr = "" ;
+    private SharedPreferenceUtil sharedPreferenceUtil;
     private TextView invoiceDateText;
     private TextView customerCodetext;
     private TextView customerNameText;
@@ -175,8 +178,11 @@ public class InvoicePrintPreviewActivity extends AppCompatActivity implements On
         company_address3 = user.get(SessionManager.KEY_ADDRESS3);
         company_phone=user.get(SessionManager.KEY_PHONE_NO);
         company_gst=user.get(SessionManager.KEY_COMPANY_REG_NO);
+        sharedPreferenceUtil = new SharedPreferenceUtil(this);
         Log.w("activity_cg",getClass().getSimpleName().toString());
 
+        shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
+                .KEY_SHORT_CODE,"");
 
         invoiceListView = findViewById(R.id.invoiceList);
         invoiceNumberText = findViewById(R.id.sr_no);
@@ -396,12 +402,24 @@ public class InvoicePrintPreviewActivity extends AppCompatActivity implements On
                                     invoiceListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                                     invoiceListModel.setUnitPrice(detailObject.optString("price"));
                                     double qty = Double.parseDouble(detailObject.optString("quantity"));
-                                    double price = Double.parseDouble(detailObject.optString("price"));
+                                    double price = 0.0;
+
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            invoiceListModel.setPricevalue(String.valueOf(price));
+                                            price = Double.parseDouble(detailObject.optString("price"));
+                                        }else{
+                                            invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                            price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        invoiceListModel.setPricevalue(String.valueOf(price));
+                                        price = Double.parseDouble(detailObject.optString("price"));
+                                    }
 
                                     double nettotal = qty * price;
                                     invoiceListModel.setTotal(String.valueOf(nettotal));
-                                    invoiceListModel.setPricevalue(String.valueOf(price));
-
+//                                    invoiceListModel.setPricevalue(String.valueOf(price));
                                     invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
                                     invoiceListModel.setItemtax(detailObject.optString("totalTax"));
                                     invoiceListModel.setSubTotal(detailObject.optString("subTotal"));

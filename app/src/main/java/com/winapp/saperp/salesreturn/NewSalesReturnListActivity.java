@@ -49,6 +49,7 @@ import com.winapp.saperp.model.SalesReturnModel;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.ImageUtil;
 import com.winapp.saperp.utils.SessionManager;
+import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
 import com.winapp.saperp.zebraprinter.TSCPrinter;
 import com.winapp.saperp.zebraprinter.ZebraPrinterActivity;
@@ -93,6 +94,7 @@ public class NewSalesReturnListActivity extends NavigationActivity {
     private ArrayList<CustomerDetails> customerDetails;
     private LinearLayout transLayout;
     private View customerLayout;
+    private SharedPreferenceUtil sharedPreferenceUtil;
     private View receiptsOptions;
     private TextView soCustomerName;
     private TextView srNumber;
@@ -110,6 +112,7 @@ public class NewSalesReturnListActivity extends NavigationActivity {
     private boolean isSearchCustomerNameClicked;
     boolean addnewCustomer;
     private String userName;
+    public static String shortCodeStr = "" ;
     private static FrameLayout recyclerViewLayout;
     public static ArrayList<SalesReturnModel> salesReturnList;
     static SalesReturnlistAdapter salesReturnlistAdapter;
@@ -154,9 +157,14 @@ public class NewSalesReturnListActivity extends NavigationActivity {
         user=session.getUserDetails();
         companyId=user.get(SessionManager.KEY_COMPANY_CODE);
         dbHelper=new DBHelper(this);
+        Log.w("activity_cg",getClass().getSimpleName().toString());
 
         salesReturnView=findViewById(R.id.salesReturnList);
         emptyLayout=findViewById(R.id.empty_layout);
+        sharedPreferenceUtil = new SharedPreferenceUtil(this);
+
+        shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
+                .KEY_SHORT_CODE,"");
 
         companyId=user.get(SessionManager.KEY_COMPANY_CODE);
         userName=user.get(SessionManager.KEY_USER_NAME);
@@ -635,9 +643,17 @@ public class NewSalesReturnListActivity extends NavigationActivity {
                             if (!object.optString("quantity").equals("null")) {
                                 cqty = object.optString("quantity");
                             }
+                            double actualPrice = 0.0 ;
 
-                            double actualPrice = Double.parseDouble(object.optString("unitPrice"));
-
+                            if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                if(tax_type.equalsIgnoreCase("E")){
+                                    actualPrice = Double.parseDouble(object.optString("unitPrice"));
+                                }else{
+                                    actualPrice = Double.parseDouble(object.optString("grossPrice"));
+                                }
+                            }else{
+                                actualPrice = Double.parseDouble(object.optString("unitPrice"));
+                            }
                             dbHelper.insertCart(
                                     object.optString("productCode"),
                                     object.optString("productName"),
@@ -775,7 +791,18 @@ public class NewSalesReturnListActivity extends NavigationActivity {
                                     salesReturnModel.setCqty(detailsObject.optString("cartonQty"));
                                     salesReturnModel.setNetqty(detailsObject.optString("quantity"));
                                     salesReturnModel.setCartonPrice(detailsObject.optString("price"));
-                                    salesReturnModel.setPrice(detailsObject.optString("price"));
+
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            salesReturnModel.setPrice(detailsObject.optString("price"));
+                                        }else{
+                                            salesReturnModel.setPrice(detailsObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        salesReturnModel.setPrice(detailsObject.optString("price"));
+                                    }
+
+                                   // salesReturnModel.setPrice(detailsObject.optString("price"));
                                     salesReturnModel.setPcspercarton(detailsObject.optString("pcsPerCarton"));
                                     salesReturnModel.setTax(detailsObject.optString("totalTax"));
 //                                    salesReturnModel.setTotal(detailsObject.optString("netTotal"));

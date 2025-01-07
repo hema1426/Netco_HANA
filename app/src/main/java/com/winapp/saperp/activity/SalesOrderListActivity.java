@@ -1026,10 +1026,24 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                 salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                 double qty1 = Double.parseDouble(detailObject.optString("quantity"));
-                                double price1 = Double.parseDouble(detailObject.optString("price"));
+                                double price1 = 0.0 ;
+
+                                if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                    if(object.optString("taxType").equalsIgnoreCase("E")){
+                                        price1 = Double.parseDouble(detailObject.optString("price"));
+                                        salesListModel.setPricevalue(String.valueOf(price1));
+                                    }else{
+                                        price1 = Double.parseDouble(detailObject.optString("grossPrice"));
+                                        salesListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                    }
+                                }else{
+                                    price1 = Double.parseDouble(detailObject.optString("price"));
+                                    salesListModel.setPricevalue(String.valueOf(price1));
+                                }
+
                                 double nettotal1 = qty1 * price1;
                                 salesListModel.setTotal(String.valueOf(nettotal1));
-                                salesListModel.setPricevalue(String.valueOf(price1));
+                                //salesListModel.setPricevalue(String.valueOf(price1));
 
                                 salesListModel.setUomCode(detailObject.optString("uomCode"));
                                 salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
@@ -1048,10 +1062,25 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                     salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                     double qty12 = Double.parseDouble(detailObject.optString("ReturnQty"));
-                                    double price12 = Double.parseDouble(detailObject.optString("Price"));
+                                //    double price12 = Double.parseDouble(detailObject.optString("Price"));
+                                    double price12 = 0.0 ;
+
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            price12 = Double.parseDouble(detailObject.optString("price"));
+                                            salesListModel.setPricevalue(String.valueOf(price12));
+                                        }else{
+                                            price12 = Double.parseDouble(detailObject.optString("grossPrice"));
+                                            salesListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        price12 = Double.parseDouble(detailObject.optString("price"));
+                                        salesListModel.setPricevalue(String.valueOf(price12));
+                                    }
+
                                     double nettotal12 = qty12 * price12;
                                     salesListModel.setTotal(String.valueOf(nettotal12));
-                                    salesListModel.setPricevalue(String.valueOf(price12));
+                                  //  salesListModel.setPricevalue(String.valueOf(price12));
 
                                     salesListModel.setUomCode(detailObject.optString("UOMCode"));
                                     salesListModel.setCartonPrice(detailObject.optString("CartonPrice"));
