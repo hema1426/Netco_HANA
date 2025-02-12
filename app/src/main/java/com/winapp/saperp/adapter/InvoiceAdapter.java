@@ -1,5 +1,7 @@
 package com.winapp.saperp.adapter;
 
+import static com.winapp.saperp.activity.NewInvoiceListActivity.shortCodeStr;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
@@ -462,11 +464,24 @@ public class InvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                     invoiceListModel.setCartonPrice(detailObject.optString("cartonPrice"));
                                     invoiceListModel.setUnitPrice(detailObject.optString("price"));
                                     double qty = Double.parseDouble(detailObject.optString("quantity"));
-                                    double price = Double.parseDouble(detailObject.optString("price"));
+                                    double price = 0.0 ;
+
+                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                        if(object.optString("taxType").equalsIgnoreCase("E")){
+                                            price = Double.parseDouble(detailObject.optString("price"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price));
+                                        }else{
+                                            invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                            price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                        }
+                                    }else{
+                                        price = Double.parseDouble(detailObject.optString("price"));
+                                        invoiceListModel.setPricevalue(String.valueOf(price));
+                                    }
 
                                     double nettotal = qty * price;
                                     invoiceListModel.setTotal(String.valueOf(nettotal));
-                                    invoiceListModel.setPricevalue(String.valueOf(price));
+//                                    invoiceListModel.setPricevalue(String.valueOf(price));
 
                                     invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
                                     invoiceListModel.setItemtax(detailObject.optString("totalTax"));

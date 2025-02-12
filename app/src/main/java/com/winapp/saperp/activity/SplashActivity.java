@@ -156,17 +156,20 @@ public class SplashActivity extends AppCompatActivity {
                 finish();
             }else {
 
+//hana app
+               //    String apiUrl=Constants.RAYMANG_URL_JULY;
+             //     String apiUrl=Constants.FUXIN;
+               //  String apiUrl=Constants.TRANS_ORIENT_LIVE;
+                 String apiUrl=Constants.TRANS_ORIENT_DEMO;
 
-        //String apiUrl=Constants.RAYMANG_URL_JULY;
-   String apiUrl=Constants.FUXIN;
-      //String apiUrl=Constants.test_URL_OCT24;
-         // String apiUrl=Constants.AADHI_DEMO;
-      //    String apiUrl=Constants.SUPER_STAR_DEMO;
-       //   String apiUrl=Constants.thongai_url;
-         // String apiUrl=Constants.SHABAN_URL;
-         // String apiUrl=Constants.UNICO;
-                //   String apiUrl=Constants.SUPER_STAR_DEMO_new10;
-       // String apiUrl=Constants.TRANS_ORIENT_DEMO;
+/*SQL app
+//                String apiUrl=Constants.test_URL_OCT24;
+//          String apiUrl=Constants.AADHI_DEMO;
+//         String apiUrl=Constants.SUPER_STAR_DEMO;
+//          String apiUrl=Constants.thongai_url;
+//          String apiUrl=Constants.SHABAN_URL;
+//          String apiUrl=Constants.UNICO;
+//                   String apiUrl=Constants.SUPER_STAR_DEMO_new10; */
 
                 dbHelper.insertUrl(apiUrl);
                 startActivity(new Intent(SplashActivity.this,LoginActivity.class));

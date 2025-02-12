@@ -257,7 +257,8 @@ public class PaidInvoices extends Fragment {
             jsonObject.put("ToDate", todate);
             jsonObject.put("DocStatus","");
             String url = Utils.getBaseUrl(getActivity()) + "InvoiceList";
-            Log.w("Given_url:", url);
+
+            Log.w("paidInvoices:", url+"/"+jsonObject.toString());
             pDialog = new SweetAlertDialog(requireActivity(), SweetAlertDialog.PROGRESS_TYPE);
             pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
             pDialog.setTitleText("Getting All Invoices...");

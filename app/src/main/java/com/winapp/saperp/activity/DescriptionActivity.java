@@ -1282,7 +1282,7 @@ public class DescriptionActivity extends AppCompatActivity {
                     double pdtStock = Double.parseDouble(stockStr);
 
                     ctnStockVal = pdtStock / baseCtnQty ;
-                    availability.setText(String.valueOf(ctnStockVal));
+                    availability.setText(String.valueOf(Utils.twoDecimalPoint(ctnStockVal)));
                 }else{
                     availability.setText(stockStr);
 

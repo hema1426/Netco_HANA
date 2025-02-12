@@ -621,7 +621,8 @@ public class StockProductsActivity extends NavigationActivity {
             //looping through existing elements
             for (ProductsModel s : adapter.getProductsList()) {
                 //if the existing elements contains the search input
-                if (s.getProductName().toLowerCase().contains(text.toLowerCase())) {
+                if (s.getProductName().toLowerCase().contains(text.toLowerCase())
+                        || s.getProductCode().toLowerCase().contains(text.toLowerCase())) {
                     //adding the element to filtered list
                     filterdNames.add(s);
                 }
@@ -794,6 +795,7 @@ public class StockProductsActivity extends NavigationActivity {
                                 product.setCartonPrice(productObject.optString("cartonPrice"));
                                 product.setPcsPerCarton(productObject.optString("pcsPerCarton"));
                                 product.setUnitCost(productObject.optString("price"));
+                                product.setLastPrice(productObject.optString("lastSalesPrice"));
                                 if (!productObject.optString("stockInHand").equals("null")){
                                     product.setStockQty(productObject.optString("stockInHand"));
                                 }else {

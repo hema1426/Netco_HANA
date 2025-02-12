@@ -65,11 +65,13 @@ import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.winapp.saperp.BuildConfig;
+import com.winapp.saperp.CommonMethods;
 import com.winapp.saperp.R;
 import com.winapp.saperp.adapter.CartAdapterNew;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.CustomerDetails;
+import com.winapp.saperp.model.CustomerModel;
 import com.winapp.saperp.model.InvoicePrintPreviewModel;
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel;
 import com.winapp.saperp.model.SettingsModel;
@@ -134,7 +136,7 @@ public class CartActivity extends AppCompatActivity {
     private TextView taxTypeText;
 
     private SweetAlertDialog pDialog;
-    private JSONObject customerResponse = new JSONObject();
+   private JSONObject customerResponse = new JSONObject();
     private String companyCode;
     String percentApi = "";
 
@@ -152,6 +154,8 @@ public class CartActivity extends AppCompatActivity {
     AlertDialog alert11;
     DialogInterface alertInterface;
     boolean isPrintCheck = false;
+    ProgressDialog dialog;
+
     public static View invoicePrintOption;
     public static boolean isShowMore = false;
     public static LinearLayout transLayout;
@@ -230,7 +234,12 @@ public class CartActivity extends AppCompatActivity {
     public static String current_addr = "";
     public String currentDateString;
     private SharedPreferenceUtil sharedPreferenceUtil;
-
+    private String custNameShared = "" ;
+    private String custCodeShared = "";
+    private String custHavetaxShared  = "";
+    private String custTaxCodeShared = "";
+    private String custTaxTypeShared = "";
+    private String custTaxPercentShared  = "" ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -308,6 +317,18 @@ public class CartActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        sharedPreferenceUtil.setStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_NAME, "");
+        sharedPreferenceUtil.setStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_CODE, "");
+        sharedPreferenceUtil.setStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_TAXTYPE, "");
+        sharedPreferenceUtil.setStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_TAXPERCENTAGE, "");
+        sharedPreferenceUtil.setStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, "");
+        sharedPreferenceUtil.setStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  "");
         // getPermission();
 
         Log.w("Printer_Mac_Id:", printerMacId);
@@ -1835,8 +1856,20 @@ public class CartActivity extends AppCompatActivity {
             }
         }
 
-        if (customerResponse.optString("TaxType").equals("I")) {
+        custNameShared = sharedPreferenceUtil.getStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_NAME, "");
+        custCodeShared = sharedPreferenceUtil.getStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_CODE, "");
+        custTaxTypeShared = sharedPreferenceUtil.getStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_TAXTYPE, "");
+        custTaxPercentShared = sharedPreferenceUtil.getStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_TAXPERCENTAGE, "");
+        custTaxCodeShared = sharedPreferenceUtil.getStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, "");
+        custHavetaxShared = sharedPreferenceUtil.getStringPreference(
+                sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  "");
 
+        if (custTaxTypeShared.equals("I")) {
             double sub_total = net_total - net_tax;
             double sub_total1 = sub_total + net_tax;
 
@@ -1853,27 +1886,40 @@ public class CartActivity extends AppCompatActivity {
             itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
             totalValue = Utils.twoDecimalPoint(total_value);
         }
-        JSONArray detailsArray = customerResponse.optJSONArray("responseData");
-        JSONObject object = detailsArray.optJSONObject(0);
+//        JSONArray detailsArray = customerResponse.optJSONArray("responseData");
+//        JSONObject object = detailsArray.optJSONObject(0);
 
         try {
             // Sales Header Add values
-
+            Log.w("custcode..cart ",""+custCodeShared);
             rootJsonObject.put("invoiceNumber", "");
             rootJsonObject.put("mode", "I");
             rootJsonObject.put("soNo", "");
             rootJsonObject.put("doNo", "");
             rootJsonObject.put("invoiceDate", currentDate);
-            rootJsonObject.put("customerCode", object.get("customerCode"));
-            rootJsonObject.put("customerName", object.get("customerName"));
-            rootJsonObject.put("address", object.get("address"));
-            rootJsonObject.put("street", object.get("street"));
-            rootJsonObject.put("city", object.get("city"));
-            rootJsonObject.put("creditLimit", object.get("creditLimit"));
+            rootJsonObject.put("customerCode", custCodeShared);
+            rootJsonObject.put("customerName", custNameShared);
+            rootJsonObject.put("address", "");
+            rootJsonObject.put("street", "");
+            rootJsonObject.put("city", "");
+            rootJsonObject.put("creditLimit", "");
+            rootJsonObject.put("remark", "");
+            rootJsonObject.put("delCustomerName", "");
+            rootJsonObject.put("delAddress1", "");
+            rootJsonObject.put("delAddress2 ", "");
+            rootJsonObject.put("delAddress3 ", "");
+            rootJsonObject.put("delPhoneNo", "");
+            rootJsonObject.put("haveTax", custHavetaxShared);
+            rootJsonObject.put("taxType", custTaxTypeShared);
+            rootJsonObject.put("taxPerc", custTaxPercentShared);
+            rootJsonObject.put("taxCode", custTaxCodeShared);
+            rootJsonObject.put("currencyCode", "");
+            rootJsonObject.put("currencyValue", "");
+            rootJsonObject.put("currencyRate", "1");
+            rootJsonObject.put("postalCode", "");
+            rootJsonObject.put("currencyName", "Singapore Dollar");
             rootJsonObject.put("Remark", "");
             rootJsonObject.put("customerReferenceNo", "");
-            rootJsonObject.put("currencyName", "Singapore Dollar");
-
             rootJsonObject.put("taxTotal", netTaxvalue);
             rootJsonObject.put("subTotal", subTotalValue);
             rootJsonObject.put("total", totalValue);
@@ -1891,20 +1937,9 @@ public class CartActivity extends AppCompatActivity {
             rootJsonObject.put("billDiscountPercentage", billDiscountPercentage);
             rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode());
             rootJsonObject.put("delCustomerName", "");
-            rootJsonObject.put("delAddress1", object.optString("delAddress1"));
-            rootJsonObject.put("delAddress2 ", object.optString("delAddress2"));
-            rootJsonObject.put("delAddress3 ", object.optString("delAddress3"));
-            rootJsonObject.put("delPhoneNo", object.optString("contactNo"));
-            rootJsonObject.put("remark", object.optString("remark"));
-            rootJsonObject.put("haveTax", object.optString("haveTax"));
-            rootJsonObject.put("taxType", object.optString("taxType"));
-            rootJsonObject.put("taxPerc", object.optString("taxPercentage"));
-            rootJsonObject.put("taxCode", object.optString("taxCode"));
-            rootJsonObject.put("currencyCode", object.optString("currencyCode"));
             rootJsonObject.put("currencyValue", "");
             rootJsonObject.put("CurrencyRate", "1");
             rootJsonObject.put("status", "0");
-            rootJsonObject.put("postalCode", object.optString("postalCode"));
             rootJsonObject.put("createUser", userName);
             rootJsonObject.put("modifyUser", userName);
             rootJsonObject.put("companyName", companyName);
@@ -1964,9 +1999,9 @@ public class CartActivity extends AppCompatActivity {
                 invoiceObject.put("totalTax", model.getCART_TAX_VALUE());
                 invoiceObject.put("subTotal", model.getSubTotal());
                 invoiceObject.put("netTotal", model.getCART_COLUMN_NET_PRICE());
-                invoiceObject.put("taxType", object.optString("taxType"));
-                invoiceObject.put("taxPerc", object.optString("taxPercentage"));
-
+                invoiceObject.put("taxType", custTaxTypeShared);
+                invoiceObject.put("taxPerc", custTaxPercentShared);
+                invoiceObject.put("taxCode", custTaxCodeShared);
                 double return_subtotal = 0;
                 if (model.getReturn_qty() != null && !model.getReturn_qty().isEmpty() && !model.getReturn_qty().equals("null")) {
                     return_subtotal = Double.parseDouble(model.getReturn_qty()) * Double.parseDouble(model.getCART_UNIT_PRICE());
@@ -1997,13 +2032,24 @@ public class CartActivity extends AppCompatActivity {
                 invoiceObject.put("returnSubTotal", return_subtotal + "");
                 invoiceObject.put("returnNetTotal", return_subtotal + "");
                 invoiceObject.put("returnReason", "");
-                invoiceObject.put("taxCode", object.optString("taxCode"));
                 invoiceObject.put("uomCode", model.getUomCode());
                 invoiceObject.put("retailPrice", model.getCART_COLUMN_CTN_PRICE());
                 invoiceObject.put("itemRemarks", "");
                 invoiceObject.put("locationCode", locationCode);
                 invoiceObject.put("createUser", userName);
                 invoiceObject.put("modifyUser", userName);
+
+                returnProductArray=new JSONArray();
+                JSONObject returnProductObject = new JSONObject();
+
+                if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
+                    returnProductObject=new JSONObject();
+                    returnProductObject.put("ReturnReason","Saleable Return");
+                    returnProductObject.put("ReturnQty",model.getReturn_qty());
+                    returnProductArray.put(returnProductObject);
+                }
+                invoiceObject.put("ReturnDetails", returnProductArray);
+
                 invoiceDetailsArray.put(invoiceObject);
                 index++;
             }
@@ -2036,7 +2082,7 @@ public class CartActivity extends AppCompatActivity {
 
             // rootJsonObject.put("IsSaveSO",false);
             //  rootJsonObject.put("InvoiceHeader", invoiceHeader);
-            rootJsonObject.put("ReturnDetails", returnProductArray);
+            //rootJsonObject.put("ReturnDetails", returnProductArray);
             rootJsonObject.put("PostingInvoiceDetails", invoiceDetailsArray);
             //  rootJsonObject.put("InvoiceSignature",signatureObject);
             // rootJsonObject.put("InvoicePhoto",invoiceImageObject);
@@ -2089,7 +2135,20 @@ public class CartActivity extends AppCompatActivity {
                 }
             }
 
-            if (customerResponse.optString("TaxType").equals("I")) {
+            custNameShared = sharedPreferenceUtil.getStringPreference(
+                    sharedPreferenceUtil.KEY_CUSTOMER_NAME, "");
+            custCodeShared = sharedPreferenceUtil.getStringPreference(
+                    sharedPreferenceUtil.KEY_CUSTOMER_CODE, "");
+            custTaxTypeShared = sharedPreferenceUtil.getStringPreference(
+                    sharedPreferenceUtil.KEY_CUSTOMER_TAXTYPE, "");
+            custTaxPercentShared = sharedPreferenceUtil.getStringPreference(
+                    sharedPreferenceUtil.KEY_CUSTOMER_TAXPERCENTAGE, "");
+            custTaxCodeShared = sharedPreferenceUtil.getStringPreference(
+                    sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, "");
+            custHavetaxShared = sharedPreferenceUtil.getStringPreference(
+                    sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  "");
+
+            if (custTaxTypeShared.equals("I")) {
 
                 double sub_total = net_total - net_tax;
                 double sub_total1 = sub_total + net_tax;
@@ -2108,27 +2167,41 @@ public class CartActivity extends AppCompatActivity {
                 totalValue = Utils.twoDecimalPoint(total_value);
             }
 
-            JSONArray detailsArray = customerResponse.optJSONArray("responseData");
-            JSONObject object = detailsArray.optJSONObject(0);
+//            JSONArray detailsArray = customerResponse.optJSONArray("responseData");
+//            JSONObject object = detailsArray.optJSONObject(0);
 
             if (currentSaveDateTime == null || currentSaveDateTime.isEmpty()) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
                 String currentDateandTime = sdf.format(new Date());
                 currentSaveDateTime = currentDateandTime;
             }
+            Log.w("custcode..cart ",""+custCodeShared);
 
             rootJsonObject.put("soNumber", "");
             rootJsonObject.put("mode", "I");
             rootJsonObject.put("status", "");
             rootJsonObject.put("soDate", currentDateStringSO);
             rootJsonObject.put("currentDateTime", currentSaveDateTime);
-            rootJsonObject.put("customerCode", object.optString("customerCode"));
-            rootJsonObject.put("customerName", object.optString("customerName"));
-            rootJsonObject.put("address", object.optString("address"));
-            rootJsonObject.put("street", object.optString("street"));
-            rootJsonObject.put("city", object.optString("city"));
-            rootJsonObject.put("creditLimit", object.optString("creditLimit"));
+            rootJsonObject.put("customerCode", custCodeShared);
+            rootJsonObject.put("customerName", custNameShared);
+            rootJsonObject.put("address", "");
+            rootJsonObject.put("street", "");
+            rootJsonObject.put("city", "");
+            rootJsonObject.put("creditLimit", "");
             rootJsonObject.put("remark", "");
+            rootJsonObject.put("delCustomerName", "");
+            rootJsonObject.put("delAddress1", "");
+            rootJsonObject.put("delAddress2 ", "");
+            rootJsonObject.put("delAddress3 ", "");
+            rootJsonObject.put("delPhoneNo", "");
+            rootJsonObject.put("haveTax", custHavetaxShared);
+            rootJsonObject.put("taxType", custTaxTypeShared);
+            rootJsonObject.put("taxPerc", custTaxPercentShared);
+            rootJsonObject.put("taxCode", custTaxCodeShared);
+            rootJsonObject.put("currencyCode", "");
+            rootJsonObject.put("currencyValue", "");
+            rootJsonObject.put("currencyRate", "1");
+            rootJsonObject.put("postalCode", "");
             rootJsonObject.put("currencyName", "Singapore Dollar");
             rootJsonObject.put("total", totalValue);
             rootJsonObject.put("itemDiscount", itemDiscountAmount);
@@ -2138,19 +2211,6 @@ public class CartActivity extends AppCompatActivity {
             rootJsonObject.put("taxTotal", netTaxvalue);
             rootJsonObject.put("netTotal", netTotalValue);
             rootJsonObject.put("DeliveryCode", SettingUtils.getDeliveryAddressCode());
-            rootJsonObject.put("delCustomerName", "");
-            rootJsonObject.put("delAddress1", object.optString("delAddress1"));
-            rootJsonObject.put("delAddress2 ", object.optString("delAddress2"));
-            rootJsonObject.put("delAddress3 ", object.optString("delAddress3"));
-            rootJsonObject.put("delPhoneNo", object.optString("contactNo"));
-            rootJsonObject.put("haveTax", object.optString("haveTax"));
-            rootJsonObject.put("taxType", object.optString("taxType"));
-            rootJsonObject.put("taxPerc", object.optString("taxPercentage"));
-            rootJsonObject.put("taxCode", object.optString("taxCode"));
-            rootJsonObject.put("currencyCode", object.optString("currencyCode"));
-            rootJsonObject.put("currencyValue", "");
-            rootJsonObject.put("currencyRate", "1");
-            rootJsonObject.put("postalCode", object.optString("postalCode"));
             rootJsonObject.put("createUser", userName);
             rootJsonObject.put("modifyUser", userName);
             rootJsonObject.put("stockUpdated", "1");
@@ -2215,8 +2275,9 @@ public class CartActivity extends AppCompatActivity {
                 saleObject.put("totalTax", model.getCART_TAX_VALUE());
                 saleObject.put("subTotal", model.getSubTotal());
                 saleObject.put("netTotal", model.getCART_COLUMN_NET_PRICE());
-                saleObject.put("taxType", object.optString("taxType"));
-                saleObject.put("taxPerc", object.optString("taxPercentage"));
+                saleObject.put("taxType", custTaxTypeShared);
+                saleObject.put("taxPerc", custTaxPercentShared);
+                saleObject.put("taxCode", custTaxCodeShared);
                 if (model.getFoc_qty() != null && !model.getFoc_qty().isEmpty() && !model.getFoc_qty().equals("null")) {
                     saleObject.put("focQty", model.getFoc_qty());
                 } else {
@@ -2246,7 +2307,6 @@ public class CartActivity extends AppCompatActivity {
                 saleObject.put("returnSubTotal", return_subtotal + "");
                 saleObject.put("returnNetTotal", return_subtotal + "");
 
-                saleObject.put("taxCode", object.optString("taxCode"));
                 saleObject.put("uomCode", model.getUomCode());
                 saleObject.put("retailPrice", model.getCART_COLUMN_CTN_PRICE());
                 saleObject.put("itemRemarks", "");
@@ -2282,12 +2342,13 @@ public class CartActivity extends AppCompatActivity {
         }
         String url = Utils.getBaseUrl(getApplicationContext()) + "Customer";
         Log.w("Given_url_custDet:", url+jsonObject);
-        ProgressDialog progressDialog = new ProgressDialog(getApplicationContext());
-        progressDialog.setCancelable(false);
-        progressDialog.setMessage("Customer Details Loading...");
-        if (isloader) {
-            progressDialog.show();
-        }
+        dialog = new ProgressDialog(CartActivity.this);
+        dialog.setMessage("ustomer Details Loading...");
+        dialog.setCancelable(false);
+        dialog.show();
+//        if (isloader) {
+//            progressDialog.show();
+//        }
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
@@ -2302,23 +2363,73 @@ public class CartActivity extends AppCompatActivity {
                         //  "createDate":"13\/07\/2021","updateDate":"30\/07\/2021","active":"N","remark":""}]}
                         if (response.length() > 0) {
                             if (response.optString("statusCode").equals("1")) {
-                                customerObject = response;
                                 customerResponse = response;
-                                progressDialog.dismiss();
+                                ArrayList<CustomerModel> customerList = new ArrayList<>();
+                                JSONArray customerDetailArray = response.optJSONArray("responseData");
+                                for (int i = 0; i < customerDetailArray.length(); i++) {
+                                    JSONObject object = customerDetailArray.optJSONObject(i);
+                                    //  if (customerObject.optBoolean("IsActive")) {
+                                    CustomerModel model = new CustomerModel();
+                                    model.setCustomerCode(object.optString("customerCode"));
+                                    model.setCustomerName(object.optString("customerName"));
+                                    model.setAddress1(object.optString("address"));
+                                    model.setAddress2(object.optString("street"));
+                                    model.setAddress3(object.optString("city"));
+                                    model.setCustomerAddress(object.optString("address"));
+                                    model.setHaveTax(object.optString("HaveTax"));
+                                    model.setTaxType(object.optString("taxType"));
+                                    model.setTaxPerc(object.optString("taxPercentage"));
+                                    model.setTaxCode(object.optString("taxCode"));
+                                    model.setCreditLimitAmount(object.optString("creditLimit"));
+
+                                  //  creditLimitAmount = object.optString("creditLimit");
+                                  //  outstandingAmount = object.optString("outstandingAmount");
+
+                                    //  model.setCustomerBarcode(object.optString("BarCode"));
+                                    // model.setCustomerBarcode(String.valueOf(i));
+                                    if (object.optString("outstandingAmount").equals("null") || object.optString("outstandingAmount").isEmpty()) {
+                                        model.setOutstandingAmount("0.00");
+                                    } else {
+                                        model.setOutstandingAmount(object.optString("outstandingAmount"));
+                                    }
+                                    customerList.add(model);
+                                    // }
+                                }
+                                if(customerList.size() > 0){
+                                    if(!selectCustomerId.equals(customerList.get(0).getCustomerCode())){
+                                        Toast.makeText(this, "different customer!"
+                                                +selectCustomerId+".."+customerList.get(0).getCustomerCode(), Toast.LENGTH_SHORT).show();
+                                    }
+                                    Log.w("custResNAme",""+customerList.get(0).getCustomerName()+
+                                            ".. "+customerList.get(0).getCustomerCode());
+
+                                    sharedPreferenceUtil.setStringPreference(
+                                            sharedPreferenceUtil.KEY_CUSTOMER_NAME, customerList.get(0).getCustomerName());
+                                    sharedPreferenceUtil.setStringPreference(
+                                            sharedPreferenceUtil.KEY_CUSTOMER_CODE, customerList.get(0).getCustomerCode());
+                                    sharedPreferenceUtil.setStringPreference(
+                                            sharedPreferenceUtil.KEY_CUSTOMER_TAXTYPE, customerList.get(0).getTaxType());
+                                    sharedPreferenceUtil.setStringPreference(
+                                            sharedPreferenceUtil.KEY_CUSTOMER_TAXPERCENTAGE, customerList.get(0).getTaxPerc());
+                                    sharedPreferenceUtil.setStringPreference(
+                                            sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, customerList.get(0).getTaxCode());
+                                    sharedPreferenceUtil.setStringPreference(
+                                            sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  customerList.get(0).getHaveTax());
+                                }
+
                             } else {
-                                Toast.makeText(getApplicationContext(), "Error in getting response", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Error,in getting Customer list", Toast.LENGTH_LONG).show();
                             }
                         }
-                        // pDialog.dismiss();
+                         dialog.dismiss();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }, error -> {
             showAlertDialog();
             // Do something when error occurred
-            //  pDialog.dismiss();
+            dialog.dismiss();
             Log.w("Error_throwing:", error.toString());
-            progressDialog.dismiss();
             // Toast.makeText(getActivity(),error.toString(),Toast.LENGTH_LONG).show();
         }) {
             @Override
@@ -2459,7 +2570,7 @@ public class CartActivity extends AppCompatActivity {
                         isPrintEnable = false;
                     }
                 } else {
-                    Log.w("ErrorValues:", responseData.optString("error"));
+                  //  Log.w("ErrorValues:", responseData.optString("error"));
                     if (responseData != null) {
                         Toast.makeText(getApplicationContext(), responseData.optString("error"), Toast.LENGTH_LONG).show();
                     } else {

@@ -70,6 +70,7 @@ import com.karumi.dexter.listener.DexterError
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.winapp.saperp.BuildConfig
+import com.winapp.saperp.CommonMethods
 import com.winapp.saperp.R
 import com.winapp.saperp.activity.CreateNewInvoiceActivity
 import com.winapp.saperp.activity.NewInvoiceListActivity
@@ -254,7 +255,12 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     private var salesPrintList: ArrayList<SalesList>? = null
     private var uomSpinnerLayl: LinearLayout? = null
     private var uomSpinner: Spinner? = null
-
+    private var custNameShared: String? = ""
+    private var custCodeShared: String? = ""
+    private var custHavetaxShared: String? = ""
+    private var custTaxCodeShared: String? = ""
+    private var custTaxTypeShared: String? = ""
+    private var custTaxPercentShared: String? = ""
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -353,7 +359,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         exchangeEditext!!.setEnabled(false)
         discountEditext!!.setEnabled(false)
         returnEditext!!.setEnabled(false)
-        qtyValue!!.setEnabled(false)
+        qtyValue!!.isEnabled = false
         val c = Calendar.getInstance().time
         println("Current time => $c")
         val df1 = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
@@ -361,6 +367,14 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         val df = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         val formattedDate = df.format(c)
         invoiceDate!!.setText(formattedDate)
+
+        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
+        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
+        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
+        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
+        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
+        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
+
         if (intent != null) {
             customerNameText!!.setText(intent.getStringExtra("customerName"))
             customerCode = intent.getStringExtra("customerCode")
@@ -959,35 +973,36 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         }
                     }
                     // stockLayout.setVisibility(View.VISIBLE);
-                    if (model.stockQty.toDouble().equals("0") || model.stockQty.toDouble() < 0) {
-                        if (isAllowLowStock) {
-                            productAutoComplete!!.clearFocus()
-                            cartonPrice!!.setText(model.unitCost)
-                            priceText!!.setText(model.unitCost)
-                            loosePrice!!.setText(model.unitCost)
-                            uomText!!.setText(model.uomCode)
-                            stockCount!!.setText(model.stockQty)
-                            pcsPerCarton!!.setText(model.pcsPerCarton)
-                            qtyValue!!.isEnabled = true
-                            qtyValue!!.setText("")
-                            qtyValue!!.requestFocus()
-                            openKeyborard(qtyValue)
-                            qtyValue!!.setSelection(qtyValue!!.text.length)
-                            focEditText!!.isEnabled = true
-                            exchangeEditext!!.isEnabled = true
-                            discountEditext!!.isEnabled = true
-                            returnEditext!!.isEnabled = true
-                        } else {
-                            Toast.makeText(
-                                applicationContext,
-                                "Low Stock Please check",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            productAutoComplete!!.clearFocus()
-                            productAutoComplete!!.setText("")
-                        //    qtyValue!!.isEnabled = false
-                        }
-                    } else {
+                    Log.w("stockkk", ""+model.stockQty)
+//                    if (model.stockQty.toDouble().equals("0") || model.stockQty.toDouble() < 0.0) {
+//                        if (isAllowLowStock) {
+//                            productAutoComplete!!.clearFocus()
+//                            cartonPrice!!.setText(model.unitCost)
+//                            priceText!!.setText(model.unitCost)
+//                            loosePrice!!.setText(model.unitCost)
+//                            uomText!!.setText(model.uomCode)
+//                            stockCount!!.setText(model.stockQty)
+//                            pcsPerCarton!!.setText(model.pcsPerCarton)
+//                            qtyValue!!.isEnabled = true
+//                            qtyValue!!.setText("")
+//                            qtyValue!!.requestFocus()
+//                            openKeyborard(qtyValue)
+//                            qtyValue!!.setSelection(qtyValue!!.text.length)
+//                            focEditText!!.isEnabled = true
+//                            exchangeEditext!!.isEnabled = true
+//                            discountEditext!!.isEnabled = true
+//                            returnEditext!!.isEnabled = true
+//                        } else {
+//                            Toast.makeText(
+//                                applicationContext,
+//                                "Low Stock Please check",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                            productAutoComplete!!.clearFocus()
+//                            productAutoComplete!!.setText("")
+//                        //    qtyValue!!.isEnabled = false
+//                        }
+//                    } else {
                         productAutoComplete!!.clearFocus()
                         cartonPrice!!.setText(model.unitCost)
                         priceText!!.setText(model.unitCost)
@@ -1005,7 +1020,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         exchangeEditext!!.isEnabled = true
                         discountEditext!!.isEnabled = true
                         returnEditext!!.isEnabled = true
-                    }
+                //    }
                 } else {
                     Log.w("Not_found", "Product")
                 }
@@ -1258,7 +1273,6 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         jsonObject.put("ItemCode",productEditId)
                         getUOMEdit(jsonObject,model.uomCode,model.stockProductQty)
 
-
                         if (model.focQty != null && !model.focQty.isEmpty() && model.focQty != "null") {
                             focEditText!!.setText(model.focQty)
                         } else {
@@ -1483,7 +1497,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                     if (model.settingName == "allow_negative_switch") {
                         isAllowLowStock = model.settingValue == "1"
                     }
-                    Log.w("SettingNameRet11:", model.settingName)
+                    Log.w("Setting_allowStock:", ""+isAllowLowStock)
                 }
             }else {
                 isAllowLowStock = false
@@ -1974,9 +1988,27 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         //  "taxName":"Sales Standard Rated Supplier SR","taxPercentage":"7.000000","balance":"21.600000","outstandingAmount":"128.400000",
         //  "address":"","street":"","city":"","state":"","zipCode":"","country":"","createDate":"13\/07\/2021","updateDate":"30\/07\/2021",
         //  "active":"N","remark":""}]}
-        val detailsArray = customerResponse.optJSONArray("responseData")
-        val `object` = detailsArray.optJSONObject(0)
+
+//        val detailsArray = customerResponse.optJSONArray("responseData")
+//        val `object` = detailsArray.optJSONObject(0)
         try {
+            custNameShared = sharedPreferenceUtil!!.getStringPreference(
+                sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
+
+            custCodeShared = sharedPreferenceUtil!!.getStringPreference(
+                sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
+
+            custHavetaxShared = sharedPreferenceUtil!!.getStringPreference(
+                sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
+
+            custTaxCodeShared = sharedPreferenceUtil!!.getStringPreference(
+                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
+
+            custTaxTypeShared = sharedPreferenceUtil!!.getStringPreference(
+                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
+
+            custTaxPercentShared = sharedPreferenceUtil!!.getStringPreference(
+                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
             // Sales Header Add values
             /*  if (activityFrom.equals("InvoiceEdit")){
                 rootJsonObject.put("invoiceNumber", AddInvoiceActivity.editInvoiceNumber);
@@ -2006,12 +2038,12 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             }
             rootJsonObject.put("soDate", currentDate)
             rootJsonObject.put("currentDateTime", currentSaveDateTime)
-            rootJsonObject.put("customerCode", `object`["customerCode"])
-            rootJsonObject.put("customerName", `object`["customerName"])
-            rootJsonObject.put("address", `object`["address"])
-            rootJsonObject.put("street", `object`["street"])
-            rootJsonObject.put("city", `object`["city"])
-            rootJsonObject.put("creditLimit", `object`["creditLimit"])
+            rootJsonObject.put("customerCode", custCodeShared)
+            rootJsonObject.put("customerName", custNameShared)
+            rootJsonObject.put("address", "")
+            rootJsonObject.put("street", "")
+            rootJsonObject.put("city", "")
+            rootJsonObject.put("creditLimit", "")
             rootJsonObject.put("remark", remarkText!!.text.toString())
             rootJsonObject.put("currencyName", "Singapore Dollar")
             rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
@@ -2024,19 +2056,19 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             rootJsonObject.put("billDiscountPercentage", "0.00")
             rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode())
             rootJsonObject.put("delCustomerName", "")
-            rootJsonObject.put("delAddress1", `object`.optString("delAddress1"))
-            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
-            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
-            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
-            rootJsonObject.put("remark", `object`.optString("remark"))
-            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
-            rootJsonObject.put("taxType", `object`.optString("taxType"))
-            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
-            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
-            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
+            rootJsonObject.put("delAddress1", "")
+            rootJsonObject.put("delAddress2 ", "")
+            rootJsonObject.put("delAddress3 ", "")
+            rootJsonObject.put("delPhoneNo", "")
+            rootJsonObject.put("remark", "")
+            rootJsonObject.put("haveTax", custHavetaxShared)
+            rootJsonObject.put("taxType", custTaxTypeShared)
+            rootJsonObject.put("taxPerc", custTaxPercentShared)
+            rootJsonObject.put("taxCode", custTaxCodeShared)
+            rootJsonObject.put("currencyCode", "")
             rootJsonObject.put("currencyValue", "")
             rootJsonObject.put("CurrencyRate", "1")
-            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
+            rootJsonObject.put("postalCode", "")
             rootJsonObject.put("createUser", username)
             rootJsonObject.put("modifyUser", username)
             rootJsonObject.put("companyName", companyName)
@@ -2070,8 +2102,10 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
                 invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
                 invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                invoiceObject.put("taxType", `object`.optString("taxType"))
-                invoiceObject.put("taxPerc", `object`.optString("taxPercentage"))
+                invoiceObject.put("taxType", custTaxTypeShared)
+                invoiceObject.put("taxPerc", custTaxPercentShared)
+                invoiceObject.put("taxCode", custTaxCodeShared)
+
                 var return_subtotal = 0.0
                 if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
                     return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
@@ -2091,7 +2125,6 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 }
                 invoiceObject.put("returnSubTotal", return_subtotal.toString() + "")
                 invoiceObject.put("returnNetTotal", return_subtotal.toString() + "")
-                invoiceObject.put("taxCode", `object`.optString("taxCode"))
                 invoiceObject.put("uomCode", model.uomCode)
                 invoiceObject.put("itemRemarks", "")
                 invoiceObject.put("locationCode", locationCode)
@@ -2825,9 +2858,11 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         val progressDialog = ProgressDialog(applicationContext)
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Customer Details Loading...")
-        if (isloader) {
-            progressDialog.show()
-        }
+//        if (isloader) {
+//            progressDialog.show()
+//        }
+        CommonMethods.showProgressDialog(this)
+
         val jsonObjectRequest: JsonObjectRequest = object : JsonObjectRequest(Method.POST,
             url,
             jsonObject,
@@ -2867,6 +2902,27 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                             customerList.add(model)
                             // }
                         }
+                        if(customerList.size > 0){
+                            if(!selectCustomerId.equals(customerList.get(0).customerCode)){
+                                Toast.makeText(this, "different customer!"
+                                        +selectCustomerId+".."+customerList.get(0).customerCode, Toast.LENGTH_SHORT).show()
+                            }
+
+                            Log.w("custResNAme",""+customerList.get(0).customerName+
+                                    ".. "+customerList.get(0).customerCode);
+                            sharedPreferenceUtil!!.setStringPreference(
+                                sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, customerList.get(0).customerName)
+                            sharedPreferenceUtil!!.setStringPreference(
+                                sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, customerList.get(0).customerCode)
+                            sharedPreferenceUtil!!.setStringPreference(
+                                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, customerList.get(0).taxType)
+                            sharedPreferenceUtil!!.setStringPreference(
+                                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, customerList.get(0).taxPerc)
+                            sharedPreferenceUtil!!.setStringPreference(
+                                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, customerList.get(0).taxCode)
+                            sharedPreferenceUtil!!.setStringPreference(
+                                sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX,  customerList.get(0).haveTax)
+                        }
                     } else {
                         Toast.makeText(
                             applicationContext,
@@ -2874,6 +2930,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         ).show()
                     }
+                    CommonMethods.cancelProgressDialog()
                     // pDialog.dismiss();
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -2881,6 +2938,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             }, Response.ErrorListener { error: VolleyError ->
                 // Do something when error occurred
                 //  pDialog.dismiss();
+                CommonMethods.cancelProgressDialog()
                 Log.w("Error_throwing:", error.toString())
                 progressDialog.dismiss()
             }) {

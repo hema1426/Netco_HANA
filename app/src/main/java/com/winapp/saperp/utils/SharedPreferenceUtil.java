@@ -22,6 +22,12 @@ public class SharedPreferenceUtil {
     public  String KEY_LAST_PRICE = "last_price";
     public  String KEY_TOTAL_SALES = "total_sales";
     public  String KEY_USER_MIDDLE_NAME = "user_middle_name";
+    public  String KEY_CUSTOMER_NAME = "cust_name";
+    public  String KEY_CUSTOMER_CODE = "cust_code";
+    public  String KEY_CUSTOMER_TAXTYPE = "cust_taxtype";
+    public  String KEY_CUSTOMER_TAXPERCENTAGE = "cust_taxpercent";
+    public  String KEY_CUSTOMER_TAXCODE = "cust_taxcode";
+    public  String KEY_CUSTOMER_HAVETAX = "cust_havetax";
 //    public  String KEY_ADMIN_PERMISSION = "admin_permission";
 
     private static SharedPreferences sharedPreferences;

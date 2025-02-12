@@ -545,21 +545,22 @@ class DashboardActivity : NavigationActivity() {
             }
         }
     }
-
     fun doWork() {
         runOnUiThread {
             try {
+                val format = "%1$02d" // two digits
+//                timeText!!.setText(String.format(format, time))
+
                 val dt = Date()
-                val hours = dt.hours
-                val minutes = dt.minutes
-                val seconds = dt.seconds
+                val hours = String.format(format, dt.hours)
+                val minutes = String.format(format, dt.minutes)
+                val seconds = String.format(format, dt.seconds)
                 val curTime = "$hours : $minutes : $seconds"
                 timeText!!.text = curTime
             } catch (e: Exception) {
             }
         }
     }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)

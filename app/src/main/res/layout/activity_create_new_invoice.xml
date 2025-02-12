@@ -534,6 +534,7 @@
                                 android:inputType="number"
                                 android:maxLength="6"
                                 android:maxLines="1"
+                                android:imeOptions="actionDone"
                                 android:padding="5dp"
                                 android:selectAllOnFocus="true"
                                 android:textColor="#212121"

@@ -1,6 +1,6 @@
-TRANS_ORIENT_DEMO
-TO01
-12345
+TRANS_ORIENT_DEMO and live
+V1
+1234
 ------
 Username: V1  --dec
 Password: 1234
@@ -47,7 +47,10 @@ fuxin
 Username - ctc230004.1
 Pwd - 1234
 c12345
-
+other fuxin
+---------
+ctc230004.2
+1234
 
 good receipt -- stock adjustment
 invertory --

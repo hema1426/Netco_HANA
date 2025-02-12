@@ -272,7 +272,8 @@ public class UnpaidInvoices extends Fragment {
             jsonObject.put("ToDate", "");
             jsonObject.put("DocStatus","");
             String url = Utils.getBaseUrl(getActivity()) + "InvoiceList";
-            Log.w("Given_url:", url);
+
+            Log.w("unpaidInvoices:", url+"/"+jsonObject.toString());
             pDialog = new SweetAlertDialog(getActivity(), SweetAlertDialog.PROGRESS_TYPE);
             pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
             pDialog.setTitleText("Getting All Invoices...");

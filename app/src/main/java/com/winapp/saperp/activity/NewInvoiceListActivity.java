@@ -1694,15 +1694,19 @@ public class NewInvoiceListActivity extends NavigationActivity
                                         double priceValue = 0.0;
 
                                         double net_qty = Double.parseDouble(cqty) - Double.parseDouble(return_qty);
-                                        String price_value = object.optString("price");
+                                        String price_value = "0.0" ;
+                                        String gst_value = "0.0" ;
                                         //String price_value=object.optString("grossPrice");
                                         if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            gst_value = object.optString("totalTax");
+
                                             if(tax_type.equalsIgnoreCase("E")){
                                                 price_value=object.optString("price");
                                             }else{
                                                 price_value=object.optString("grossPrice");
                                             }
                                         }else{
+                                            gst_value = object.optString("priceWithGST");
                                             price_value=object.optString("price");
                                         }
 
@@ -1730,7 +1734,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                                                 object.optString("stockInHand"),
                                                 object.optString("total"),
                                                 object.optString("subTotal"),
-                                                object.optString("priceWithGST"),
+                                                gst_value,
                                                 object.optString("netTotal"),
                                                 object.optString("itemDiscount"),
                                                 salesObject.optString("billDiscount"),
@@ -3513,7 +3517,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                                             invoiceListModel.setPricevalue(String.valueOf(price));
 
                                         }else{
-                                            invoiceListModel.setPricevalue(object.optString("grossPrice"));
+                                            invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
                                             price = Double.parseDouble(detailObject.optString("grossPrice"));
                                         }
                                     }else{

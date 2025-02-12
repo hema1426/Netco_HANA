@@ -410,6 +410,7 @@ public class SalesOrderPrintPreview extends AppCompatActivity implements OnPageC
                                         price = Double.parseDouble(detailObject.optString("price"));
                                         salesListModel.setPricevalue(String.valueOf(price));
                                     }
+
                                     double nettotal=qty * price;
                                     salesListModel.setTotal(String.valueOf(nettotal));
                                  //   salesListModel.setPricevalue(String.valueOf(price));
@@ -452,10 +453,23 @@ public class SalesOrderPrintPreview extends AppCompatActivity implements OnPageC
                                         salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
 
                                         double qty1 = Double.parseDouble(detailObject.optString("ReturnQty"));
-                                        double price1 = Double.parseDouble(detailObject.optString("Price"));
+                                        double price1 = 0.0;
+
+                                        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                            if(object.optString("taxType").equalsIgnoreCase("E")){
+                                                price1 = Double.parseDouble(detailObject.optString("price"));
+                                                salesListModel.setPricevalue(String.valueOf(price1));
+                                            }else{
+                                                price1 = Double.parseDouble(detailObject.optString("grossPrice"));
+                                                salesListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                            }
+                                        }else{
+                                            price1 = Double.parseDouble(detailObject.optString("price"));
+                                            salesListModel.setPricevalue(String.valueOf(price1));
+                                        }
                                         double nettotal1 = qty1 * price1;
                                         salesListModel.setTotal(String.valueOf(nettotal1));
-                                        salesListModel.setPricevalue(String.valueOf(price1));
+                                        //salesListModel.setPricevalue(String.valueOf(price1));
 
                                         salesListModel.setUomCode(detailObject.optString("uomCode"));
                                         salesListModel.setCartonPrice(detailObject.optString("CartonPrice"));

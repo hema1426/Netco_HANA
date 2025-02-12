@@ -57,6 +57,7 @@
         tools:listitem="@layout/cash_collection_invoice_items"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/lit_grey_new"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -115,6 +116,7 @@
             android:layout_width="match_parent"
             android:id="@+id/sales_return_view"
             android:visibility="gone"
+            android:background="@color/lit_grey_new"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

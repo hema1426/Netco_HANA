@@ -406,15 +406,15 @@ public class InvoicePrintPreviewActivity extends AppCompatActivity implements On
 
                                     if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
                                         if(object.optString("taxType").equalsIgnoreCase("E")){
-                                            invoiceListModel.setPricevalue(String.valueOf(price));
                                             price = Double.parseDouble(detailObject.optString("price"));
+                                            invoiceListModel.setPricevalue(String.valueOf(price));
                                         }else{
                                             invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
                                             price = Double.parseDouble(detailObject.optString("grossPrice"));
                                         }
                                     }else{
-                                        invoiceListModel.setPricevalue(String.valueOf(price));
                                         price = Double.parseDouble(detailObject.optString("price"));
+                                        invoiceListModel.setPricevalue(String.valueOf(price));
                                     }
 
                                     double nettotal = qty * price;

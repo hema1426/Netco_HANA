@@ -1,5 +1,7 @@
 package com.winapp.saperp.adapter;
 
+import static com.winapp.saperp.activity.NewInvoiceListActivity.shortCodeStr;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
@@ -384,12 +386,24 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                                 invoiceListModel.setUomCode(detailObject.optString("uomCode"));
 
                                 double qty = Double.parseDouble(detailObject.optString("quantity"));
-                                double price = Double.parseDouble(detailObject.optString("price"));
+                                double price = 0.0 ;
 
+                                if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
+                                    if(object.optString("taxType").equalsIgnoreCase("E")){
+                                        price = Double.parseDouble(detailObject.optString("price"));
+                                        invoiceListModel.setPricevalue(String.valueOf(price));
+                                    }else{
+                                        invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
+                                        price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                    }
+                                }else{
+                                    price = Double.parseDouble(detailObject.optString("price"));
+                                    invoiceListModel.setPricevalue(String.valueOf(price));
+                                }
                                 double nettotal = qty * price;
                                 // invoiceListModel.setTotal(String.valueOf(nettotal));
                                 invoiceListModel.setTotal(detailObject.optString("total"));
-                                invoiceListModel.setPricevalue(String.valueOf(price));
+                              //  invoiceListModel.setPricevalue(String.valueOf(price));
 
                                 invoiceListModel.setUomCode(detailObject.optString("uomCode"));
                                 invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));

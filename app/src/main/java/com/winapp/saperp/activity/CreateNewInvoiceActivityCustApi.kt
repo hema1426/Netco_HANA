@@ -80,7 +80,6 @@ import com.winapp.saperp.adapter.DuplicateInvoiceAdapter
 import com.winapp.saperp.adapter.NewProductSummaryAdapter
 import com.winapp.saperp.adapter.SelectProductAdapter
 import com.winapp.saperp.db.DBHelper
-import com.winapp.saperp.fragments.ProductsFragment
 import com.winapp.saperp.model.AppUtils
 import com.winapp.saperp.model.CreateInvoiceModel
 import com.winapp.saperp.model.CustomerDetails
@@ -129,7 +128,7 @@ import java.util.Locale
 import java.util.Objects
 
 
-class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
+class CreateNewInvoiceActivityCustApi : AppCompatActivity() , OnClickListener {
 
     private var returnLayout: LinearLayout? = null
     private var showHideButton: ImageView? = null
@@ -378,13 +377,6 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     private var billDiscApiStr: String = "0.00"
     private var isFOCStr: String? = ""
     private var isMailId: String? = ""
-    private var custNameShared: String? = ""
-    private var custCodeShared: String? = ""
-    private var custHavetaxShared: String? = ""
-    private var custTaxCodeShared: String? = ""
-    private var custTaxTypeShared: String? = ""
-    private var custTaxPercentShared: String? = ""
-
 
     @SuppressLint("LogNotTimber", "ClickableViewAccessibility", "SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.O)
@@ -505,12 +497,6 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         products = ArrayList()
         productAutoComplete!!.clearFocus()
         imageString = ""
-        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
-        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
-        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
-        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
-        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
-        sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
         //  barcodeText!!.requestFocus()
         getCurrentLocation()
         bill_disc_amt_ed!!.isEnabled = false
@@ -993,20 +979,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             Log.w("customerRes1",""+customerResponse.optJSONArray("responseData"))
             if (detailsArr != null) {
                 if (!customerResponse.optJSONArray("responseData")!!.equals("null") &&
-                    detailsArr.length() > 0) {
-                    var custCode = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
-
-                    if(selectCustomerId.equals(custCode)) {
-                        if (addProduct!!.text.contains("Update")) {
-                                Toast.makeText(this, "Update previous product", Toast.LENGTH_SHORT)
-                                    .show()
-                            } else {
-                                viewCloseBottomSheet()
-                            }
-                        }else{
-                        Toast.makeText(this, "different customer!" + selectCustomerId + ".." + custCode, Toast.LENGTH_SHORT).show()
-
+                    detailsArr.length() > 0
+                ) {
+                    if (addProduct!!.text.contains("Update")) {
+                        Toast.makeText(this, "Update previous product", Toast.LENGTH_SHORT).show()
+                    } else {
+                        viewCloseBottomSheet()
                     }
                 }else{
                     Toast.makeText(this, "Customer detail is empty!"+selectCustomerId, Toast.LENGTH_SHORT).show()
@@ -1747,7 +1725,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         // Setting the sorting
         sortButton!!.setOnClickListener(View.OnClickListener {
             val menuItemView = findViewById<View>(R.id.fab)
-            val popupMenu = PopupMenu(this@CreateNewInvoiceActivity, menuItemView)
+            val popupMenu = PopupMenu(this@CreateNewInvoiceActivityCustApi, menuItemView)
             popupMenu.menuInflater.inflate(R.menu.sort_menu, popupMenu.menu)
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
@@ -1909,7 +1887,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         mMonth = c[Calendar.MONTH]
         mDay = c[Calendar.DAY_OF_MONTH]
         val datePickerDialog = DatePickerDialog(
-            this@CreateNewInvoiceActivity,
+            this@CreateNewInvoiceActivityCustApi,
             { view, year, monthOfYear, dayOfMonth ->
                 dateEditext!!.text = dayOfMonth.toString() + "/" + (monthOfYear + 1) + "/" + year
                 val dateConvert = dayOfMonth.toString() + "-" + (monthOfYear + 1) + "-" + year
@@ -2067,7 +2045,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     }
 
     fun showMinimumSellingpriceAlert(sellingPrice: String) {
-        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
         builder1.setTitle("Warning !")
         builder1.setMessage(
             productName + "-" + "Minimum Selling Price is : $ " + Utils.twoDecimalPoint(
@@ -2100,7 +2078,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     }
 
     fun showExistingProductAlert(productId: String?, productName: String?) {
-        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
         builder1.setTitle("Warning !")
         builder1.setMessage("$productName - $productId\nAlready Exist Do you want to replace ? ")
         builder1.setCancelable(false)
@@ -2489,7 +2467,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     searchProduct!!.isEnabled = true
                     down_menu!!.isVisible = true
 
-                    Utils.refreshActionBarMenu(this@CreateNewInvoiceActivity)
+                    Utils.refreshActionBarMenu(this@CreateNewInvoiceActivityCustApi)
                 }
                 .showCancelButton(true)
                 .setCancelText("No")
@@ -2622,7 +2600,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         startActivityForResult(pickPhoto, REQUEST_GALLERY_PHOTO)
     }
     fun showImage() {
-        val builder = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+        val builder = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.image_view_layout, null)
         val imageView = dialogView.findViewById<ImageView>(R.id.invoice_image)
@@ -2669,7 +2647,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             "Take Photo",  /* "Choose from Library",*/
             "Cancel"
         )
-        val builder = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+        val builder = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
         builder.setItems(
             items
         ) { dialog: DialogInterface, item: Int ->
@@ -4059,29 +4037,9 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         //  "taxName":"Sales Standard Rated Supplier SR","taxPercentage":"7.000000","balance":"21.600000","outstandingAmount":"128.400000",
         //  "address":"","street":"","city":"","state":"","zipCode":"","country":"","createDate":"13\/07\/2021","updateDate":"30\/07\/2021",
         //  "active":"N","remark":""}]}
-
-//        val detailsArray = customerResponse.optJSONArray("responseData")
-//        val `object` = detailsArray.optJSONObject(0)
-
+        val detailsArray = customerResponse.optJSONArray("responseData")
+        val `object` = detailsArray.optJSONObject(0)
         try {
-            custNameShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
-
-            custCodeShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
-
-            custHavetaxShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
-
-            custTaxCodeShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
-
-            custTaxTypeShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
-
-            custTaxPercentShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
-
             // Sales Header Add values
             /*  if (activityFrom.equals("InvoiceEdit")){
                 rootJsonObject.put("invoiceNumber", AddInvoiceActivity.editInvoiceNumber);
@@ -4117,12 +4075,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             rootJsonObject.put("customerReferenceNo", orderNoText!!.text.toString())
             rootJsonObject.put("soDate", currentDate)
             rootJsonObject.put("currentDateTime", currentSaveDateTime)
-            rootJsonObject.put("customerCode", custCodeShared)
-            rootJsonObject.put("customerName", custNameShared)
-            rootJsonObject.put("address","")
-            rootJsonObject.put("street", "")
-            rootJsonObject.put("city", "")
-            rootJsonObject.put("creditLimit", "")
+            rootJsonObject.put("customerCode", `object`["customerCode"])
+            rootJsonObject.put("customerName", `object`["customerName"])
+            rootJsonObject.put("address", `object`["address"])
+            rootJsonObject.put("street", `object`["street"])
+            rootJsonObject.put("city", `object`["city"])
+            rootJsonObject.put("creditLimit", `object`["creditLimit"])
             rootJsonObject.put("remark", remarkStr)
             rootJsonObject.put("currencyName", "Singapore Dollar")
             rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
@@ -4136,17 +4094,18 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode())
             rootJsonObject.put("delCustomerName", "")
             rootJsonObject.put("delAddress1", deliverAddrNameStr)
-            rootJsonObject.put("delAddress2 ", "")
-            rootJsonObject.put("delAddress3 ","")
-            rootJsonObject.put("delPhoneNo", "")
-            rootJsonObject.put("haveTax", custHavetaxShared)
-            rootJsonObject.put("taxType", custTaxTypeShared)
-            rootJsonObject.put("taxPerc", custTaxPercentShared)
-            rootJsonObject.put("taxCode", custTaxCodeShared)
-            rootJsonObject.put("currencyCode", "")
+            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
+            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
+            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
+            rootJsonObject.put("remark", `object`.optString("remark"))
+            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
+            rootJsonObject.put("taxType", `object`.optString("taxType"))
+            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
+            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
+            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
             rootJsonObject.put("currencyValue", "")
             rootJsonObject.put("CurrencyRate", "1")
-            rootJsonObject.put("postalCode", "")
+            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
             rootJsonObject.put("createUser", username)
             rootJsonObject.put("modifyUser", username)
             rootJsonObject.put("companyName", companyName)
@@ -4182,9 +4141,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                 invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
                 invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
                 invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                invoiceObject.put("taxType", custTaxTypeShared)
-                invoiceObject.put("taxPerc", custTaxPercentShared)
-                invoiceObject.put("taxCode", custTaxCodeShared)
+                invoiceObject.put("taxType", `object`.optString("taxType"))
+                invoiceObject.put("taxPerc", `object`.optString("taxPercentage"))
                 var return_subtotal = 0.0
                 if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
                     return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
@@ -4206,6 +4164,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
 
                 invoiceObject.put("returnSubTotal", return_subtotal.toString() + "")
                 invoiceObject.put("returnNetTotal", return_subtotal.toString() + "")
+                invoiceObject.put("taxCode", `object`.optString("taxCode"))
                 invoiceObject.put("uomCode", model.uomCode)
                 invoiceObject.put("itemRemarks", "")
                 invoiceObject.put("locationCode", locationCode)
@@ -5072,7 +5031,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             }
             R.id.action_scan_menu -> {
                 scannedBarcode = ""
-                val intent = Intent(this@CreateNewInvoiceActivity, BarCodeScanner::class.java)
+                val intent = Intent(this@CreateNewInvoiceActivityCustApi, BarCodeScanner::class.java)
                 startActivityForResult(intent, RESULT_CODE)
                 true
             }
@@ -5184,7 +5143,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     }
 
     fun showAlertForCreditLimit() {
-        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
         builder1.setTitle("Information")
         builder1.setMessage(
             customerNameText!!.getText()
@@ -5203,7 +5162,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     fun showSaveAlert() {
        // try {
             // create an alert builder
-            val builder = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+            val builder = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
             // set the custom layout
             builder.setCancelable(false)
             val customLayout = layoutInflater.inflate(R.layout.invoice_save_option, null)
@@ -5429,9 +5388,6 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
 
                             if (isSignatureSetting) {
                                 if (signatureString != null && !signatureString!!.isEmpty()) {
-//                                var custCode =   sharedPreferenceUtil!!.getStringPreference(
-//                                        sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
-
                                     createInvoiceJson(noOfCopy.text.toString().toInt())
                                 } else {
                                     Toast.makeText(
@@ -5479,7 +5435,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     fun saveSalesOrder(jsonBody: JSONObject, action: String, copy: Int) {
         try {
             pDialog =
-                SweetAlertDialog(this@CreateNewInvoiceActivity, SweetAlertDialog.PROGRESS_TYPE)
+                SweetAlertDialog(this@CreateNewInvoiceActivityCustApi, SweetAlertDialog.PROGRESS_TYPE)
             pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
             if (action == "SalesOrder") {
                 pDialog!!.setTitleText("Saving Sales Order...")
@@ -5983,29 +5939,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                                         `object`.optString("outstandingAmount")
                                 }
                                 customerList.add(model)
-
                                 // }
-                            }
-                            if(customerList.size > 0){
-                                if(!selectCustomerId.equals(customerList.get(0).customerCode)){
-                                    Toast.makeText(this, "different customer!"
-                                            +selectCustomerId+".."+customerList.get(0).customerCode, Toast.LENGTH_SHORT).show()
-                                }
-
-                                Log.w("custResNAme",""+customerList.get(0).customerName+
-                                        ".. "+customerList.get(0).customerCode);
-                                sharedPreferenceUtil!!.setStringPreference(
-                                    sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, customerList.get(0).customerName)
-                                sharedPreferenceUtil!!.setStringPreference(
-                                    sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, customerList.get(0).customerCode)
-                                sharedPreferenceUtil!!.setStringPreference(
-                                    sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, customerList.get(0).taxType)
-                                sharedPreferenceUtil!!.setStringPreference(
-                                    sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, customerList.get(0).taxPerc)
-                                sharedPreferenceUtil!!.setStringPreference(
-                                    sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, customerList.get(0).taxCode)
-                                sharedPreferenceUtil!!.setStringPreference(
-                                    sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX,  customerList.get(0).haveTax)
                             }
                         } else {
                             Toast.makeText(
@@ -6158,15 +6092,15 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         val intent: Intent
         intent = if (activityFrom == "iv" || activityFrom == "Duplicate"
             || activityFrom == "ConvertInvoiceFromDO" || activityFrom == "ReOrderInvoice") {
-            Intent(this@CreateNewInvoiceActivity, NewInvoiceListActivity::class.java)
+            Intent(this@CreateNewInvoiceActivityCustApi, NewInvoiceListActivity::class.java)
         } else {
-            Intent(this@CreateNewInvoiceActivity, SalesOrderListActivity::class.java)
+            Intent(this@CreateNewInvoiceActivityCustApi, SalesOrderListActivity::class.java)
         }
         startActivity(intent)
         finish()
     }
     fun getCurrentLocation() {
-        locationTrack = LocationTrack(this@CreateNewInvoiceActivity)
+        locationTrack = LocationTrack(this@CreateNewInvoiceActivityCustApi)
         if (locationTrack!!.canGetLocation()) {
             val longitude: Double = locationTrack!!.getLongitude()
             val latitude: Double = locationTrack!!.getLatitude()
@@ -6175,7 +6109,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             Log.w("longInv",""+longitude)
             if(current_latitude != null && current_latitude.isNotEmpty()) {
                 val currentAddress =
-                    Utils.getCompleteAddress(this@CreateNewInvoiceActivity, latitude, longitude)
+                    Utils.getCompleteAddress(this@CreateNewInvoiceActivityCustApi, latitude, longitude)
                 if (currentAddress != null && !currentAddress.isEmpty()) {
                     currentAddressl = currentAddress
                     Log.w("longAddrInv", "" + currentAddressl)
@@ -6191,7 +6125,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     fun setCurrentLocation(latitude: Double, longitude: Double) {
         currentLocationLatitude = latitude
         currentLocationLongitude = longitude
-        val currentAddress = Utils.getCompleteAddress(this@CreateNewInvoiceActivity, latitude, longitude)
+        val currentAddress = Utils.getCompleteAddress(this@CreateNewInvoiceActivityCustApi, latitude, longitude)
         if (currentAddress != null && !currentAddress.isEmpty()) {
            // locationText.setText(currentAddress)
         }
@@ -6227,7 +6161,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     }
 
     fun showDeleteAlert() {
-        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivity)
+        val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivityCustApi)
         builder1.setMessage("Data Will be Cleared are you sure want to back?")
         builder1.setCancelable(false)
         builder1.setPositiveButton(
@@ -6740,6 +6674,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         requestQueue.add(jsonObjectRequest)
     }
     fun createInvoiceJson(copy: Int) {
+        val detailsArr = customerResponse.optJSONArray("responseData")
+        Log.w("customerResponsekk",""+customerResponse.optJSONArray("responseData"))
+        if (detailsArr != null) {
+            if(!customerResponse.optJSONArray("responseData")!!.equals("null") &&
+                detailsArr.length() > 0){
+
                 // JSONObject rootJsonObject = new JSONObject();
                 val rootJsonObject = JSONObject()
                 val invoiceDetailsArray = JSONArray()
@@ -6761,8 +6701,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     billDisPercent_share_api = sharedPref_billdisc!!.getString("billDisc_percent", "")
                 }
 
-//                val detailsArray = customerResponse.optJSONArray("responseData")
-//                val custObj = detailsArray.optJSONObject(0)
+                val detailsArray = customerResponse.optJSONArray("responseData")
+                val custObj = detailsArray.optJSONObject(0)
 
 //        if (detailsArray != null) {
 //            if(!customerResponse.optJSONArray("responseData")!!.equals("null") &&
@@ -6847,26 +6787,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                         rootJsonObject.put("soNo", "")
                         rootJsonObject.put("doNo", "")
                         rootJsonObject.put("invoiceDate", inDate)
+
                     }
-
-                    custNameShared = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
-
-                    custCodeShared = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
-
-                    custHavetaxShared = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
-
-                    custTaxCodeShared = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
-
-                    custTaxTypeShared = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
-
-                    custTaxPercentShared = sharedPreferenceUtil!!.getStringPreference(
-                        sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
-
                     if (currentSaveDateTime == null || currentSaveDateTime!!.isEmpty()) {
                         val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
                         val currentDateandTime = sdf.format(Date())
@@ -6876,12 +6798,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     Log.w("remarkkc  ", "..$remarkStr")
                     rootJsonObject.put("customerReferenceNo", orderNoText!!.text.toString())
                     rootJsonObject.put("currentDateTime", currentSaveDateTime)
-                    rootJsonObject.put("customerCode", custCodeShared)
-                    rootJsonObject.put("customerName", custNameShared)
-                    rootJsonObject.put("address", "")
-                    rootJsonObject.put("street", "")
-                    rootJsonObject.put("city","")
-                    rootJsonObject.put("creditLimit", "")
+                    rootJsonObject.put("customerCode", custObj["customerCode"])
+                    rootJsonObject.put("customerName", custObj["customerName"])
+                    rootJsonObject.put("address", custObj["address"])
+                    rootJsonObject.put("street", custObj["street"])
+                    rootJsonObject.put("city", custObj["city"])
+                    rootJsonObject.put("creditLimit", custObj["creditLimit"])
                     rootJsonObject.put("Remark", remarkStr)
                     rootJsonObject.put("currencyName", "Singapore Dollar")
                     rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
@@ -6926,19 +6848,19 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode())
                     rootJsonObject.put("delCustomerName", "")
                     rootJsonObject.put("delAddress1", deliverAddrNameStr)
-                    rootJsonObject.put("delAddress2 ", "")
-                    rootJsonObject.put("delAddress3 ", "")
-                    rootJsonObject.put("delPhoneNo", "")
-                    rootJsonObject.put("remark", "")
-                    rootJsonObject.put("haveTax", custHavetaxShared)
-                    rootJsonObject.put("taxType", custTaxTypeShared)
-                    rootJsonObject.put("taxPerc", custTaxPercentShared)
-                    rootJsonObject.put("taxCode", custTaxCodeShared)
-                    rootJsonObject.put("currencyCode","")
+                    rootJsonObject.put("delAddress2 ", custObj.optString("delAddress2"))
+                    rootJsonObject.put("delAddress3 ", custObj.optString("delAddress3"))
+                    rootJsonObject.put("delPhoneNo", custObj.optString("contactNo"))
+                    rootJsonObject.put("remark", custObj.optString("remark"))
+                    rootJsonObject.put("haveTax", custObj.optString("haveTax"))
+                    rootJsonObject.put("taxType", custObj.optString("taxType"))
+                    rootJsonObject.put("taxPerc", custObj.optString("taxPercentage"))
+                    rootJsonObject.put("taxCode", custObj.optString("taxCode"))
+                    rootJsonObject.put("currencyCode",custObj.optString("currencyCode"))
                     rootJsonObject.put("currencyValue", "")
                     rootJsonObject.put("CurrencyRate", "1")
                     rootJsonObject.put("status", "0")
-                    rootJsonObject.put("postalCode", "")
+                    rootJsonObject.put("postalCode", custObj.optString("postalCode"))
                     rootJsonObject.put("createUser", username)
                     rootJsonObject.put("modifyUser", username)
                     rootJsonObject.put("companyName", companyName)
@@ -6979,8 +6901,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                         invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
                         invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
                         invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                        invoiceObject.put("taxType", custTaxTypeShared)
-                        invoiceObject.put("taxPerc", custTaxPercentShared)
+                        invoiceObject.put("taxType", custObj.optString("taxType"))
+                        invoiceObject.put("taxPerc", custObj.optString("taxPercentage"))
                         var return_subtotal = 0.0
                         if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
                             return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
@@ -7006,7 +6928,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                         }
                         invoiceObject.put("returnSubTotal", Utils.twoDecimalPoint(return_subtotal))
                         invoiceObject.put("returnNetTotal", Utils.twoDecimalPoint(return_subtotal))
-                        invoiceObject.put("taxCode",custTaxCodeShared)
+                        invoiceObject.put("taxCode", custObj.optString("taxCode"))
                         invoiceObject.put("returnReason", "")
                         invoiceObject.put("uomCode", model.uomCode)
                         invoiceObject.put("itemRemarks", "")
@@ -7055,14 +6977,15 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     Log.w("Error1s:", Objects.requireNonNull(e.message!!))
                 }
 
-    }
 
-    override fun onResume() {
-        dbHelper!!.removeAllReturn()
-        dbHelper!!.removeAllInvoiceItems()
-        dbHelper!!.removeAllItems()
-        Utils.clearCustomerSession(this)
-        super.onResume()
+            }
+            else{
+                Toast.makeText(this, "Customer detail is empty1!", Toast.LENGTH_SHORT).show()
+            }
+        }else{
+            Toast.makeText(this, "Customer detail is empty!", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     fun createConvert_InvoiceJson(copy: Int) {
@@ -7087,26 +7010,9 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             billDisPercent_share_api = sharedPref_billdisc!!.getString("billDisc_percent", "")
         }
 
-//        Log.w("customerResponsekk",""+customerResponse.optJSONArray("responseData"))
-//        val detailsArray = customerResponse.optJSONArray("responseData")
-//        val `object` = detailsArray.optJSONObject(0)
-        custNameShared = sharedPreferenceUtil!!.getStringPreference(
-            sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
-
-        custCodeShared = sharedPreferenceUtil!!.getStringPreference(
-            sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
-
-        custHavetaxShared = sharedPreferenceUtil!!.getStringPreference(
-            sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
-
-        custTaxCodeShared = sharedPreferenceUtil!!.getStringPreference(
-            sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
-
-        custTaxTypeShared = sharedPreferenceUtil!!.getStringPreference(
-            sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
-
-        custTaxPercentShared = sharedPreferenceUtil!!.getStringPreference(
-            sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
+        Log.w("customerResponsekk",""+customerResponse.optJSONArray("responseData"))
+        val detailsArray = customerResponse.optJSONArray("responseData")
+        val `object` = detailsArray.optJSONObject(0)
 //        if(customerResponse.optJSONArray("responseData")!!.equals("null")){
 //            Toast.makeText(this, "Customer detail is empty!", Toast.LENGTH_SHORT).show()
 //        }
@@ -7152,12 +7058,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             Log.w("remarkkc  ", "..$remarkStr")
             rootJsonObject.put("customerReferenceNo", orderNoText!!.text.toString())
             rootJsonObject.put("currentDateTime", currentSaveDateTime)
-            rootJsonObject.put("customerCode", custCodeShared)
-            rootJsonObject.put("customerName", custNameShared)
-            rootJsonObject.put("address", "")
-            rootJsonObject.put("street", "")
-            rootJsonObject.put("city", "")
-            rootJsonObject.put("creditLimit", "")
+            rootJsonObject.put("customerCode", `object`["customerCode"])
+            rootJsonObject.put("customerName", `object`["customerName"])
+            rootJsonObject.put("address", `object`["address"])
+            rootJsonObject.put("street", `object`["street"])
+            rootJsonObject.put("city", `object`["city"])
+            rootJsonObject.put("creditLimit", `object`["creditLimit"])
             rootJsonObject.put("Remark", remarkStr)
             rootJsonObject.put("currencyName", "Singapore Dollar")
             rootJsonObject.put("taxTotal", taxValueText!!.text.toString())
@@ -7202,19 +7108,19 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode())
             rootJsonObject.put("delCustomerName", "")
             rootJsonObject.put("delAddress1", deliverAddrNameStr)
-            rootJsonObject.put("delAddress2 ", "")
-            rootJsonObject.put("delAddress3 ", "")
-            rootJsonObject.put("delPhoneNo", "")
-          rootJsonObject.put("remark", "")
-            rootJsonObject.put("haveTax", custHavetaxShared)
-            rootJsonObject.put("taxType", custTaxTypeShared)
-            rootJsonObject.put("taxPerc", custTaxPercentShared)
-            rootJsonObject.put("taxCode", custTaxCodeShared)
-            rootJsonObject.put("currencyCode", "")
+            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
+            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
+            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
+          rootJsonObject.put("remark", `object`.optString("remark"))
+            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
+            rootJsonObject.put("taxType", `object`.optString("taxType"))
+            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
+            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
+            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
             rootJsonObject.put("currencyValue", "")
             rootJsonObject.put("CurrencyRate", "1")
             rootJsonObject.put("status", "0")
-            rootJsonObject.put("postalCode", "")
+            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
             rootJsonObject.put("createUser", username)
             rootJsonObject.put("modifyUser", username)
             rootJsonObject.put("companyName", companyName)
@@ -7254,9 +7160,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
                     invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
                     invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                    invoiceObject.put("taxType", custTaxTypeShared)
-                    invoiceObject.put("taxPerc", custTaxPercentShared)
-                    invoiceObject.put("taxCode", custTaxCodeShared)
+                    invoiceObject.put("taxType", `object`.optString("taxType"))
+                    invoiceObject.put("taxPerc", `object`.optString("taxPercentage"))
                     var return_subtotal = 0.0
                     if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
                         return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
@@ -7279,6 +7184,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     }
                     invoiceObject.put("returnSubTotal", Utils.twoDecimalPoint(return_subtotal))
                     invoiceObject.put("returnNetTotal", Utils.twoDecimalPoint(return_subtotal))
+                    invoiceObject.put("taxCode", `object`.optString("taxCode"))
                     invoiceObject.put("returnReason", "")
                     invoiceObject.put("uomCode", model.uomCode)
                     invoiceObject.put("itemRemarks", "")
@@ -7333,9 +7239,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     invoiceObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
                     invoiceObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
                     invoiceObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                    invoiceObject.put("taxType", custTaxTypeShared)
-                    invoiceObject.put("taxPerc", custTaxPercentShared)
-                    invoiceObject.put("taxCode", custTaxCodeShared)
+                    invoiceObject.put("taxType", `object`.optString("taxType"))
+                    invoiceObject.put("taxPerc", `object`.optString("taxPercentage"))
                     var return_subtotal = 0.0
                     if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
                         return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
@@ -7361,6 +7266,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                     }
                     invoiceObject.put("returnSubTotal", Utils.twoDecimalPoint(return_subtotal))
                     invoiceObject.put("returnNetTotal", Utils.twoDecimalPoint(return_subtotal))
+                    invoiceObject.put("taxCode", `object`.optString("taxCode"))
                     invoiceObject.put("returnReason", "")
                     invoiceObject.put("uomCode", model.uomCode)
                     invoiceObject.put("itemRemarks", "")
@@ -7418,26 +7324,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
         var deliveryObject = JSONObject()
         try {
             // Sales Header Add values
-//            val detailsArray = customerResponse.optJSONArray("responseData")
-//            val `object` = detailsArray.optJSONObject(0)
-            custNameShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_NAME, "")
-
-            custCodeShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
-
-            custHavetaxShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_HAVETAX, "")
-
-            custTaxCodeShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXCODE, "")
-
-            custTaxTypeShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXTYPE, "")
-
-            custTaxPercentShared = sharedPreferenceUtil!!.getStringPreference(
-                sharedPreferenceUtil!!.KEY_CUSTOMER_TAXPERCENTAGE, "")
-
+            val detailsArray = customerResponse.optJSONArray("responseData")
+            val `object` = detailsArray.optJSONObject(0)
             if (activityFrom == "doEdit") {
                 rootJsonObject.put("doNumber", editDoNumber.toString())
                 rootJsonObject.put("mode", "E")
@@ -7448,12 +7336,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                 rootJsonObject.put("status", "")
             }
             rootJsonObject.put("doDate", currentDate)
-            rootJsonObject.put("customerCode", custCodeShared)
-            rootJsonObject.put("customerName", custNameShared)
-            rootJsonObject.put("address", "")
-            rootJsonObject.put("street","")
-            rootJsonObject.put("city", "")
-            rootJsonObject.put("creditLimit", "")
+            rootJsonObject.put("customerCode", `object`.optString("customerCode"))
+            rootJsonObject.put("customerName", `object`.optString("customerName"))
+            rootJsonObject.put("address", `object`.optString("address"))
+            rootJsonObject.put("street", `object`.optString("street"))
+            rootJsonObject.put("city", `object`.optString("city"))
+            rootJsonObject.put("creditLimit", `object`.optString("creditLimit"))
             rootJsonObject.put("remark", remarkStr)
             rootJsonObject.put("currencyName", "Singapore Dollar")
             rootJsonObject.put("total", subTotalValue!!.text.toString())
@@ -7465,17 +7353,17 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             rootJsonObject.put("netTotal", netTotalValue!!.text.toString())
             rootJsonObject.put("delCustomerName", "")
             rootJsonObject.put("delAddress1", deliverAddrNameStr)
-            rootJsonObject.put("delAddress2 ", "")
-            rootJsonObject.put("delAddress3 ", "")
-            rootJsonObject.put("delPhoneNo", "")
-            rootJsonObject.put("haveTax",custHavetaxShared)
-            rootJsonObject.put("taxType",custTaxTypeShared)
-            rootJsonObject.put("taxPerc",custTaxPercentShared)
-            rootJsonObject.put("taxCode", custTaxCodeShared)
-            rootJsonObject.put("currencyCode","" )
+            rootJsonObject.put("delAddress2 ", `object`.optString("delAddress2"))
+            rootJsonObject.put("delAddress3 ", `object`.optString("delAddress3"))
+            rootJsonObject.put("delPhoneNo", `object`.optString("contactNo"))
+            rootJsonObject.put("haveTax", `object`.optString("haveTax"))
+            rootJsonObject.put("taxType", `object`.optString("taxType"))
+            rootJsonObject.put("taxPerc", `object`.optString("taxPercentage"))
+            rootJsonObject.put("taxCode", `object`.optString("taxCode"))
+            rootJsonObject.put("currencyCode", `object`.optString("currencyCode"))
             rootJsonObject.put("currencyValue", "")
             rootJsonObject.put("currencyRate", "1")
-            rootJsonObject.put("postalCode", "")
+            rootJsonObject.put("postalCode", `object`.optString("postalCode"))
             rootJsonObject.put("createUser", username)
             rootJsonObject.put("modifyUser", username)
             rootJsonObject.put("companyCode", companyCode)
@@ -7509,10 +7397,8 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                 deliveryObject.put("totalTax", Utils.twoDecimalPoint(model.gstAmount.toDouble()))
                 deliveryObject.put("subTotal", Utils.twoDecimalPoint(model.subTotal.toDouble()))
                 deliveryObject.put("netTotal", Utils.twoDecimalPoint(model.netTotal.toDouble()))
-                deliveryObject.put("taxType",custTaxTypeShared)
-                deliveryObject.put("taxPerc", custTaxPercentShared)
-                deliveryObject.put("taxCode", custTaxCodeShared)
-
+                deliveryObject.put("taxType", `object`.optString("taxType"))
+                deliveryObject.put("taxPerc", `object`.optString("taxPercentage"))
                 var return_subtotal = 0.0
                 if (model.returnQty != null && !model.returnQty.isEmpty() && model.returnQty != "null") {
                     return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
@@ -7534,6 +7420,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                 }
                 deliveryObject.put("returnSubTotal", Utils.twoDecimalPoint(return_subtotal))
                 deliveryObject.put("returnNetTotal", Utils.twoDecimalPoint(return_subtotal))
+                deliveryObject.put("taxCode", `object`.optString("taxCode"))
                 deliveryObject.put("returnReason", "")
                 deliveryObject.put("uomCode", model.uomCode)
                 deliveryObject.put("itemRemarks", "")
@@ -7559,12 +7446,12 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             try {
                 if (printerType == "TSC Printer") {
                     val printer =
-                        TSCPrinter(this@CreateNewInvoiceActivity, printerMacId, "SalesOrder")
+                        TSCPrinter(this@CreateNewInvoiceActivityCustApi, printerMacId, "SalesOrder")
                     printer.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList)
                     Utils.setSignature("")
                 } else if (printerType == "Zebra Printer") {
                     val zebraPrinterActivity =
-                        ZebraPrinterActivity(this@CreateNewInvoiceActivity, printerMacId)
+                        ZebraPrinterActivity(this@CreateNewInvoiceActivityCustApi, printerMacId)
                     zebraPrinterActivity.printSalesOrder(
                         copy,
                         salesOrderHeaderDetails,
