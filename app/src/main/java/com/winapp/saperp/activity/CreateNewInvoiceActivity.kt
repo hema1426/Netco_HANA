@@ -273,6 +273,7 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
     var isInvoicePrint = false
     var isDOPrint = false
     var receiptNoApi: String? = ""
+    var custCode: String? = ""
     var companyName: String? = null
     var remarkStr: String? = null
     var billDiscSetAmt_api: String? = "0.00"
@@ -994,20 +995,22 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
             if (detailsArr != null) {
                 if (!customerResponse.optJSONArray("responseData")!!.equals("null") &&
                     detailsArr.length() > 0) {
-                    var custCode = sharedPreferenceUtil!!.getStringPreference(
+
+                     custCode = sharedPreferenceUtil!!.getStringPreference(
                         sharedPreferenceUtil!!.KEY_CUSTOMER_CODE, "")
 
-                    if(selectCustomerId.equals(custCode)) {
+                    Log.w("customerResCode","$custCode");
+
+                   // if(selectCustomerId.equals(custCode)) {
                         if (addProduct!!.text.contains("Update")) {
                                 Toast.makeText(this, "Update previous product", Toast.LENGTH_SHORT)
                                     .show()
                             } else {
                                 viewCloseBottomSheet()
                             }
-                        }else{
-                        Toast.makeText(this, "different customer!" + selectCustomerId + ".." + custCode, Toast.LENGTH_SHORT).show()
-
-                    }
+//                        }else{
+//                        Toast.makeText(this, "different customer!" + selectCustomerId + ".." + custCode, Toast.LENGTH_SHORT).show()
+//                    }
                 }else{
                     Toast.makeText(this, "Customer detail is empty!"+selectCustomerId, Toast.LENGTH_SHORT).show()
                 }
@@ -2426,7 +2429,6 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
                             isItemFOCApi = model.isItemFOC
                         }
                         uomValueVisible(model.uomCode)
-
 
                         stockCount!!.setText(model.stockQty)
                         minimumSellingPriceText!!.setText(model.minimumSellingPrice)
@@ -7057,13 +7059,9 @@ class CreateNewInvoiceActivity : AppCompatActivity() , OnClickListener {
 
     }
 
-    override fun onResume() {
-        dbHelper!!.removeAllReturn()
-        dbHelper!!.removeAllInvoiceItems()
-        dbHelper!!.removeAllItems()
-        Utils.clearCustomerSession(this)
-        super.onResume()
-    }
+//    override fun onResume() {
+//        super.onResume()
+//    }
 
     fun createConvert_InvoiceJson(copy: Int) {
         // JSONObject rootJsonObject = new JSONObject();
