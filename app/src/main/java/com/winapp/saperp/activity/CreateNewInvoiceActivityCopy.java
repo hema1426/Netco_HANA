@@ -1587,10 +1587,6 @@ public class CreateNewInvoiceActivityCopy extends AppCompatActivity {
 //                    }
 
                     uomText.setText(model.getUomCode());
-                    uomName = model.getUomCode();
-                    Log.w("EditUomText:", model.getUomCode());
-                    uomTextView.setText(model.getUomText());
-                    qtyValue.setText("");
 
                     double netqty = Double.parseDouble(model.getNetQty());
 
@@ -1606,7 +1602,12 @@ public class CreateNewInvoiceActivityCopy extends AppCompatActivity {
 
                     productAutoComplete.setText(model.getProductName() + "-" + model.getProductCode());
 
+                    uomName = model.getUomCode();
+                    Log.w("EditUomText:", model.getUomCode());
+                    uomTextView.setText(model.getUomText());
+                    qtyValue.setText("");
                     priceText.setText(model.getPrice());
+
                     addProduct.setText("Update");
                     qtyValue.requestFocus();
                     qtyValue.setSelectAllOnFocus(true);
