@@ -316,7 +316,8 @@ public class OrderDetailsHistoryActivity extends AppCompatActivity {
 //                    model.getUomcode(),"0.00");
        //    // Toast.makeText(getApplicationContext(),"Product added to your list",Toast.LENGTH_SHORT).show();
         }else {
-            dbHelper.deleteInvoiceProductNew(model.getProductId(),model.getProductId());
+            dbHelper.deleteInvoiceProduct(model.getProductId());
+           // dbHelper.deleteInvoiceProductNew(model.getProductId(),model.getProductId());
           //  Toast.makeText(getApplicationContext(),"Product removed from your list",Toast.LENGTH_SHORT).show();
         }
     }

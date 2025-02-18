@@ -37,7 +37,7 @@
             android:textSize="12sp"
             />
         <TextView
-            android:layout_width="80dp"
+            android:layout_width="100dp"
             android:layout_height="match_parent"
             android:layout_gravity="top"
             android:layout_weight="1"
@@ -45,7 +45,7 @@
             android:textStyle="bold"
             android:textColor="@color/white"
             android:background="@drawable/table_header_cell_bg"
-            android:text="UOM"
+            android:text="Uom Code"
             android:textSize="12sp"
             />
 
