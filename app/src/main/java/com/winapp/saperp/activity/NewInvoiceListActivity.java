@@ -2204,6 +2204,7 @@ public class NewInvoiceListActivity extends NavigationActivity
             // Initialize a new RequestQueue instance
             RequestQueue requestQueue = Volley.newRequestQueue(NewInvoiceListActivity.this);
             String url = Utils.getBaseUrl(NewInvoiceListActivity.this) + "MasterApi/GetCustomer_All?Requestdata={CompanyCode:" + companyCode + "}";
+
             Log.w("Given_url:", url);
             JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET,
                     url, null,

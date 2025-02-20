@@ -55,7 +55,14 @@ ctc230004.2
 good receipt -- stock adjustment
 invertory --
 
-
+kotlin coroutines in android
+GlobalScope.launch {
+ withContext(Dispatchers.Main) {
+                                    if (accountList!!.size > 0) {
+                                        setAccountSpinner(accountList!!)
+                                    }
+                                }
+                                }
 raymanng
 Username - ctc230003.1
 Pwd - 12345

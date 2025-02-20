@@ -1095,6 +1095,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         alert11.show()
     }
 
+    @SuppressLint("SimpleDateFormat")
     fun insertProducts() {
         try {
             var focType = "pcs"
@@ -1104,7 +1105,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
             var return_qty = "0"
             val lPriceCalc = "0"
             var foc = "0"
-            var uom = "PCS"
+            var uom = ""
             var price_value = "0"
             if (focSwitch!!.isChecked) {
                 focType = "ctn"
@@ -1166,6 +1167,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 "",
                 "","",timeStamp,"")
 
+            Log.w("timeupdatRetur", "" + timeStamp)
+
             // Adding Return Qty Table values
             if (qty_value.toInt() > 0) {
                 dbHelper!!.updateReturnQty("Delete", "0", "Saleable Return", productId)
@@ -1209,7 +1212,8 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                 returnSwitch!!.isChecked = false
                 stockLayout!!.visibility = View.GONE
                 priceText!!.isEnabled = false
-               // qtyValue!!.isEnabled = false
+                isEditItem = false
+                // qtyValue!!.isEnabled = false
                 focEditText!!.isEnabled = false
                 exchangeEditext!!.isEnabled = false
                 discountEditext!!.isEnabled = false
@@ -1249,6 +1253,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                         productName = model.productName
                         qtyValue!!.setText("")
                         val netqty = model.netQty.toDouble()
+                        uomText!!.setText(model.uomCode)
 
                         /*  if (model.getMinimumSellingPrice()!=null && !model.getMinimumSellingPrice().isEmpty()){
                         minimumSellingPriceText.setText(model.getMinimumSellingPrice());
@@ -1415,6 +1420,7 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
         ed_uomTxtl!!.visibility = View.GONE
         uomSpinnerLayl!!.visibility = View.VISIBLE
         ischangeUOM = false
+        isEditItem = false
         // priceText.setEnabled(false);
         getProducts()
         setSummaryTotal()
