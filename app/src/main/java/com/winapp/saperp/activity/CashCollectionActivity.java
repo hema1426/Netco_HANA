@@ -171,6 +171,7 @@ public class CashCollectionActivity extends AppCompatActivity {
     public static File imageFile;
     private AlertDialog dialog;
     int minteger = 1;
+    Boolean netAmountFocus = false ;
     public Button decreaseButton;
     public Button increaseButton;
     public TextView noOfCopyText;
@@ -511,17 +512,21 @@ public class CashCollectionActivity extends AppCompatActivity {
         btnSplit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if ( !netAmount.getText().toString().equals(".")) {
-                    if (!netAmount.getText().toString().isEmpty() &&
-                            (Double.parseDouble(netAmount.getText().toString()) > 0.00)) {
-                        CashInvoiceFragment.splitInvoices();
+                if(netAmountFocus) {
+                    if (!netAmount.getText().toString().equals(".")) {
+                        if (!netAmount.getText().toString().isEmpty() &&
+                                (Double.parseDouble(netAmount.getText().toString()) > 0.00)) {
+                            Log.w("dsplit11", "");
+                            CashInvoiceFragment.splitInvoices();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Value Should not be empty", Toast.LENGTH_LONG).show();
+                        }
                     } else {
                         Toast.makeText(getApplicationContext(), "Value Should not be empty", Toast.LENGTH_LONG).show();
                     }
-                }else {
-                    Toast.makeText(getApplicationContext(), "Value Should not be empty", Toast.LENGTH_LONG).show();
+                }else{
+                    Log.w("dsplit11aa", "");
                 }
-
             }
         });
 
@@ -533,7 +538,16 @@ public class CashCollectionActivity extends AppCompatActivity {
         });
 
 
-
+        netAmount.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (hasFocus) {
+                    netAmountFocus = true ;
+                } else {
+                    netAmountFocus = false ;
+                }
+            }
+        });
         // Define the Textwatcher of the Total Paid Amount
 
         netAmountTextWatcher = new TextWatcher() {

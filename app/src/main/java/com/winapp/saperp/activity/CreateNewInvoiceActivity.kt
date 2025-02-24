@@ -7507,8 +7507,8 @@ class CreateNewInvoiceActivity : AppCompatActivity(), OnClickListener {
                         return_subtotal = model.returnQty.toDouble() * model.price.toDouble()
                     }
                     if (!model.returnQty.isEmpty() && model.returnQty.toString() != "null") {
-                        invoiceObject.put("returnLQty", model.returnQty)
-                        invoiceObject.put("returnQty", model.returnQty)
+                        invoiceObject.put("returnLQty", model.returnQty.toDouble().toInt())
+                        invoiceObject.put("returnQty", model.returnQty.toDouble().toInt())
                         invoiceObject.put("qty", model.focQty.toString())
                     } else {
                         invoiceObject.put("returnLQty", "0")
