@@ -1,5 +1,7 @@
 package com.winapp.saperp.printpreview;
 
+import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
+
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -111,8 +113,9 @@ public class SettlementPrintPreview extends AppCompatActivity implements OnPageC
     private TextView taxValueText;
     private TextView netTotalText;
     private TextView expenseTotalText;
+    double expensetotal = 0.0;
 
-    private LinearLayout expenseTotalLay;
+    private LinearLayout expenseTotalLay,expens_lay_settlel;
 
     private TextView outstandingText;
     private TextView taxTitle;
@@ -162,6 +165,7 @@ public class SettlementPrintPreview extends AppCompatActivity implements OnPageC
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         setContentView(R.layout.activity_settlement_print_preview);
+        Log.w("activity_cg",getClass().getSimpleName().toString());
 
         setTitle();
 
@@ -185,6 +189,7 @@ public class SettlementPrintPreview extends AppCompatActivity implements OnPageC
         taxValueText = findViewById(R.id.tax);
         netTotalText = findViewById(R.id.net_total);
         expenseTotalText = findViewById(R.id.expense_total);
+        expens_lay_settlel = findViewById(R.id.expens_lay_settl);
         expenseTotalLay = findViewById(R.id.expenseTotalLayl);
         outstandingText = findViewById(R.id.outstanding_amount);
         taxTitle = findViewById(R.id.tax_title);
@@ -193,7 +198,7 @@ public class SettlementPrintPreview extends AppCompatActivity implements OnPageC
         companyAddress1Text = findViewById(R.id.address1);
         companyAddress2Text = findViewById(R.id.address2);
         expenseView = findViewById(R.id.expenseList_settle);
-        expenslayoutl = findViewById(R.id.expenslayout);
+        expenslayoutl = findViewById(R.id.expens_lay_settl);
         addressLayout = findViewById(R.id.adressLayout);
         settlementBy=findViewById(R.id.user);
         rootLayout = findViewById(R.id.rootLayout);
@@ -327,10 +332,9 @@ public class SettlementPrintPreview extends AppCompatActivity implements OnPageC
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                expenslayoutl.setVisibility(View.VISIBLE);
                                                 setExpensePreviewAdapter(expenseList);
-                                                expenseTotalLay.setVisibility(View.VISIBLE);
-                                                expenseTotalText.setText(Utils.twoDecimalPoint(Double.parseDouble(responseObject.optString("totalExpense"))));
+//                                                expenseTotalLay.setVisibility(View.VISIBLE);
+//                                                expenseTotalText.setText(Utils.twoDecimalPoint(Double.parseDouble(responseObject.optString("totalExpense"))));
                                             }
                                         });
                                     } else {
@@ -378,6 +382,16 @@ public class SettlementPrintPreview extends AppCompatActivity implements OnPageC
 
 
     private void setExpensePreviewAdapter(ArrayList<ExpenseModel> expenseList) {
+        for(int i = 0 ; i < expenseList.size() ; i++) {
+            expensetotal += Double.parseDouble(expenseList.get(i).getExpenseTotal());
+        }
+        if(expensetotal > 0) {
+            expens_lay_settlel.setVisibility(View.VISIBLE);
+            expenseTotalText.setText(twoDecimalPoint(expensetotal));
+        }
+        else{
+            expens_lay_settlel.setVisibility(View.GONE);
+        }
             expenseView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
             ExpensePreviewAdapter = new SettleExpensePreviewAdapter(expenseList, new SettleExpensePreviewAdapter.CallBack() {
                 @Override

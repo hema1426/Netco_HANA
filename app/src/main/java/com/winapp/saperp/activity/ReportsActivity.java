@@ -1092,7 +1092,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
 
                         JSONArray expenseArray = detailObject.optJSONArray("reportSettlementWithReceiptExpenses");
                         assert expenseArray != null;
-                        if (denominationArray.length() > 0) {
+                        if (expenseArray.length() > 0) {
                             for (int i = 0; i < expenseArray.length(); i++) {
                                 JSONObject expenseObject = expenseArray.optJSONObject(i);
                                 SettlementReceiptModel.Expense expense = new SettlementReceiptModel.Expense();

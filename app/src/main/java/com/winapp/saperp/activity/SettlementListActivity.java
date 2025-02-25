@@ -124,6 +124,7 @@ public class SettlementListActivity extends NavigationActivity implements View.O
         getLayoutInflater().inflate(R.layout.activity_settlement_list, contentFrameLayout);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Settlements");
+        Log.w("activity_cg",getClass().getSimpleName().toString());
 
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE);
         printerType = sharedPreferences.getString("printer_type", "");

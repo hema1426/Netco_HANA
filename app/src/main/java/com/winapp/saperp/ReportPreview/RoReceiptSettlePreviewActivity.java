@@ -278,10 +278,10 @@ public class RoReceiptSettlePreviewActivity extends AppCompatActivity {
                                 denominationArrayList.add(denomination);
                             }
                         }
-                        Log.w("expensss",""+resObject.optJSONArray("reportSettlementWithReceiptExpenses"));
+
 
                         JSONArray expenseArray = resObject.optJSONArray("reportSettlementWithReceiptExpenses");
-
+                        Log.w("expensss",""+expenseArray.length());
                         if (expenseArray.length() > 0) {
                             for (int i = 0; i < expenseArray.length(); i++) {
                                 JSONObject expenseObject = expenseArray.optJSONObject(i);

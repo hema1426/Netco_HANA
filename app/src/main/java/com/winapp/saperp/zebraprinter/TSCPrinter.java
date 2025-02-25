@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.tscdll.TSCActivity;
@@ -2127,13 +2128,17 @@ public class TSCPrinter {
                 double currencytotal = 0.0;
                 double expensetotal = 0.0;
                 double expensetotal1 = 0.0;
+                double expensetotalList = 0.0;
 
                 ArrayList<SettlementReceiptDetailModel> receiptDetailsModels1 = new ArrayList<>();
 
                 if (currencyList.size() > 0) {
                     currencyListl = currencyList.size();
                 }
-                if (expenseList.size() > 0) {
+                for(int i = 0 ; i < expenseList.size() ; i++) {
+                    expensetotalList += Double.parseDouble(expenseList.get(i).getExpenseTotal());
+                }
+                if(expensetotalList > 0) {
                     expenseListl  = expenseList.size();
                 }
 
@@ -2153,7 +2158,7 @@ public class TSCPrinter {
 
                 finalHeight = height + (receiptModelDetailList.size() * 11) + (currencyListl * list_height)
                         + (expenseListl * list_height) + invoiveSubTotalHeight+settleHeight + (invListl * 20);                ;
-
+                Log.w("settlfinalht",""+finalHeight);
 //                finalHeight = height + 10 + (receiptList.size() * list_height);
                 //finalHeight = getPrintSize(finalHeight, "false", "false", "false", "false", "false", "false");
 
@@ -2416,7 +2421,8 @@ public class TSCPrinter {
     }
 
 
-    public void setSettlementPrintSave(int copy, String settlementNo, String settlementDate, String locationCode, String settlementBy,
+    public void setSettlementPrintSave(int copy, String settlementNo, String settlementDate,
+                                       String locationCode, String settlementBy,
                                        ArrayList<CurrencyModel> currencyList, ArrayList<ExpenseModel>
                                                expenseList) throws IOException {
 
@@ -2428,10 +2434,23 @@ public class TSCPrinter {
 
                 //String status = TscDll.printerstatus(300);
                 int y = 0;
-                height = 70;
+                height = 60;
                 double currencytotal = 0.0;
                 double expensetotal = 0.0;
-                finalHeight = height + (currencyList.size() * 8) + (expenseList.size() * 8) + invoiceBottomLine;
+                double expensetotalList = 0.0;
+                int expenseListl = 0;
+                double expensetotal1 = 0.0;
+
+                for(int i = 0 ; i < expenseList.size() ; i++) {
+                    expensetotalList += Double.parseDouble(expenseList.get(i).getExpenseTotal());
+                }
+                if(expensetotalList > 0) {
+                    expenseListl  = expenseList.size();
+                }
+
+                finalHeight = height + (currencyList.size() * 8) + (expenseListl * 8) + invoiceBottomLine;
+                Log.w("settlePrint",""+finalHeight);
+
                 TscDll.sendcommand("SIZE 80 mm, " + finalHeight + " mm\n");
                 TscDll.sendcommand("GAP 0 mm, 0 mm\r\n");//Gap media
                 TscDll.clearbuffer();
@@ -2535,8 +2554,14 @@ public class TSCPrinter {
                     TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
                 }
-
+                expensetotal1 = 0.0 ;
                 if (expenseList.size() > 0) {
+
+                    for (ExpenseModel expense : expenseList) {
+                        expensetotal1 += Double.parseDouble(expense.getExpenseTotal());
+                    }
+                }
+                if (expenseList.size() > 0 && expensetotal1 > 0 ) {
                     y += 20;
                     TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "SNo" + "\"\n");
                     TscDll.sendcommand("TEXT 60," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Expense Name" + "\"\n");
