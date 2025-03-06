@@ -385,9 +385,11 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
             }
             invoiceSummary.setChecked(false);
             invoiceByProduct.setChecked(false);
-            customerStatement.setChecked(false);
             receiptDetails.setChecked(false);
-            receiptSummary.setChecked(false);
+            customerStatement.setChecked(false);
+            settlementReport.setChecked(false);
+            settle_receiptReport.setChecked(false);
+            customerStatementDatel.setChecked(false);
         }catch (Exception exception){}
     }
 

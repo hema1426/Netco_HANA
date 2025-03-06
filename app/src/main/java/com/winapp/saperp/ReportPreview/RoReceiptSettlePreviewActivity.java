@@ -192,6 +192,7 @@ public class RoReceiptSettlePreviewActivity extends AppCompatActivity {
         expenseArrayList = new ArrayList<>();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject, response -> {
             try{
+                int invoiceDetailsize = 0 ;
 
                 Log.w("SettlReceiptRes:",response.toString());
                 String statusCode = response.optString("statusCode");
@@ -258,8 +259,12 @@ public class RoReceiptSettlePreviewActivity extends AppCompatActivity {
                                     model.setInvoiceDetailSettlementList(invoiceDetailSettlementList);
                                 }
                                 settlementReceiptDetailModelList.add(model);
+                                Log.w("settlInvSizpreviw22",".."+model.getInvoiceDetailSettlementList().size());
+                                invoiceDetailsize +=  model.getInvoiceDetailSettlementList().size() ;
                             }
+                            Log.w("settlInvSizpreviw",".."+invoiceDetailsize);
                         }
+
                         Log.w("denominatsss",""+resObject.optJSONArray("reportSettlementWithReceiptDenomination"));
 
                         JSONArray denominationArray = resObject.optJSONArray("reportSettlementWithReceiptDenomination");

@@ -2123,8 +2123,9 @@ public class TSCPrinter {
                 int currencyListl = 0;
                 int expenseListl = 0;
                 int invListl = 0;
+                int invoiceDetailsize = 0 ;
                 int settleHeight = 0;
-                height = 85;
+                height = 98;
                 double currencytotal = 0.0;
                 double expensetotal = 0.0;
                 double expensetotal1 = 0.0;
@@ -2150,15 +2151,19 @@ public class TSCPrinter {
                     if (receiptModel.getInvoiceDetailSettlementList().size() > 0) {
                         invListl  = receiptModel.getInvoiceDetailSettlementList().size();
                     }
+                    invoiceDetailsize +=  invListl ;
+
                 }
                 settleHeight = receiptDetailsModels1.size() * 20;
 
-
-                Log.w("settlheig",""+settleHeight);
+                Log.w("settlheig",""+receiptDetailsModels1.size()+".."+settleHeight);
+                Log.w("settlInvSiz",".."+invoiceDetailsize);
 
                 finalHeight = height + (receiptModelDetailList.size() * 11) + (currencyListl * list_height)
-                        + (expenseListl * list_height) + invoiveSubTotalHeight+settleHeight + (invListl * 20);                ;
+                        + (expenseListl * list_height) + invoiveSubTotalHeight+settleHeight + (invoiceDetailsize * list_height);
+
                 Log.w("settlfinalht",""+finalHeight);
+
 //                finalHeight = height + 10 + (receiptList.size() * list_height);
                 //finalHeight = getPrintSize(finalHeight, "false", "false", "false", "false", "false", "false");
 
