@@ -157,13 +157,14 @@ public class SplashActivity extends AppCompatActivity {
             }else {
 
 //hana app
-               //    String apiUrl=Constants.RAYMANG_URL_JULY;
+              //  String apiUrl=Constants.test_URL_OCT24;
+
+                //    String apiUrl=Constants.RAYMANG_URL_JULY;
                 //  String apiUrl=Constants.FUXIN;
-               // String apiUrl=Constants.TRANS_ORIENT_LIVE;
-                 String apiUrl=Constants.TRANS_ORIENT_DEMO;
+                String apiUrl=Constants.TRANS_ORIENT_LIVE;
+             //   String apiUrl=Constants.TRANS_ORIENT_DEMO;
 
 /*SQL app
-//                String apiUrl=Constants.test_URL_OCT24;
 //          String apiUrl=Constants.AADHI_DEMO;
 //         String apiUrl=Constants.SUPER_STAR_DEMO;
 //          String apiUrl=Constants.thongai_url;
