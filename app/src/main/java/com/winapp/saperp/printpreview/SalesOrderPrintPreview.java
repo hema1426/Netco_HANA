@@ -56,7 +56,9 @@ import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.saperp.R;
 import com.winapp.saperp.activity.NewInvoiceListActivity;
+import com.winapp.saperp.activity.PurchaseInvoiceListActivity;
 import com.winapp.saperp.adapter.SalesOrderPrintPreviewAdapter;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel;
 import com.winapp.saperp.tscprinter.TSCPrinterActivity;
 import com.winapp.saperp.utils.Constants;
@@ -897,7 +899,12 @@ public class SalesOrderPrintPreview extends AppCompatActivity implements OnPageC
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }else if (printerType.equals("Zebra Printer")){
+                }else if (printerType.equals("iMin Printer V2")) {
+                    Utils.setSignature("");
+                    IminPrinterV2 printLayer = new IminPrinterV2(SalesOrderPrintPreview.this);
+                    printLayer.printSalesOrder(1, salesOrderHeaderDetails, salesOrderList);
+                }
+                else if (printerType.equals("Zebra Printer")){
                     ZebraPrinterActivity zebraPrinterActivity=new ZebraPrinterActivity(SalesOrderPrintPreview.this,printerMacId);
                     try {
                         zebraPrinterActivity.printSalesOrder(1,salesOrderHeaderDetails,salesOrderList);

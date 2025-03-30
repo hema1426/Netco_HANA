@@ -42,7 +42,9 @@ import com.example.tscdll.TSCActivity;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.saperp.R;
+import com.winapp.saperp.activity.NewInvoiceListActivity;
 import com.winapp.saperp.adapter.NewInvoicePrintPreviewAdapter;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.InvoicePrintPreviewModel;
 import com.winapp.saperp.thermalprinter.PrinterUtils;
 import com.winapp.saperp.tscprinter.TSCPrinterActivity;
@@ -815,6 +817,7 @@ public class NewInvoicePrintPreviewActivity extends AppCompatActivity {
         builder1.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 alertInterface = dialog;
+
                 if (printerType.equals("TSC Printer")) {
                    dialog.dismiss();
                     //TSCPrinter tscPrinter=new TSCPrinter(InvoicePrintPreviewActivity.this,printerMacId);
@@ -845,7 +848,13 @@ public class NewInvoicePrintPreviewActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
+                }else if (printerType.equals("iMin Printer V2")) {
+                    Toast.makeText(getApplicationContext(), "imin invoice", Toast.LENGTH_SHORT).show();
+                    Utils.setSignature("");
+                    IminPrinterV2 printLayer = new IminPrinterV2(NewInvoicePrintPreviewActivity.this);
+                    printLayer.printInvoice(1, invoiceHeaderDetails, invoiceList, "false");
                 }
+//
               else if (printerType.equals("Zebra Printer")) {
                     ZebraPrinterActivity zebraPrinterActivity = new ZebraPrinterActivity(NewInvoicePrintPreviewActivity.this, printerMacId);
                     zebraPrinterActivity.printInvoice(1, invoiceHeaderDetails, invoiceList,"false");

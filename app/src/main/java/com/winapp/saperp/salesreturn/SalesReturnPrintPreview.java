@@ -33,6 +33,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.tscdll.TSCActivity;
 import com.winapp.saperp.R;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.ImageUtil;
 import com.winapp.saperp.utils.SessionManager;
@@ -452,6 +453,9 @@ public class SalesReturnPrintPreview extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }else  if (printerType == "iMin Printer V2") {
+                    IminPrinterV2 printLayer = new IminPrinterV2(SalesReturnPrintPreview.this);
+                    printLayer.printSalesReturn(1,salesReturnHeader,salesReturnList);
                 }
             }
         });

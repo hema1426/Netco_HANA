@@ -8,11 +8,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Build;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -458,7 +460,14 @@ public class Utils {
         }
         return strAdd;
     }
-
+    public Bitmap getSignature(String encodedImage) {
+        String base64Image = encodedImage.split(",")[1];
+        byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+    }
+    public static Bitmap getStamp(Context context,int stamp){
+        return BitmapFactory.decodeResource(context.getResources(), stamp);
+    }
     public static void setCustomerSession(Context context, String customerId) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("customerPref", MODE_PRIVATE);
         SharedPreferences.Editor customerPredEdit = sharedPreferences.edit();

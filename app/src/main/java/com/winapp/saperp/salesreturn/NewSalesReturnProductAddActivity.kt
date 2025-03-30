@@ -78,6 +78,7 @@ import com.winapp.saperp.activity.SalesOrderListActivity
 import com.winapp.saperp.adapter.NewSalesReturnProductAdapter
 import com.winapp.saperp.adapter.SelectProductAdapter
 import com.winapp.saperp.db.DBHelper
+import com.winapp.saperp.iminPrinter.IminPrinterV2
 import com.winapp.saperp.model.AppUtils
 import com.winapp.saperp.model.CreateInvoiceModel
 import com.winapp.saperp.model.CustomerDetails
@@ -3404,7 +3405,18 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
                             }
                             model.salesReturnList = salesReturnList
                             invoiceHeaderDetails!!.add(model)
-                            printInvoice(copy)
+                            if (printerType == "iMin Printer V2") {
+
+                                val printLayer = IminPrinterV2(this@NewSalesReturnProductAddActivity)
+                                printLayer.printInvoice(
+                                    copy,
+                                    invoiceHeaderDetails,
+                                    invoicePrintList,
+                                    "false"
+                                )
+                            }else {
+                                printInvoice(copy)
+                            }
                         } else {
                             Toast.makeText(
                                 applicationContext,
@@ -3472,165 +3484,165 @@ class NewSalesReturnProductAddActivity : AppCompatActivity() {
     }
 
     @Throws(JSONException::class)
-    private fun getSalesOrderDetails(soNumber: String, copy: Int) {
-        // Initialize a new RequestQueue instance
-        val jsonObject = JSONObject()
-        //  jsonObject.put("CompanyCode",companyId);
-        jsonObject.put("SalesOrderNo", soNumber)
-        // jsonObject.put("LocationCode",locationCode);
-        val requestQueue = Volley.newRequestQueue(this)
-        val url = Utils.getBaseUrl(this) + "SalesOrderDetails"
-        // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:", url)
-        //   pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-        //   pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        //  pDialog.setTitleText("Generating Print Preview...");
-        //  pDialog.setCancelable(false);
-        //  pDialog.show();
-        salesOrderHeaderDetails = ArrayList()
-        salesPrintList = ArrayList()
-        val jsonObjectRequest: JsonObjectRequest = object : JsonObjectRequest(
-            Method.POST,
-            url,
-            jsonObject,
-            Response.Listener { response: JSONObject ->
-                try {
-                    // {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"WinApp","customerName":"WinApp","soNumber":"3",
-                    // "soStatus":"O","soDate":"6\/8\/2021 12:00:00 am","netTotal":"26.750000","balanceAmount":"26.750000",
-                    // "totalDiscount":"0.000000","paidAmount":"0.000000","contactPersonCode":"","createDate":"7\/8\/2021 12:00:00 am",
-                    // "updateDate":"7\/8\/2021 12:00:00 am","remark":"","fDocTotal":"0.000000","fTaxAmount":"0.000000",
-                    // "receivedAmount":"0.000000","total":"26.750000","fTotal":"0.000000","iTotalDiscount":"0.000000",
-                    // "taxTotal":"1.750000","iPaidAmount":"0.000000","currencyCode":"SGD","currencyName":"Singapore Dollar",
-                    // "companyCode":"WINAPP_DEMO","docEntry":"3","address1":"SingaporeShipTo1   Changi 890323 SG","taxPercentage":"0.000000",
-                    // "discountPercentage":"0.000000",
-                    //
-                    //
-                    // "salesOrderDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO","soNo":"3",
-                    // "productCode":"FG\/001245","productName":"Milk","quantity":"5.000000","cartonQty":"1.000000",
-                    // "price":"5.000000","currency":"SGD","taxRate":"0.000000","discountPercentage":"0.000000",
-                    // "lineTotal":"26.750000","fRowTotal":"0.000000","warehouseCode":"01","salesEmployeeCode":"-1","accountCode":"400000",
-                    // "taxStatus":"Y","unitPrice":"5.000000","customerCategoryNo":"","barCodes":"","totalTax":"1.750000",
-                    // "fTaxAmount":"0.000000","taxCode":"","taxType":"E","taxPerc":"0.000000","uoMCode":null,"soDate":"6\/8\/2021 12:00:00 am",
-                    // "dueDate":"6\/8\/2021 12:00:00 am","createDate":"7\/8\/2021 12:00:00 am","updateDate":"7\/8\/2021 12:00:00 am",
-                    // "createdUser":"manager","uomCode":"Ctn","uoMName":"Carton","cartonPrice":"3000.000000","piecePrice":"0.000000",
-                    // "pcsPerCarton":"100.000000","lPrice":"100.000000","unitQty":"1.000000","retailPrice":"100.000000"}]}]}
-                    Log.w("Sales_Details:", response.toString())
-                    val statusCode = response.optString("statusCode")
-                    if (statusCode == "1") {
-                        val responseData = response.getJSONArray("responseData")
-                        val `object` = responseData.optJSONObject(0)
-                        val model = SalesOrderPrintPreviewModel()
-                        model.soNumber = `object`.optString("soNumber")
-                        model.soDate = `object`.optString("soDate")
-                        model.customerCode = `object`.optString("customerCode")
-                        model.customerName = `object`.optString("customerName")
-                        model.address =
-                            `object`.optString("address1") + `object`.optString("address2") + `object`.optString(
-                                "address3"
-                            )
-                        model.address2 = `object`.optString("address2")
-                        model.address3 = `object`.optString("address3")
-                        // model.setDeliveryAddress(model.getAddress());
-                        model.subTotal = `object`.optString("subTotal")
-                        model.netTax = `object`.optString("taxTotal")
-                        model.netTotal = `object`.optString("netTotal")
-                        model.taxType = `object`.optString("taxType")
-                        model.taxValue = `object`.optString("taxPerc")
-                        model.outStandingAmount = `object`.optString("outstandingAmount")
-                        model.billDiscount = `object`.optString("billDiscount")
-                        model.itemDiscount = `object`.optString("totalDiscount")
-                        Utils.setInvoiceMode("SalesOrder")
-                        val signFlag = `object`.optString("signFlag")
-                        if (signFlag == "Y") {
-                            val signature = `object`.optString("signature")
-                            Utils.setSignature(signature)
-                            createSignature()
-                        } else {
-                            Utils.setSignature("")
-                        }
-                        val detailsArray = `object`.optJSONArray("salesOrderDetails")
-                        for (i in 0 until detailsArray.length()) {
-                            val detailObject = detailsArray.optJSONObject(i)
-                            var salesListModel = SalesList()
-                            salesListModel.productCode = detailObject.optString("productCode")
-                            salesListModel.description = detailObject.optString("productName")
-                            salesListModel.lqty = detailObject.optString("unitQty")
-                            salesListModel.cqty = detailObject.optString("cartonQty")
-                            salesListModel.netQty = detailObject.optString("quantity")
-                            salesListModel.cartonPrice = detailObject.optString("cartonPrice")
-                            salesListModel.unitPrice = detailObject.optString("price")
-                            val qty1 = detailObject.optString("quantity").toDouble()
-                            val price1 = detailObject.optString("price").toDouble()
-                            val nettotal1 = qty1 * price1
-                            salesListModel.total = nettotal1.toString()
-                            salesListModel.pricevalue = price1.toString()
-                            salesListModel.uomCode = detailObject.optString("uomCode")
-                            salesListModel.pcsperCarton = detailObject.optString("pcsPerCarton")
-                            salesListModel.itemtax = detailObject.optString("totalTax")
-                            salesListModel.subTotal = detailObject.optString("subTotal")
-                            salesPrintList!!.add(salesListModel)
-                            if (!detailObject.optString("ReturnQty")
-                                    .isEmpty() && detailObject.optString("ReturnQty").toDouble() > 0
-                            ) {
-                                salesListModel = SalesList()
-                                salesListModel.productCode = detailObject.optString("ProductCode")
-                                salesListModel.description = detailObject.optString("ProductName")
-                                salesListModel.lqty = detailObject.optString("LQty")
-                                salesListModel.cqty = detailObject.optString("CQty")
-                                salesListModel.netQty = "-" + detailObject.optString("ReturnQty")
-                                val qty12 = detailObject.optString("ReturnQty").toDouble()
-                                val price12 = detailObject.optString("Price").toDouble()
-                                val nettotal12 = qty12 * price12
-                                salesListModel.total = nettotal12.toString()
-                                salesListModel.pricevalue = price12.toString()
-                                salesListModel.uomCode = detailObject.optString("UOMCode")
-                                salesListModel.cartonPrice = detailObject.optString("CartonPrice")
-                                salesListModel.unitPrice = detailObject.optString("Price")
-                                salesListModel.pcsperCarton = detailObject.optString("PcsPerCarton")
-                                salesListModel.itemtax = detailObject.optString("Tax")
-                                salesListModel.subTotal = detailObject.optString("subTotal")
-                                salesPrintList!!.add(salesListModel)
-                            }
-                            model.salesList = salesPrintList
-                            salesOrderHeaderDetails!!.add(model)
-                        }
-                        sentSalesOrderDataPrint(copy)
-                        // pDialog.dismiss();
-                    } else {
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }, Response.ErrorListener { error: VolleyError ->
-                // Do something when error occurred
-                pDialog!!.dismiss()
-                Log.w("Error_throwing:", error.toString())
-            }) {
-            override fun getHeaders(): Map<String, String> {
-                val params = HashMap<String, String>()
-                val creds =
-                    String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD)
-                val auth = "Basic " + Base64.encodeToString(creds.toByteArray(), Base64.DEFAULT)
-                params["Authorization"] = auth
-                return params
-            }
-        }
-        jsonObjectRequest.setRetryPolicy(object : RetryPolicy {
-            override fun getCurrentTimeout(): Int {
-                return 50000
-            }
-
-            override fun getCurrentRetryCount(): Int {
-                return 50000
-            }
-
-            @Throws(VolleyError::class)
-            override fun retry(error: VolleyError) {
-            }
-        })
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonObjectRequest)
-    }
+//    private fun getSalesOrderDetails(soNumber: String, copy: Int) {
+//        // Initialize a new RequestQueue instance
+//        val jsonObject = JSONObject()
+//        //  jsonObject.put("CompanyCode",companyId);
+//        jsonObject.put("SalesOrderNo", soNumber)
+//        // jsonObject.put("LocationCode",locationCode);
+//        val requestQueue = Volley.newRequestQueue(this)
+//        val url = Utils.getBaseUrl(this) + "SalesOrderDetails"
+//        // Initialize a new JsonArrayRequest instance
+//        Log.w("Given_url:", url)
+//        //   pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+//        //   pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+//        //  pDialog.setTitleText("Generating Print Preview...");
+//        //  pDialog.setCancelable(false);
+//        //  pDialog.show();
+//        salesOrderHeaderDetails = ArrayList()
+//        salesPrintList = ArrayList()
+//        val jsonObjectRequest: JsonObjectRequest = object : JsonObjectRequest(
+//            Method.POST,
+//            url,
+//            jsonObject,
+//            Response.Listener { response: JSONObject ->
+//                try {
+//                    // {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"WinApp","customerName":"WinApp","soNumber":"3",
+//                    // "soStatus":"O","soDate":"6\/8\/2021 12:00:00 am","netTotal":"26.750000","balanceAmount":"26.750000",
+//                    // "totalDiscount":"0.000000","paidAmount":"0.000000","contactPersonCode":"","createDate":"7\/8\/2021 12:00:00 am",
+//                    // "updateDate":"7\/8\/2021 12:00:00 am","remark":"","fDocTotal":"0.000000","fTaxAmount":"0.000000",
+//                    // "receivedAmount":"0.000000","total":"26.750000","fTotal":"0.000000","iTotalDiscount":"0.000000",
+//                    // "taxTotal":"1.750000","iPaidAmount":"0.000000","currencyCode":"SGD","currencyName":"Singapore Dollar",
+//                    // "companyCode":"WINAPP_DEMO","docEntry":"3","address1":"SingaporeShipTo1   Changi 890323 SG","taxPercentage":"0.000000",
+//                    // "discountPercentage":"0.000000",
+//                    //
+//                    //
+//                    // "salesOrderDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO","soNo":"3",
+//                    // "productCode":"FG\/001245","productName":"Milk","quantity":"5.000000","cartonQty":"1.000000",
+//                    // "price":"5.000000","currency":"SGD","taxRate":"0.000000","discountPercentage":"0.000000",
+//                    // "lineTotal":"26.750000","fRowTotal":"0.000000","warehouseCode":"01","salesEmployeeCode":"-1","accountCode":"400000",
+//                    // "taxStatus":"Y","unitPrice":"5.000000","customerCategoryNo":"","barCodes":"","totalTax":"1.750000",
+//                    // "fTaxAmount":"0.000000","taxCode":"","taxType":"E","taxPerc":"0.000000","uoMCode":null,"soDate":"6\/8\/2021 12:00:00 am",
+//                    // "dueDate":"6\/8\/2021 12:00:00 am","createDate":"7\/8\/2021 12:00:00 am","updateDate":"7\/8\/2021 12:00:00 am",
+//                    // "createdUser":"manager","uomCode":"Ctn","uoMName":"Carton","cartonPrice":"3000.000000","piecePrice":"0.000000",
+//                    // "pcsPerCarton":"100.000000","lPrice":"100.000000","unitQty":"1.000000","retailPrice":"100.000000"}]}]}
+//                    Log.w("Sales_Details:", response.toString())
+//                    val statusCode = response.optString("statusCode")
+//                    if (statusCode == "1") {
+//                        val responseData = response.getJSONArray("responseData")
+//                        val `object` = responseData.optJSONObject(0)
+//                        val model = SalesOrderPrintPreviewModel()
+//                        model.soNumber = `object`.optString("soNumber")
+//                        model.soDate = `object`.optString("soDate")
+//                        model.customerCode = `object`.optString("customerCode")
+//                        model.customerName = `object`.optString("customerName")
+//                        model.address =
+//                            `object`.optString("address1") + `object`.optString("address2") + `object`.optString(
+//                                "address3"
+//                            )
+//                        model.address2 = `object`.optString("address2")
+//                        model.address3 = `object`.optString("address3")
+//                        // model.setDeliveryAddress(model.getAddress());
+//                        model.subTotal = `object`.optString("subTotal")
+//                        model.netTax = `object`.optString("taxTotal")
+//                        model.netTotal = `object`.optString("netTotal")
+//                        model.taxType = `object`.optString("taxType")
+//                        model.taxValue = `object`.optString("taxPerc")
+//                        model.outStandingAmount = `object`.optString("outstandingAmount")
+//                        model.billDiscount = `object`.optString("billDiscount")
+//                        model.itemDiscount = `object`.optString("totalDiscount")
+//                        Utils.setInvoiceMode("SalesOrder")
+//                        val signFlag = `object`.optString("signFlag")
+//                        if (signFlag == "Y") {
+//                            val signature = `object`.optString("signature")
+//                            Utils.setSignature(signature)
+//                            createSignature()
+//                        } else {
+//                            Utils.setSignature("")
+//                        }
+//                        val detailsArray = `object`.optJSONArray("salesOrderDetails")
+//                        for (i in 0 until detailsArray.length()) {
+//                            val detailObject = detailsArray.optJSONObject(i)
+//                            var salesListModel = SalesList()
+//                            salesListModel.productCode = detailObject.optString("productCode")
+//                            salesListModel.description = detailObject.optString("productName")
+//                            salesListModel.lqty = detailObject.optString("unitQty")
+//                            salesListModel.cqty = detailObject.optString("cartonQty")
+//                            salesListModel.netQty = detailObject.optString("quantity")
+//                            salesListModel.cartonPrice = detailObject.optString("cartonPrice")
+//                            salesListModel.unitPrice = detailObject.optString("price")
+//                            val qty1 = detailObject.optString("quantity").toDouble()
+//                            val price1 = detailObject.optString("price").toDouble()
+//                            val nettotal1 = qty1 * price1
+//                            salesListModel.total = nettotal1.toString()
+//                            salesListModel.pricevalue = price1.toString()
+//                            salesListModel.uomCode = detailObject.optString("uomCode")
+//                            salesListModel.pcsperCarton = detailObject.optString("pcsPerCarton")
+//                            salesListModel.itemtax = detailObject.optString("totalTax")
+//                            salesListModel.subTotal = detailObject.optString("subTotal")
+//                            salesPrintList!!.add(salesListModel)
+//                            if (!detailObject.optString("ReturnQty")
+//                                    .isEmpty() && detailObject.optString("ReturnQty").toDouble() > 0
+//                            ) {
+//                                salesListModel = SalesList()
+//                                salesListModel.productCode = detailObject.optString("ProductCode")
+//                                salesListModel.description = detailObject.optString("ProductName")
+//                                salesListModel.lqty = detailObject.optString("LQty")
+//                                salesListModel.cqty = detailObject.optString("CQty")
+//                                salesListModel.netQty = "-" + detailObject.optString("ReturnQty")
+//                                val qty12 = detailObject.optString("ReturnQty").toDouble()
+//                                val price12 = detailObject.optString("Price").toDouble()
+//                                val nettotal12 = qty12 * price12
+//                                salesListModel.total = nettotal12.toString()
+//                                salesListModel.pricevalue = price12.toString()
+//                                salesListModel.uomCode = detailObject.optString("UOMCode")
+//                                salesListModel.cartonPrice = detailObject.optString("CartonPrice")
+//                                salesListModel.unitPrice = detailObject.optString("Price")
+//                                salesListModel.pcsperCarton = detailObject.optString("PcsPerCarton")
+//                                salesListModel.itemtax = detailObject.optString("Tax")
+//                                salesListModel.subTotal = detailObject.optString("subTotal")
+//                                salesPrintList!!.add(salesListModel)
+//                            }
+//                            model.salesList = salesPrintList
+//                            salesOrderHeaderDetails!!.add(model)
+//                        }
+//                        sentSalesOrderDataPrint(copy)
+//                        // pDialog.dismiss();
+//                    } else {
+//                    }
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                }
+//            }, Response.ErrorListener { error: VolleyError ->
+//                // Do something when error occurred
+//                pDialog!!.dismiss()
+//                Log.w("Error_throwing:", error.toString())
+//            }) {
+//            override fun getHeaders(): Map<String, String> {
+//                val params = HashMap<String, String>()
+//                val creds =
+//                    String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD)
+//                val auth = "Basic " + Base64.encodeToString(creds.toByteArray(), Base64.DEFAULT)
+//                params["Authorization"] = auth
+//                return params
+//            }
+//        }
+//        jsonObjectRequest.setRetryPolicy(object : RetryPolicy {
+//            override fun getCurrentTimeout(): Int {
+//                return 50000
+//            }
+//
+//            override fun getCurrentRetryCount(): Int {
+//                return 50000
+//            }
+//
+//            @Throws(VolleyError::class)
+//            override fun retry(error: VolleyError) {
+//            }
+//        })
+//        // Add JsonArrayRequest to the RequestQueue
+//        requestQueue.add(jsonObjectRequest)
+//    }
     fun getUOM(jsonObject: JSONObject) {
         // Initialize a new RequestQueue instance
         val requestQueue = Volley.newRequestQueue(this)

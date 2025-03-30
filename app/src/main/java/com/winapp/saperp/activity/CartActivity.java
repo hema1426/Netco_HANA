@@ -69,6 +69,7 @@ import com.winapp.saperp.CommonMethods;
 import com.winapp.saperp.R;
 import com.winapp.saperp.adapter.CartAdapterNew;
 import com.winapp.saperp.db.DBHelper;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerModel;
@@ -2885,7 +2886,13 @@ public class CartActivity extends AppCompatActivity {
                             invoiceHeaderDetails.add(model);
                         }
                         // pDialog.dismiss();
-                        sentPrintData("Invoice", copy);
+                        if (printerType == "iMin Printer V2") {
+                            IminPrinterV2 printLayer = new IminPrinterV2(CartActivity.this);
+                            printLayer.printInvoice(copy, invoiceHeaderDetails, invoicePrintList, "true");
+
+                        }else {
+                            sentPrintData("Invoice", copy);
+                        }
                         // validatePrinterConfiguration("Invoice",copy);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -3108,7 +3115,12 @@ public class CartActivity extends AppCompatActivity {
                             model.setSalesList(salesOrderList);
                             salesOrderHeaderDetails.add(model);
                         }
-                        sentPrintData("SalesOrder", copy);
+                        if (printerType == "iMin Printer V2") {
+                            IminPrinterV2 printLayer = new IminPrinterV2(CartActivity.this);
+                            printLayer.printSalesOrder(copy, salesOrderHeaderDetails, salesOrderList);
+                        }else {
+                            sentPrintData("SalesOrder", copy);
+                        }
                         // validatePrinterConfiguration("SalesOrder",copy);
                     } catch (Exception e) {
                         e.printStackTrace();

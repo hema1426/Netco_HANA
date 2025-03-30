@@ -58,6 +58,7 @@ import com.winapp.saperp.activity.FilterCustomerListActivity;
 import com.winapp.saperp.activity.NavigationActivity;
 import com.winapp.saperp.adapter.SelectCustomerAdapter;
 import com.winapp.saperp.db.DBHelper;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerGroupModel;
 import com.winapp.saperp.model.CustomerModel;
@@ -893,7 +894,12 @@ public class ReceiptsListActivity extends NavigationActivity {
                         }else {
 
                         }
+                        if (printerType.equals("iMin Printer V2")) {
+                            IminPrinterV2 printLayer = new IminPrinterV2(ReceiptsListActivity.this);
+                        printLayer.printReceipts(1, receiptsHeaderDetails, receiptsPrintList);
+                    }else{
                         printReceipt(copy);
+                    }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

@@ -37,11 +37,13 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.winapp.saperp.R;
+import com.winapp.saperp.activity.CartActivity;
 import com.winapp.saperp.activity.CustomerListActivity;
 import com.winapp.saperp.activity.FilterCustomerListActivity;
 import com.winapp.saperp.activity.NavigationActivity;
 import com.winapp.saperp.adapter.SelectCustomerAdapter;
 import com.winapp.saperp.db.DBHelper;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerGroupModel;
 import com.winapp.saperp.model.CustomerModel;
@@ -876,8 +878,11 @@ public class NewSalesReturnListActivity extends NavigationActivity {
             } catch (IOException e) {
                 e.printStackTrace();
                    }
+        }else  if (printerType == "iMin Printer V2") {
+            IminPrinterV2 printLayer = new IminPrinterV2(NewSalesReturnListActivity.this);
+            printLayer.printSalesReturn(copy,salesReturnHeader,salesPrintReturnList);
         }
-    }
+        }
 
 
 

@@ -262,7 +262,6 @@ public class CashCollectionActivity extends AppCompatActivity {
             changeFragment(new CashInvoiceFragment(customerCode));
         }
 
-
         invoiceTab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

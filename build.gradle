@@ -7,13 +7,16 @@ buildscript {
     ext.butterKnifeVersion = '10.1.0'
 
     repositories {
+        maven {allowInsecureProtocol = true
+            url 'https://jitpack.io'}
         google()
         mavenCentral()
         maven { url "https://repo1.maven.org/maven2/"}
 //        maven {
 //            url  "https://api.mapbox.com/downloads/v2/releases/maven/"
 //        }
-//        maven { url 'https://jitpack.io' }
+
+
         maven { url "https://maven.scijava.org/content/repositories/public/"}
     }
     dependencies {

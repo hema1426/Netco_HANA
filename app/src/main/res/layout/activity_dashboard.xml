@@ -152,6 +152,17 @@
 
         </FrameLayout>
 
+        <TextView
+            android:id="@+id/samplePrint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@color/white"
+            android:padding="@dimen/_5sdp"
+            android:text="sample print"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/_12sdp"
+            android:visibility="visible" />
 
 
         <LinearLayout

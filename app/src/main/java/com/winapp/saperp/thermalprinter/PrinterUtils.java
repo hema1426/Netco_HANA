@@ -1901,7 +1901,8 @@ public class PrinterUtils extends AppCompatActivity {
                                 if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
                                     TscDll.sendcommand("TEXT 410," + y + ",\"Poppins.TTF\",0,8,8,\"" + fourDecimalPoint(Double.parseDouble(invoice.getPricevalue())) + "\"\n");
                                     TscDll.sendcommand("TEXT 490," + y + ",\"Poppins.TTF\",0,8,8,\"" +
-                                            twoDecimalPoint(Double.parseDouble(invoice.getTotal())) + "\"\n");                                }
+                                            twoDecimalPoint(Double.parseDouble(invoice.getTotal())) + "\"\n");
+                                }
                                 else{
                                     TscDll.sendcommand("TEXT 410," + y + ",\"Poppins.TTF\",0,8,8,\"" + invoice.getPricevalue() + "\"\n");
                                     TscDll.sendcommand("TEXT 490," + y + ",\"Poppins.TTF\",0,8,8,\"" +

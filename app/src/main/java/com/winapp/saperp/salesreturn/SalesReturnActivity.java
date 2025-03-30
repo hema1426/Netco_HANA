@@ -41,6 +41,7 @@ import com.winapp.saperp.R;
 import com.winapp.saperp.activity.FilterCustomerListActivity;
 import com.winapp.saperp.activity.NavigationActivity;
 import com.winapp.saperp.db.DBHelper;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerModel;
@@ -879,6 +880,9 @@ public class SalesReturnActivity extends NavigationActivity implements View.OnCl
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }else  if (printerType == "iMin Printer V2") {
+            IminPrinterV2 printLayer = new IminPrinterV2(SalesReturnActivity.this);
+            printLayer.printSalesReturn(copy,salesReturnHeader,salesReturnList);
         }
     }
 

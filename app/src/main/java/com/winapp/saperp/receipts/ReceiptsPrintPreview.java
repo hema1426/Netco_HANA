@@ -50,6 +50,7 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.saperp.R;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.ImageUtil;
 import com.winapp.saperp.utils.SessionManager;
@@ -722,6 +723,9 @@ public class ReceiptsPrintPreview extends AppCompatActivity implements OnPageCha
                         e.printStackTrace();
                     }
 
+                }else if (printerType.equals("iMin Printer V2")) {
+                    IminPrinterV2 printLayer = new IminPrinterV2(ReceiptsPrintPreview.this);
+                    printLayer.printReceipts(1, receiptsHeaderDetails, receiptsList);
                 }
             }
         });

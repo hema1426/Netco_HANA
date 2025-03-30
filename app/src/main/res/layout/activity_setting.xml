@@ -447,6 +447,13 @@
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="iMin Printer V2"
+                android:id="@+id/imin_printer_V2"
+                android:textSize="12dp" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Zebra Printer"
                 android:visibility="gone"
                 android:checked="false"

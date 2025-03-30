@@ -116,7 +116,7 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
     private RadioButton printerSelectButton;
     private String printerType;
     private String printerMacId;
-    private RadioButton tscPrinterRadio;
+    private RadioButton tscPrinterRadio,iMinPrinterV2_Radio;
     private RadioButton zebraPrinterRadio;
     private RadioButton inch_3_BluetoothRadio;
     private RadioButton inch_2_BlutoothRadio;
@@ -220,6 +220,7 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
         myEdit = sharedPreferences.edit();
         radioPrinterGroup = findViewById(R.id.radioGroup);
         tscPrinterRadio = findViewById(R.id.tsc_printer);
+        iMinPrinterV2_Radio = findViewById(R.id.imin_printer_V2);
         zebraPrinterRadio = findViewById(R.id.zebra_printer);
         inch_2_BlutoothRadio = findViewById(R.id.inch_2_5printer);
         inch_3_BluetoothRadio = findViewById(R.id.inch_3printer);
@@ -381,7 +382,9 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
                 inch_3_BluetoothRadio.setChecked(true);
             } else if (printerType.equals("2.5 Inch Bluetooth Generic")) {
                 inch_2_BlutoothRadio.setChecked(true);
-            } else {
+            }  else if (printerType.equals("iMin Printer V2")) {
+                iMinPrinterV2_Radio.setChecked(true);
+            }else {
                 zebraPrinterRadio.setChecked(true);
             }
         }

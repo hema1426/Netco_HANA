@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
+import android.os.RemoteException
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.util.Base64
@@ -35,6 +36,8 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
+import com.imin.printer.INeoPrinterCallback
+import com.imin.printer.PrinterHelper
 import com.winapp.saperp.R
 import com.winapp.saperp.activity.MainHomeActivity.CompanyChooseAdapter
 import com.winapp.saperp.adapter.CreditLimitDialogAdapter
@@ -89,6 +92,7 @@ class DashboardActivity : NavigationActivity() {
 
     var locationCodem: String? = null
     private var timeText: TextView? = null
+    private var samplePrintl: TextView? = null
     var dialog: AlertDialog? = null
     var pDialog: SweetAlertDialog? = null
     var pdialog: ProgressDialog? = null
@@ -147,6 +151,7 @@ class DashboardActivity : NavigationActivity() {
         creditLimit_Img = findViewById(R.id.creditLimit_dial)
         timeText = findViewById(R.id.time)
         companyLogo = findViewById(R.id.company_logo)
+        samplePrintl = findViewById(R.id.samplePrint)
         val c = Calendar.getInstance().time
         println("Current time => $c")
         var myThread: Thread? = null
@@ -188,6 +193,28 @@ class DashboardActivity : NavigationActivity() {
         dbHelper!!.removeAllInvoiceItems()
         dbHelper!!.removeAllItems()
         Utils.clearCustomerSession(this)
+
+        samplePrintl!!.setOnClickListener {
+
+            PrinterHelper.getInstance().printerSelfChecking(object : INeoPrinterCallback() {
+                @Throws(RemoteException::class)
+                override fun onRunResult(isSuccess: Boolean) {
+                }
+
+                @Throws(RemoteException::class)
+                override fun onReturnString(result: String?) {
+                }
+
+                @Throws(RemoteException::class)
+                override fun onRaiseException(code: Int, msg: String?) {
+                }
+
+                @Throws(RemoteException::class)
+                override fun onPrintResult(code: Int, msg: String?) {
+                }
+            })
+
+        }
 
 
         //   showCreditdialog(creditAmtApi);

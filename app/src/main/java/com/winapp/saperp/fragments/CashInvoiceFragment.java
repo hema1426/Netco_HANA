@@ -47,7 +47,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.saperp.R;
 import com.winapp.saperp.activity.CashCollectionActivity;
 import com.winapp.saperp.activity.NewInvoiceListActivity;
+import com.winapp.saperp.activity.SalesOrderListActivity;
 import com.winapp.saperp.adapter.NewCashCollectionAdapter;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.SettingsModel;
 import com.winapp.saperp.receipts.ReceiptPrintPreviewModel;
 import com.winapp.saperp.receipts.ReceiptsListActivity;
@@ -1898,7 +1900,14 @@ public class CashInvoiceFragment extends Fragment {
                         }else {
 
                         }
-                        printReceipt(copy);
+                        if (printerType.equals("iMin Printer V2")) {
+                            Utils.setSignature("");
+                            IminPrinterV2 printLayer = new IminPrinterV2(myContext);
+                            printLayer.printReceipts(1, receiptsHeaderDetails, receiptsPrintList);
+                        }else {
+                            printReceipt(copy);
+                        }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

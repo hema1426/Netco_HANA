@@ -94,6 +94,7 @@ import com.winapp.saperp.fragments.AllInvoices;
 import com.winapp.saperp.fragments.CustomerFragment;
 import com.winapp.saperp.fragments.PaidInvoices;
 import com.winapp.saperp.fragments.UnpaidInvoices;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.AppUtils;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerModel;
@@ -105,6 +106,7 @@ import com.winapp.saperp.model.UserRoll;
 import com.winapp.saperp.printpreview.DOPrintPreview;
 import com.winapp.saperp.printpreview.InvoicePrintPreviewActivity;
 import com.winapp.saperp.printpreview.NewInvoicePrintPreviewActivity;
+import com.winapp.saperp.printpreview.SalesOrderPrintPreview;
 import com.winapp.saperp.thermalprinter.PrinterUtils;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.FileDownloader;
@@ -3652,7 +3654,14 @@ public class NewInvoiceListActivity extends NavigationActivity
 
                             model.setSalesReturnList(salesReturnList);
                             invoiceHeaderDetails.add(model);
-                            printInvoice(copy,doPrint);
+
+                            if (printerType.equals("iMin Printer V2")) {
+                                Utils.setSignature("");
+                                IminPrinterV2 printLayer = new IminPrinterV2(NewInvoiceListActivity.this);
+                                printLayer.printInvoice(copy, invoiceHeaderDetails, invoicePrintList, doPrint);
+                            }else {
+                                printInvoice(copy, doPrint);
+                            }
                         } else {
                             Toast.makeText(getApplicationContext(), "Error in printing Data...", Toast.LENGTH_SHORT).show();
                         }

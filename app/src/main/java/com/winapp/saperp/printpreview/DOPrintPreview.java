@@ -57,6 +57,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.saperp.R;
 import com.winapp.saperp.activity.DeliveryOrderListActivity;
 import com.winapp.saperp.adapter.InvoicePrintPreviewAdapter;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.InvoicePrintPreviewModel;
 import com.winapp.saperp.thermalprinter.PrinterUtils;
 import com.winapp.saperp.tscprinter.TSCPrinterActivity;
@@ -869,6 +870,10 @@ public class DOPrintPreview extends AppCompatActivity implements OnPageChangeLis
 //                        e.printStackTrace();
 //                    }
 
+                }else if (printerType.equals("iMin Printer V2")) {
+                    Utils.setSignature("");
+                    IminPrinterV2 printLayer = new IminPrinterV2(DOPrintPreview.this);
+                    printLayer.printDeliveryOrder(1, invoiceHeaderDetails, invoiceList);
                 } else if (printerType.equals("Zebra Printer")) {
                     ZebraPrinterActivity zebraPrinterActivity = new ZebraPrinterActivity(DOPrintPreview.this, printerMacId);
                     zebraPrinterActivity.printDeliveryOrder(1, invoiceHeaderDetails, invoiceList);

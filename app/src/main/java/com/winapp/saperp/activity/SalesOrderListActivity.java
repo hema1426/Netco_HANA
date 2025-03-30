@@ -47,6 +47,7 @@ import com.winapp.saperp.adapter.SalesOrderAdapterNew;
 import com.winapp.saperp.adapter.SelectCustomerAdapter;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.fragments.CustomerFragment;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.AppUtils;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerModel;
@@ -1094,7 +1095,13 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                 model.setSalesList(salesPrintList);
                                 salesOrderHeaderDetails.add(model);
                             }
-                            sentPrintDate(copy);
+                            if (printerType.equals("iMin Printer V2")) {
+                                Utils.setSignature("");
+                                IminPrinterV2 printLayer = new IminPrinterV2(SalesOrderListActivity.this);
+                                printLayer.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList);
+                            }else {
+                                sentPrintDate(copy);
+                            }
                            // pDialog.dismiss();
                         }else {
 

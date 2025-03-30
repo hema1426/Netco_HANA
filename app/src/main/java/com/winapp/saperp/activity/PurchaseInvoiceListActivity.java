@@ -48,6 +48,7 @@ import com.winapp.saperp.adapter.PurchaseInvoiceAdapterNew;
 import com.winapp.saperp.adapter.SelectCustomerAdapter;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.fragments.CustomerFragment;
+import com.winapp.saperp.iminPrinter.IminPrinterV2;
 import com.winapp.saperp.model.AppUtils;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerModel;
@@ -996,6 +997,12 @@ public class PurchaseInvoiceListActivity extends NavigationActivity implements A
             } else if (printerType.equals("Zebra Printer")) {
                 ZebraPrinterActivity zebraPrinterActivity = new ZebraPrinterActivity(PurchaseInvoiceListActivity.this, printerMacId);
                 zebraPrinterActivity.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList);
+            }
+        }else{
+             if (printerType.equals("iMin Printer V2")) {
+                Utils.setSignature("");
+                IminPrinterV2 printLayer = new IminPrinterV2(PurchaseInvoiceListActivity.this);
+                printLayer.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList);
             }
         }
     }
