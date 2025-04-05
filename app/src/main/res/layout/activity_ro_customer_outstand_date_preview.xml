@@ -239,7 +239,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.5"
                     android:gravity="center"
                     android:text="INVOICE NO"
                     android:textColor="@color/colorPrimary"
@@ -251,7 +251,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="1.5"
+                    android:layout_weight="1.2"
                     android:gravity="center"
                     android:text="DATE"
                     android:textColor="@color/colorPrimary"
@@ -269,6 +269,17 @@
                     android:textColor="@color/colorPrimary"
                     android:textSize="12dp"
                     android:textStyle="bold" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="PAID"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12dp"
+                    android:textStyle="bold" />
+
 
                 <TextView
                     android:id="@+id/balance"
@@ -323,7 +334,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="2"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:visibility="invisible"
                 android:textColor="@color/colorPrimary"
@@ -334,15 +345,25 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="2"
+                android:layout_weight="1.7"
                 android:gravity="center"
                 android:text="TOTAL(SGD) :"
                 android:textColor="@color/black"
                 android:textSize="12sp"
                 android:textStyle="bold" />
-
             <TextView
                 android:id="@+id/nettotal_txt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/paidamt_txt"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -424,7 +445,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.2"
                     android:gravity="center"
                     android:visibility="invisible"
                     android:textColor="@color/colorPrimary"
@@ -435,7 +456,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.5"
                     android:gravity="center"
                     android:text="TOTAL($) :"
                     android:textColor="@color/black"
@@ -444,6 +465,17 @@
 
                 <TextView
                     android:id="@+id/nettotal_txt1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/paid_txt1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -489,7 +521,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.2"
                     android:gravity="center"
                     android:visibility="invisible"
                     android:textColor="@color/colorPrimary"
@@ -500,7 +532,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.5"
                     android:gravity="center"
                     android:text="NET TOTAL($) :"
                     android:textColor="@color/black"
@@ -509,6 +541,18 @@
 
                 <TextView
                     android:id="@+id/nettotal_txt_final"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/paidamt_txt_final"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

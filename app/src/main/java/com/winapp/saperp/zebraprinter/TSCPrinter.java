@@ -3731,7 +3731,7 @@ public class TSCPrinter {
                 TscDll.openport(macAddress);
 
                 int y = 0;
-                height = 70;
+                height = 80;
                 int totalheight = 0;
                 if(customerStateModels.get(0).getCustInvoiceDetailsARList().size() >0){
                     totalheight = 30 ;
@@ -3814,10 +3814,11 @@ public class TSCPrinter {
                 TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
                 y += 20;
-                TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Invoice No" + "\"\n");
-                TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Invoice Date" + "\"\n");
-                TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Net Total" + "\"\n");
-                TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+                TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                TscDll.sendcommand("TEXT 160," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv Date" + "\"\n");
+                TscDll.sendcommand("TEXT 290," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Total" + "\"\n");
+                TscDll.sendcommand("TEXT 380," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Paid" + "\"\n");
+                TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
 
                 y += LINE_SPACING;
                 TscDll.sendcommand("BAR 0," + y + ",800,2\n");
@@ -3825,6 +3826,7 @@ public class TSCPrinter {
                 int index = 1;
                 double sum_netbalance = 0.0;
                 double sum_nettotal = 0.0;
+                double sum_paid = 0.0;
                 double sum_netbalance1 = 0.0;
                 double sum_nettotal1 = 0.0;
                 double sum_netbalanceFinal = 0.0;
@@ -3834,12 +3836,14 @@ public class TSCPrinter {
                         customerStateModels.get(0).getCustInvoiceDetailList()) {
                     y += 35;
                     TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceNumber() + "\"\n");
-                    TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceDate() + "\"\n");
-                    TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getNetTotal())) + "\"\n");
-                    TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getBalanceAmount())) + "\"\n");
+                    TscDll.sendcommand("TEXT 160," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceDate() + "\"\n");
+                    TscDll.sendcommand("TEXT 300," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getNetTotal())) + "\"\n");
+                    TscDll.sendcommand("TEXT 390," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getPaidAmount())) + "\"\n");
+                    TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getBalanceAmount())) + "\"\n");
 
                     sum_netbalance += Double.parseDouble(custInvoiceDetails.getBalanceAmount());
                     sum_nettotal += Double.parseDouble(custInvoiceDetails.getNetTotal());
+                    sum_paid += Double.parseDouble(custInvoiceDetails.getPaidAmount());
 
                     index++;
                 }
@@ -3848,23 +3852,35 @@ public class TSCPrinter {
 
                 y += 20;
                 TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,8,8,\"" + "Total :($) " + "\"\n");
-                TscDll.sendcommand("TEXT 330," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(sum_nettotal) + "\"\n");
-                TscDll.sendcommand("TEXT 440," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(sum_netbalance) + "\"\n");
+                TscDll.sendcommand("TEXT 280," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(sum_nettotal) + "\"\n");
+                TscDll.sendcommand("TEXT 380," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(sum_paid) + "\"\n");
+                TscDll.sendcommand("TEXT 460," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(sum_netbalance) + "\"\n");
 
                 if(customerStateModels.get(0).getCustInvoiceDetailsARList().size() > 0){
 
                     y += LINE_SPACING;
                     TscDll.sendcommand("BAR 0," + y + ",800,2\n");
                     y += 20;
-                    TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "AR Credit Statement" + "\"\n");
 
+                    TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "AR Credit Statement" + "\"\n");
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+                    y += 20;
+
+                    TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                    TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv Date" + "\"\n");
+                    TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Net Total" + "\"\n");
+                    TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
                     for (CustomerStateModel.CustInvoiceDetailsAR custInvoiceDetailsAR : customerStateModels.get(0).getCustInvoiceDetailsARList()) {
-                        y += 35;
+                        y += 30;
                         TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetailsAR.getInvoiceNumber() + "\"\n");
                         TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetailsAR.getInvoiceDate() + "\"\n");
                         TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getNetTotal())) + "\"\n");
-                        TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount())) + "\"\n");
+                        TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount())) + "\"\n");
 
                         sum_netbalance1 += Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount());
                         sum_nettotal1 += Double.parseDouble(custInvoiceDetailsAR.getNetTotal());
@@ -5783,7 +5799,7 @@ public class TSCPrinter {
             public void run() {
                 TscDll.openport(macAddress);
                 int y = 0;
-                height = 70;
+                height = 80;
                 int totalheight = 0;
                 if(customerStateModels.get(0).getCustInvoiceDetailsARList().size() >0){
                     totalheight = 30 ;
@@ -5848,8 +5864,8 @@ public class TSCPrinter {
                 y += LINE_SPACING + 10;
                 // Define the Box
                 //TscDll.sendcommand("BOX 0,"+y+",570,0,2\n");
-                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "FROM DATE: " + fromDate + "\"\n");
-                TscDll.sendcommand("TEXT 330," + y + ",\"Poppins.TTF\",0,8,8,\"" + "TO DATE: " + toDate + "\"\n");
+//                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "FROM DATE: " + fromDate + "\"\n");
+                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "TO DATE: " + toDate + "\"\n");
 
                 y += 40;
                 if (customerStateModels.get(0).getCustomerName().length() <= 45) {
@@ -5868,10 +5884,11 @@ public class TSCPrinter {
 
                 y += 20;
                 // TscDll.sendcommand("TEXT 0,"+y+",\"Poppins.TTF\",0,8,8,\""+"SNo"+"\"\n");
-                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Invoice No" + "\"\n");
-                TscDll.sendcommand("TEXT 220," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Invoice Date" + "\"\n");
-                TscDll.sendcommand("TEXT 370," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Net Total" + "\"\n");
-                TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+                TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                TscDll.sendcommand("TEXT 160," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv Date" + "\"\n");
+                TscDll.sendcommand("TEXT 290," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Total" + "\"\n");
+                TscDll.sendcommand("TEXT 380," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Paid" + "\"\n");
+                TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
 
                 y += LINE_SPACING;
                 TscDll.sendcommand("BAR 0," + y + ",800,2\n");
@@ -5879,6 +5896,7 @@ public class TSCPrinter {
                 int index = 1;
                 double sum_netbalance = 0.0;
                 double sum_nettotal = 0.0;
+                double sum_paid = 0.0;
                 double sum_netbalance1 = 0.0;
                 double sum_nettotal1 = 0.0;
                 double sum_netbalanceFinal = 0.0;
@@ -5889,11 +5907,13 @@ public class TSCPrinter {
                     y += 35;
                     // TscDll.sendcommand("TEXT 5,"+y+",\"Poppins.TTF\",0,8,8,\""+index+"\"\n");
                     TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceNumber() + "\"\n");
-                    TscDll.sendcommand("TEXT 220," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceDate() + "\"\n");
-                    TscDll.sendcommand("TEXT 370," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getNetTotal())) + "\"\n");
+                    TscDll.sendcommand("TEXT 160," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceDate() + "\"\n");
+                    TscDll.sendcommand("TEXT 300," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getNetTotal())) + "\"\n");
+                    TscDll.sendcommand("TEXT 390," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getPaidAmount())) + "\"\n");
                     TscDll.sendcommand("TEXT 470," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getBalanceAmount())) + "\"\n");
 
                     sum_netbalance += Double.parseDouble(custInvoiceDetails.getBalanceAmount());
+                    sum_paid += Double.parseDouble(custInvoiceDetails.getPaidAmount());
                     sum_nettotal += Double.parseDouble(custInvoiceDetails.getNetTotal());
 
                     index++;
@@ -5905,6 +5925,9 @@ public class TSCPrinter {
                 TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,9,9,\"" + "Total : ( $ ) " + "\"\n");
                 TscDll.sendcommand("TEXT 420," + y + ",\"Bold.TTF\",0,9,9,\"" + twoDecimalPoint(sum_nettotal) + "\"\n");
                 y += LINE_SPACING;
+                TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,9,9,\"" + "Paid Amt : ( $ ) " + "\"\n");
+                TscDll.sendcommand("TEXT 420," + y + ",\"Bold.TTF\",0,9,9,\"" + twoDecimalPoint(sum_paid) + "\"\n");
+                y += LINE_SPACING;
                 TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,9,9,\"" + "Balance : ( $ ) " + "\"\n");
                 TscDll.sendcommand("TEXT 420," + y + ",\"Bold.TTF\",0,9,9,\"" + twoDecimalPoint(sum_netbalance) + "\"\n");
 
@@ -5914,13 +5937,25 @@ public class TSCPrinter {
                     y += 20;
 
                     TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "AR Credit Statement" + "\"\n");
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+                    y += 20;
+
+                    TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                    TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv Date" + "\"\n");
+                    TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Net Total" + "\"\n");
+                    TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
                     for (CustomerStateModel.CustInvoiceDetailsAR custInvoiceDetailsAR : customerStateModels.get(0).getCustInvoiceDetailsARList()) {
-                        y += 35;
+                        y += 30;
                         TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetailsAR.getInvoiceNumber() + "\"\n");
                         TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetailsAR.getInvoiceDate() + "\"\n");
                         TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getNetTotal())) + "\"\n");
-                        TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount())) + "\"\n");
+                        TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount())) + "\"\n");
+
 
                         sum_netbalance1 += Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount());
                         sum_nettotal1 += Double.parseDouble(custInvoiceDetailsAR.getNetTotal());
@@ -5962,7 +5997,7 @@ public class TSCPrinter {
             public void run() {
                 TscDll.openport(macAddress);
                 int y = 0;
-                height = 70;
+                height = 80;
                 int totalheight = 0;
                 if(customerStateModels.get(0).getCustInvoiceDetailsARList().size() >0){
                     totalheight = 30 ;
@@ -6047,10 +6082,12 @@ public class TSCPrinter {
 
                 y += 20;
                 // TscDll.sendcommand("TEXT 0,"+y+",\"Poppins.TTF\",0,8,8,\""+"SNo"+"\"\n");
-                TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Invoice No" + "\"\n");
-                TscDll.sendcommand("TEXT 220," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Invoice Date" + "\"\n");
-                TscDll.sendcommand("TEXT 370," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Net Total" + "\"\n");
-                TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+                TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                TscDll.sendcommand("TEXT 140," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Date" + "\"\n");
+                TscDll.sendcommand("TEXT 290," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Total" + "\"\n");
+                TscDll.sendcommand("TEXT 380," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Paid" + "\"\n");
+                TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+
 
                 y += LINE_SPACING;
                 TscDll.sendcommand("BAR 0," + y + ",800,2\n");
@@ -6058,6 +6095,7 @@ public class TSCPrinter {
                 int index = 1;
                 double sum_netbalance = 0.0;
                 double sum_nettotal = 0.0;
+                double sum_paid = 0.0;
                 double sum_netbalance1 = 0.0;
                 double sum_nettotal1 = 0.0;
                 double sum_netbalanceFinal = 0.0;
@@ -6068,12 +6106,14 @@ public class TSCPrinter {
                     y += 35;
                     // TscDll.sendcommand("TEXT 5,"+y+",\"Poppins.TTF\",0,8,8,\""+index+"\"\n");
                     TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceNumber() + "\"\n");
-                    TscDll.sendcommand("TEXT 220," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceDate() + "\"\n");
-                    TscDll.sendcommand("TEXT 370," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getNetTotal())) + "\"\n");
+                    TscDll.sendcommand("TEXT 140," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetails.getInvoiceDate() + "\"\n");
+                    TscDll.sendcommand("TEXT 300," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getNetTotal())) + "\"\n");
+                    TscDll.sendcommand("TEXT 390," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getPaidAmount())) + "\"\n");
                     TscDll.sendcommand("TEXT 470," + y + ",\"Bold.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetails.getBalanceAmount())) + "\"\n");
 
                     sum_netbalance += Double.parseDouble(custInvoiceDetails.getBalanceAmount());
                     sum_nettotal += Double.parseDouble(custInvoiceDetails.getNetTotal());
+                    sum_paid += Double.parseDouble(custInvoiceDetails.getPaidAmount());
 
                     index++;
                 }
@@ -6084,6 +6124,9 @@ public class TSCPrinter {
                 TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,9,9,\"" + "Total : ( $ ) " + "\"\n");
                 TscDll.sendcommand("TEXT 420," + y + ",\"Bold.TTF\",0,9,9,\"" + twoDecimalPoint(sum_nettotal) + "\"\n");
                 y += LINE_SPACING;
+                TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,9,9,\"" + "Paid Amt : ( $ ) " + "\"\n");
+                TscDll.sendcommand("TEXT 420," + y + ",\"Bold.TTF\",0,9,9,\"" + twoDecimalPoint(sum_paid) + "\"\n");
+                y += LINE_SPACING;
                 TscDll.sendcommand("TEXT 100," + y + ",\"Bold.TTF\",0,9,9,\"" + "Balance : ( $ ) " + "\"\n");
                 TscDll.sendcommand("TEXT 420," + y + ",\"Bold.TTF\",0,9,9,\"" + twoDecimalPoint(sum_netbalance) + "\"\n");
 
@@ -6093,13 +6136,24 @@ public class TSCPrinter {
                     y += 20;
 
                     TscDll.sendcommand("TEXT 0," + y + ",\"Poppins.TTF\",0,8,8,\"" + "AR Credit Statement" + "\"\n");
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
+                    y += 20;
+
+                    TscDll.sendcommand("TEXT 10," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv No" + "\"\n");
+                    TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Inv Date" + "\"\n");
+                    TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Net Total" + "\"\n");
+                    TscDll.sendcommand("TEXT 470," + y + ",\"Poppins.TTF\",0,8,8,\"" + "Balance" + "\"\n");
+
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
                     for (CustomerStateModel.CustInvoiceDetailsAR custInvoiceDetailsAR : customerStateModels.get(0).getCustInvoiceDetailsARList()) {
                         y += 35;
                         TscDll.sendcommand("TEXT 5," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetailsAR.getInvoiceNumber() + "\"\n");
                         TscDll.sendcommand("TEXT 180," + y + ",\"Poppins.TTF\",0,8,8,\"" + custInvoiceDetailsAR.getInvoiceDate() + "\"\n");
                         TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getNetTotal())) + "\"\n");
-                        TscDll.sendcommand("TEXT 450," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount())) + "\"\n");
+                        TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + twoDecimalPoint(Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount())) + "\"\n");
 
                         sum_netbalance1 += Double.parseDouble(custInvoiceDetailsAR.getBalanceAmount());
                         sum_nettotal1 += Double.parseDouble(custInvoiceDetailsAR.getNetTotal());

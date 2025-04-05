@@ -28,7 +28,7 @@ public class SapRoCustomerOutstandingARPreviewAdapter extends RecyclerView.Adapt
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.sap_ro_customer_outstand_preview_item, parent, false));
+        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.ro_customer_ar_preview_item, parent, false));
     }
 
     @Override

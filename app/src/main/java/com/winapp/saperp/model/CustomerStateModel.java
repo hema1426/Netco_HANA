@@ -55,6 +55,15 @@ public class CustomerStateModel {
         private String invoiceDate;
         private String netTotal;
         private String balanceAmount;
+        private String paidAmount;
+
+        public String getPaidAmount() {
+            return paidAmount;
+        }
+
+        public void setPaidAmount(String paidAmount) {
+            this.paidAmount = paidAmount;
+        }
 
         public String getInvoiceNumber() {
             return invoiceNumber;

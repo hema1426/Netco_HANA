@@ -27,7 +27,7 @@ public class SapRoCustomerOutstandingPreviewAdapter extends RecyclerView.Adapter
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.sap_ro_customer_outstand_preview_item, parent, false));
+        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.ro_customer_preview_item, parent, false));
     }
 
     @Override
@@ -39,6 +39,7 @@ public class SapRoCustomerOutstandingPreviewAdapter extends RecyclerView.Adapter
         viewHolder.invoicedate.setText(customerList.getInvoiceDate());
         viewHolder.nettotal.setText(customerList.getNetTotal());
         viewHolder.balance.setText(customerList.getBalanceAmount());
+        viewHolder.paidAmt.setText(customerList.getPaidAmount());
     }
 
     @Override
@@ -48,7 +49,7 @@ public class SapRoCustomerOutstandingPreviewAdapter extends RecyclerView.Adapter
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         private TextView slNo;
-        private TextView invoiceno;
+        private TextView invoiceno,paidAmt;
         private TextView invoicedate,nettotal,balance;
 
         public ViewHolder(View view) {
@@ -58,6 +59,7 @@ public class SapRoCustomerOutstandingPreviewAdapter extends RecyclerView.Adapter
             invoicedate=view.findViewById(R.id.item_invoicedate);
             nettotal=view.findViewById(R.id.itemnettoal);
             balance=view.findViewById(R.id.item_balance);
+            paidAmt=view.findViewById(R.id.item_paid);
         }
     }
 }

@@ -69,8 +69,8 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
     private ArrayList<CustomerStateModel.CustInvoiceDetails> custInvoiceDetailsList ;
     private ArrayList<CustomerStateModel.CustInvoiceDetailsAR> custInvoiceDetailsARList ;
 
-    private TextView fromdat,todat,nettotal,nettotal_txt_final,nettotalAr1;
-    private TextView balance,balanceAr1,balance_final,cust_name;
+    private TextView fromdat,todat,nettotal,nettotal_txt_final,nettotalAr1,cust_name ;
+    private TextView balance,balanceAr1,balance_final,paidamt_txtl;
     private RecyclerView customerListView;
     private RoCustomerPreviewPrintAdapter adapter;
     private SapRoCustomerOutstandingARPreviewAdapter adapter1;
@@ -79,6 +79,7 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
     private LinearLayout ArCustlistLayl;
     double mNettotal =0.0;
     double mBalance =0.0;
+    double mPaid =0.0;
     double mNettotal1 =0.0;
     double mBalance1 =0.0;
     double mNettotalFinal =0.0;
@@ -120,6 +121,7 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
         nettotal_txt_final =findViewById (R.id.nettotal_txt_final);
         balanceAr1 =findViewById (R.id.balance_txt1);
         balance_final =findViewById (R.id.balance_txt_final);
+        paidamt_txtl =findViewById (R.id.paidamt_txt);
 
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE);
         printerType=sharedPreferences.getString("printer_type","");
@@ -204,6 +206,7 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
                         double nettotal1 = 0.0;
                         double nettotal2 = 0.0;
                         double balance1 = 0.0;
+                        double paidAmtt = 0.0;
                         double balance2 = 0.0;
                         JSONArray jsonArray1 = detailObject.optJSONArray("reportCustomerStatementDetails");
 
@@ -214,10 +217,15 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
                             custInvoiceDetailModel.setInvoiceDate(object.optString("invoiceDate"));
                             custInvoiceDetailModel.setNetTotal(Utils.twoDecimalPoint(Double.parseDouble(object.optString("netTotal"))));
                             custInvoiceDetailModel.setBalanceAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("balance"))));
+                            custInvoiceDetailModel.setPaidAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("paidAmt"))));
+
                             nettotal1 += Double.parseDouble(object.optString("netTotal"));
                             balance1 += Double.parseDouble(object.optString("balance"));
+                            paidAmtt += Double.parseDouble(object.optString("paidAmt"));
+
                             mNettotal = Double.parseDouble(twoDecimalPoint(nettotal1));
                             mBalance = Double.parseDouble(twoDecimalPoint(balance1));
+                            mPaid = Double.parseDouble(twoDecimalPoint(paidAmtt));
 
                             custInvoiceDetailsList.add(custInvoiceDetailModel);
                         }
@@ -248,6 +256,7 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
                                 setCustomerAdapter(customerStateList);
                                 nettotal.setText(String.valueOf(mNettotal));
                                 balance.setText(String.valueOf(mBalance));
+                                paidamt_txtl.setText(String.valueOf(mPaid));
                             }
                             if (custInvoiceDetailsARList.size() > 0) {
                                 setCustomerAdapterAR(customerStateList);
@@ -257,6 +266,8 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
                                 balanceAr1.setText(String.valueOf(mBalance1));
                                 mNettotalFinal = mNettotal - mNettotal1;
                                 mBalanceFinal = mBalance - mBalance1;
+                                mBalanceFinal = mBalance - mBalance1;
+
                                 nettotal_txt_final.setText(twoDecimalPoint(mNettotalFinal));
                                 balance_final.setText(twoDecimalPoint(mBalanceFinal));
                                 Log.w("custnettot", "" + mNettotal + ".." + mBalance);

@@ -1699,6 +1699,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                             custInvoiceDetailModel.setInvoiceDate(object.optString("invoiceDate"));
                             custInvoiceDetailModel.setNetTotal(object.optString("netTotal"));
                             custInvoiceDetailModel.setBalanceAmount(object.optString("balance"));
+                            custInvoiceDetailModel.setPaidAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("paidAmt"))));
+
                             nettotal1 += Double.parseDouble(object.optString("netTotal"));
                             balance1 += Double.parseDouble(object.optString("balance"));
                             custInvoiceDetailsList.add(custInvoiceDetailModel);
@@ -1815,6 +1817,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                             custInvoiceDetailModel.setInvoiceDate(object.optString("invoiceDate"));
                             custInvoiceDetailModel.setNetTotal(object.optString("netTotal"));
                             custInvoiceDetailModel.setBalanceAmount(object.optString("balance"));
+                            custInvoiceDetailModel.setPaidAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("paidAmt"))));
+
                             nettotal1 += Double.parseDouble(object.optString("netTotal"));
                             balance1 += Double.parseDouble(object.optString("balance"));
                             custInvoiceDetailsList.add(custInvoiceDetailModel);

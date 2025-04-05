@@ -60,7 +60,7 @@ public class CustomerLisrOutstandPreviewActivity extends AppCompatActivity {
     private ArrayList<CustomerStateModel.CustInvoiceDetails> custInvoiceDetailsList ;
     private ArrayList<CustomerStateModel.CustInvoiceDetailsAR> custInvoiceDetailsARList ;
     private TextView fromdat,todat,nettotal,nettotal_txt_final,nettotalAr1;
-    private TextView balance,balanceAr1,balance_final,cust_name;
+    private TextView balance,balanceAr1,balance_final,paidAmt_txt,cust_name;
     private RecyclerView customerListView;
     private RecyclerView customerListView1;
     private LinearLayout ArCustlistLayl;
@@ -68,6 +68,7 @@ public class CustomerLisrOutstandPreviewActivity extends AppCompatActivity {
     private SapRoCustomerOutstandingARPreviewAdapter adapter1;
     double mNettotal =0.0;
     double mBalance =0.0;
+    double mPaid =0.0;
     double mNettotal1 =0.0;
     double mBalance1 =0.0;
     double mNettotalFinal =0.0;
@@ -100,6 +101,7 @@ public class CustomerLisrOutstandPreviewActivity extends AppCompatActivity {
         balance =findViewById (R.id.balance_txt);
         balanceAr1 =findViewById (R.id.balance_txt1);
         balance_final =findViewById (R.id.balance_txt_final);
+        paidAmt_txt =findViewById (R.id.paidamt_txt);
         cust_name =findViewById (R.id.customer_txt);
         customerListView = findViewById (R.id.rv_customerlist);
         customerListView1 = findViewById (R.id.rv_customerlist1);
@@ -186,6 +188,7 @@ public class CustomerLisrOutstandPreviewActivity extends AppCompatActivity {
                                 double nettotal2 = 0.0;
                                 double balance1 = 0.0;
                                 double balance2 = 0.0;
+                                double paidAmt = 0.0;
 
                                 JSONArray jsonArray1 = detailObject.optJSONArray("reportCustomerStatementDetails");
 
@@ -197,11 +200,15 @@ public class CustomerLisrOutstandPreviewActivity extends AppCompatActivity {
                                     custInvoiceDetailModel.setInvoiceDate(object.optString("invoiceDate"));
                                     custInvoiceDetailModel.setNetTotal(object.optString("netTotal"));
                                     custInvoiceDetailModel.setBalanceAmount(object.optString("balance"));
+                                    custInvoiceDetailModel.setPaidAmount(object.optString("paidAmt"));
 
                                     nettotal1 += Double.parseDouble(object.optString("netTotal"));
                                     balance1 += Double.parseDouble(object.optString("balance"));
+                                    paidAmt += Double.parseDouble(object.optString("paidAmt"));
                                     mNettotal = Double.parseDouble(twoDecimalPoint(nettotal1));
                                     mBalance = Double.parseDouble(twoDecimalPoint(balance1));
+                                    mPaid = Double.parseDouble(twoDecimalPoint(paidAmt));
+                                    Log.w("cusPaid", "" + mPaid );
 
                                     custInvoiceDetailsList.add(custInvoiceDetailModel);
                                 }
@@ -235,6 +242,7 @@ public class CustomerLisrOutstandPreviewActivity extends AppCompatActivity {
                                     setCustomerAdapter(customerStateList);
                                     nettotal.setText(String.valueOf(mNettotal));
                                     balance.setText(String.valueOf(mBalance));
+                                    paidAmt_txt.setText(String.valueOf(mPaid));
                                 }
                                 if (custInvoiceDetailsARList.size() > 0) {
                                     setCustomerAdapterAR(customerStateList);

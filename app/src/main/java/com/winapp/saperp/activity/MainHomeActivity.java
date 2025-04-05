@@ -192,6 +192,7 @@ public class MainHomeActivity extends NavigationActivity implements NavigationVi
         progressLayout=findViewById(R.id.customer_progress);
         rootLayout=findViewById(R.id.rootLayout);
         emptyLayout=findViewById(R.id.empty_layout);
+
         setupViewPager(viewPager);
 
         String customerId = sharedPreferences.getString("customerId", "");

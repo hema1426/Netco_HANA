@@ -41,6 +41,7 @@ public class RoCustomerPreviewPrintAdapter extends RecyclerView.Adapter<RoCustom
         viewHolder.invoicedate.setText(customerList.getInvoiceDate());
         viewHolder.nettotal.setText(customerList.getNetTotal());
         viewHolder.balance.setText(customerList.getBalanceAmount());
+        viewHolder.paid.setText(customerList.getPaidAmount());
     }
 
     @Override
@@ -50,7 +51,7 @@ public class RoCustomerPreviewPrintAdapter extends RecyclerView.Adapter<RoCustom
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         private TextView slNo;
-        private TextView invoiceno;
+        private TextView invoiceno,paid;
         private TextView invoicedate,nettotal,balance;
 
         public ViewHolder(View view) {
@@ -60,6 +61,7 @@ public class RoCustomerPreviewPrintAdapter extends RecyclerView.Adapter<RoCustom
             invoicedate=view.findViewById(R.id.item_invoicedate);
             nettotal=view.findViewById(R.id.itemnettoal);
             balance=view.findViewById(R.id.item_balance);
+            paid=view.findViewById(R.id.item_paid);
 
         }
     }

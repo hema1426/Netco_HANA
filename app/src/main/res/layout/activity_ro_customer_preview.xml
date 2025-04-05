@@ -238,9 +238,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.5"
                     android:gravity="center"
-                    android:text="INVOICE NO"
+                    android:text="INV NO"
                     android:textColor="@color/colorPrimary"
                     android:textSize="12dp"
                     android:textStyle="bold" />
@@ -250,9 +250,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="1.5"
+                    android:layout_weight="1.2"
                     android:gravity="center"
-                    android:text="DATE"
+                    android:text="INV DATE"
                     android:textColor="@color/colorPrimary"
                     android:textSize="12dp"
                     android:textStyle="bold" />
@@ -265,6 +265,17 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="TOTAL"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="PAID"
                     android:textColor="@color/colorPrimary"
                     android:textSize="12dp"
                     android:textStyle="bold" />
@@ -322,7 +333,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="2"
+                android:layout_weight="1.3"
                 android:gravity="center"
                 android:visibility="invisible"
                 android:textColor="@color/colorPrimary"
@@ -333,7 +344,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="2"
+                android:layout_weight="1.2"
                 android:gravity="center"
                 android:text="TOTAL(SGD) :"
                 android:textColor="@color/black"
@@ -342,6 +353,17 @@
 
             <TextView
                 android:id="@+id/nettotal_txt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/paidamt_txt"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -369,7 +391,7 @@
         <LinearLayout
             android:id="@+id/ArCustlistLay"
             android:orientation="vertical"
-            android:visibility="visible"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -386,12 +408,77 @@
                 android:textColor="@color/colorPrimary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5sp"
+                android:padding="5sp"
+                android:background="@color/lit_blue"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="SNO"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1.5"
+                    android:gravity="center"
+                    android:text="INV NO"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1.2"
+                    android:gravity="center"
+                    android:text="INV DATE"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="TOTAL"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12dp"
+                    android:textStyle="bold" />
+
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="BALANCE"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12dp"
+                    android:textStyle="bold" />
+
+
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_customerlist1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:listitem="@layout/ro_customer_preview_item">
+                tools:listitem="@layout/ro_customer_ar_preview_item">
 
             </androidx.recyclerview.widget.RecyclerView>
 
@@ -423,7 +510,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.4"
                     android:gravity="center"
                     android:visibility="invisible"
                     android:textColor="@color/colorPrimary"
@@ -434,9 +521,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.3"
                     android:gravity="center"
-                    android:text="TOTAL($) :"
+                    android:text="TOTAL(SGD) :"
                     android:textColor="@color/black"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -488,7 +575,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.1"
                     android:gravity="center"
                     android:visibility="invisible"
                     android:textColor="@color/colorPrimary"
@@ -499,13 +586,12 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_weight="2"
+                    android:layout_weight="1.7"
                     android:gravity="center"
-                    android:text="NET TOTAL($) :"
+                    android:text="NET TOTAL(SGD) :"
                     android:textColor="@color/black"
                     android:textSize="12sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/nettotal_txt_final"
                     android:layout_width="0dp"

@@ -63,19 +63,6 @@
                         android:textSize="12sp"
                         />
                     <TextView
-                        android:id="@+id/item_paid"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:text="0.0"
-                        android:layout_weight="1"
-                        android:textColor="@color/black"
-                        android:textStyle="bold"
-                        android:textSize="12sp" />
-
-                    <TextView
                         android:id="@+id/item_balance"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
