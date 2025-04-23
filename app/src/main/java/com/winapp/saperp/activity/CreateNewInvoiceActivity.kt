@@ -915,17 +915,17 @@ class CreateNewInvoiceActivity : AppCompatActivity(), OnClickListener {
             }
         }
         Log.w("settleInvDate", "" + isSettlementByNextDate)
-        val jsonObject = JSONObject()
-        try {
-            jsonObject.put("User", username)
-            jsonObject.put("CardCode", customerCode)
-            jsonObject.put("LocationCode", locationCode)
-
-            getAllProducts(jsonObject)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-            Log.w("Erroraa:", Objects.requireNonNull(e.message!!))
-        }
+//        val jsonObject = JSONObject()
+//        try {
+//            jsonObject.put("User", username)
+//            jsonObject.put("CardCode", customerCode)
+//            jsonObject.put("LocationCode", locationCode)
+//
+//            getAllProducts(jsonObject)
+//        } catch (e: JSONException) {
+//            e.printStackTrace()
+//            Log.w("Erroraa:", Objects.requireNonNull(e.message!!))
+//        }
         val jsonObj = JSONObject()
         try {
             jsonObj.put("CustomerCode", customerCode)

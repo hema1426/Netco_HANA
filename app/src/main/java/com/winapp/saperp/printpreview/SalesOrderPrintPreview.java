@@ -900,6 +900,8 @@ public class SalesOrderPrintPreview extends AppCompatActivity implements OnPageC
                         e.printStackTrace();
                     }
                 }else if (printerType.equals("iMin Printer V2")) {
+                    Toast.makeText(getApplicationContext(), "SOPrevieimin " + salesOrderList.size(), Toast.LENGTH_SHORT).show();
+
                     Utils.setSignature("");
                     IminPrinterV2 printLayer = new IminPrinterV2(SalesOrderPrintPreview.this);
                     printLayer.printSalesOrder(1, salesOrderHeaderDetails, salesOrderList);

@@ -63,8 +63,8 @@ public class Utils {
     public static String unpaid = "";
     public static String paid = "";
 
-    public static String orderDate="";
-    public static String orderNo="";
+    public static String orderDate = "";
+    public static String orderNo = "";
     public static ArrayList<NewLocationModel.LocationDetails> locationDetails;
 
     public static String getOrderDate() {
@@ -122,6 +122,7 @@ public class Utils {
     public static void setCurrentDateTime(String currentDateTime) {
         Utils.currentDateTime = currentDateTime;
     }
+
     public static String getInvoiceDate() {
         return invoiceDate;
     }
@@ -129,6 +130,7 @@ public class Utils {
     public static void setInvoiceDate(String invoiceDate) {
         Utils.invoiceDate = invoiceDate;
     }
+
     public static String getReceiptMode() {
         return receiptMode;
     }
@@ -166,7 +168,7 @@ public class Utils {
     }
 
     public static void setSignature(String signature) {
-        Log.d("cg_setSign",""+signature);
+        Log.d("cg_setSign", "" + signature);
         Utils.signature = signature;
         if (signature.isEmpty()) {
             Utils.setReceiptMode("");
@@ -178,12 +180,13 @@ public class Utils {
     }
 
     public static void setSelectImage(String selectImage) {
-        Log.d("cg_setImg",""+selectImage);
+        Log.d("cg_setImg", "" + selectImage);
         Utils.selectImage = selectImage;
 //        if (selectImage.isEmpty()) {
 //            Utils.setReceiptMode("");
 //        }
     }
+
     public static String getNextInvoiceDate(String date) throws ParseException {
         String dt = date;  // Start date
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -191,16 +194,18 @@ public class Utils {
         c.setTime(sdf.parse(dt));
         c.add(Calendar.DATE, 1);  // number of days to add
         dt = sdf.format(c.getTime());
-        System.out.println("GivenNextDate: "+dt);
+        System.out.println("GivenNextDate: " + dt);
         return dt;
     }
+
     public static String getDayOfTheDate(String givenDate) throws ParseException {
         DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         Format f = new SimpleDateFormat("EEEE");
         String str = f.format(sdf.parse(givenDate));
-        System.out.println("Day_Name: "+str);
+        System.out.println("Day_Name: " + str);
         return str;
     }
+
     public static ArrayList<NewLocationModel.LocationDetails> getLocationList() {
         return locationDetails;
     }
@@ -208,6 +213,7 @@ public class Utils {
     public static void setLocationList(ArrayList<NewLocationModel.LocationDetails> locationList) {
         Utils.locationDetails = locationList;
     }
+
     // email validation
     public static boolean isValidMail(String email) {
         String EMAIL_STRING = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
@@ -292,6 +298,11 @@ public class Utils {
         return false;
     }
 
+    public static String currentdateTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss", Locale.getDefault());
+    String currentDateandTime = sdf.format(new Date());
+    return currentDateandTime ;
+}
     public static String twoDecimalPoint(double d) {
         DecimalFormat df = new DecimalFormat("#.##");
         df.setMinimumFractionDigits(2);

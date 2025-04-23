@@ -190,7 +190,9 @@ public class IminPrinterV2 {
 
         try {
             for (int i = 0; i < copy; i++) {
-                Log.w("invoiceimin", "");
+                Log.w("invoiceimin1", "");
+                Toast.makeText(context, "invoiceimin1 " + invoiceList.size(), Toast.LENGTH_SHORT).show();
+
                 PrinterHelper.getInstance().setTextBitmapSize(25);
                 PrinterHelper.getInstance().setTextBitmapTypeface("Typeface.DEFAULT_BOLD");
                 PrinterHelper.getInstance().printTextBitmapWithAli(company_name, 1, null);
@@ -311,7 +313,8 @@ public class IminPrinterV2 {
                 double overallItemDiscount = 0.0;
 
                 for (InvoicePrintPreviewModel.InvoiceList invoice : invoiceList) {
-                    // Toast.makeText(context, "invoiceListPrint1 " + invoiceList.size(), Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(context, "invoiceimin2 " + invoiceList.size(), Toast.LENGTH_SHORT).show();
 
                     String productName = "";
                     String priceValue = "0.00";
@@ -827,10 +830,11 @@ public class IminPrinterV2 {
 
     public void printSalesOrder(int copy, ArrayList<SalesOrderPrintPreviewModel> salesOrderHeaderDetails,
                                 ArrayList<SalesOrderPrintPreviewModel.SalesList> salesOrderList) {
-
         try {
             for (int i = 0; i < copy; i++) {
-                Log.w("invoice", "");
+                Toast.makeText(context, "SOimin1 " + salesOrderList.size(), Toast.LENGTH_SHORT).show();
+
+                Log.w("salesOrder", "");
                 PrinterHelper.getInstance().setTextBitmapSize(25);
                 PrinterHelper.getInstance().setTextBitmapTypeface("Typeface.DEFAULT_BOLD");
                 PrinterHelper.getInstance().printTextBitmapWithAli(company_name, 1, null);
@@ -989,6 +993,7 @@ public class IminPrinterV2 {
 
                 for (SalesOrderPrintPreviewModel.SalesList salesOrder : salesOrderList) {
                     // Toast.makeText(context, "invoiceListPrint1 " + invoiceList.size(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "SOimin2 " + salesOrderList.size(), Toast.LENGTH_SHORT).show();
 
                     String productName = "";
                     String priceValue = "0.00";

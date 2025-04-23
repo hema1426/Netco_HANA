@@ -1096,6 +1096,8 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
                                 salesOrderHeaderDetails.add(model);
                             }
                             if (printerType.equals("iMin Printer V2")) {
+                                Toast.makeText(this, "SOimin " + salesOrderList.size(), Toast.LENGTH_SHORT).show();
+
                                 Utils.setSignature("");
                                 IminPrinterV2 printLayer = new IminPrinterV2(SalesOrderListActivity.this);
                                 printLayer.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList);

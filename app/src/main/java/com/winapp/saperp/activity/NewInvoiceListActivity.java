@@ -3656,6 +3656,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                             invoiceHeaderDetails.add(model);
 
                             if (printerType.equals("iMin Printer V2")) {
+                                Toast.makeText(this, "invoiceimin " + invoiceList.size(), Toast.LENGTH_SHORT).show();
                                 Utils.setSignature("");
                                 IminPrinterV2 printLayer = new IminPrinterV2(NewInvoiceListActivity.this);
                                 printLayer.printInvoice(copy, invoiceHeaderDetails, invoicePrintList, doPrint);
