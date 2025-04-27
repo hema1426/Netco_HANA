@@ -149,6 +149,7 @@ public class Constants {
 
     public static String SHABAN ="http://129.150.58.169:95/api/";
 
+    public static String IMPERIAL ="http://148.251.245.115:85/api/";
 
     // TO Singapore Pte. Ltd.
     public static String TO_Singapore ="http://52.220.175.199:97/api/";

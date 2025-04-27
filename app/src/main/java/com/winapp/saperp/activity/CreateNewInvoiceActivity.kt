@@ -2136,7 +2136,7 @@ class CreateNewInvoiceActivity : AppCompatActivity(), OnClickListener {
     fun showExistingProductAlert(productId: String?, productName: String?) {
         val builder1 = AlertDialog.Builder(this@CreateNewInvoiceActivity)
         builder1.setTitle("Warning !")
-        builder1.setMessage("$productName - $productId\nAlready Exist Do you want to replace ? ")
+        builder1.setMessage("$productName - $productId\nAlready Exist Do You Want to Add New Item ? ")
         builder1.setCancelable(false)
         builder1.setPositiveButton("YES") { dialog, id ->
             dialog.cancel()
