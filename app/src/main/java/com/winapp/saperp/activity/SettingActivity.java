@@ -170,13 +170,14 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
     public SwitchCompat creditLimit_Switch;
     public SwitchCompat deliveryAddress_Switch;
     public SwitchCompat latLong_Switch;
-    public SwitchCompat email_Switch;
+    public SwitchCompat email_Switch,catalog_temp2_switchl;
     public UomSettingInvoiceAdapter uomSettingInvoiceAdapter;
     public UomSettingTransferAdapter uomSettingTransferAdapter;
     public RecyclerView rv_uom_transf_setting;
     public RecyclerView rv_uom_invoice_setting;
 
 
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -241,6 +242,8 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
         email_Switch = findViewById(R.id.sentEmailSwitch);
         rv_uom_transf_setting = findViewById(R.id.uom_transf_setting);
         rv_uom_invoice_setting = findViewById(R.id.uom_invoice_setting);
+        catalog_temp2_switchl = findViewById(R.id.catalog_temp2_switch);
+
         inv_switch.setOnCheckedChangeListener(this);
         sales_switch.setOnCheckedChangeListener(this);
         receipt_switch.setOnCheckedChangeListener(this);
@@ -251,6 +254,7 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
         signature_Switch.setOnCheckedChangeListener(this);
         discount_Switch.setOnCheckedChangeListener(this);
         email_Switch.setOnCheckedChangeListener(this);
+        catalog_temp2_switchl.setOnCheckedChangeListener(this);
 
         session = new SessionManager(this);
         user = session.getUserDetails();
@@ -289,7 +293,17 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
                         } else {
                             email_Switch.setChecked(false);
                         }
-                    } else if (model.getSettingName().equals("salesSwitch")) {
+                    }
+                    else if (model.getSettingName().equals("catalog_temp2_switch")) {
+                        Log.w("SettingName:", model.getSettingName());
+                        Log.w("SettingValue:", model.getSettingValue());
+                        if (model.getSettingValue().equals("1")) {
+                            catalog_temp2_switchl.setChecked(true);
+                        } else {
+                            catalog_temp2_switchl.setChecked(false);
+                        }
+                    }
+                    else if (model.getSettingName().equals("salesSwitch")) {
                         Log.w("SettingName:", model.getSettingName());
                         Log.w("SettingValue:", model.getSettingValue());
                         if (model.getSettingValue().equals("1")) {
@@ -1190,6 +1204,13 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
                     dbHelper.insertSettings(email_Switch.getTag().toString(),"1");
                 }else {
                     dbHelper.insertSettings(email_Switch.getTag().toString(),"0");
+                }
+                break;
+            case R.id.catalog_temp2_switch:
+                if (isChecked){
+                    dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"1");
+                }else {
+                    dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"0");
                 }
                 break;
             case R.id.UomSwitch:

@@ -634,7 +634,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                                     if (isPrintEnable){
                                         try {
                                             getCustomerStatement(customer_id, customername[0].toString(),
-                                                    fromDateString, toDateString, "O",
+                                                    fromDateString, toDateString, "",
                                                     Integer.parseInt(noOfCopyText.getText().toString()));
                                         } catch (JSONException e) {
                                             e.printStackTrace();
@@ -1281,7 +1281,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         customerList=new ArrayList<>();
         searchableCustomerList=new ArrayList<>();
         searchableCustomerList.add("Select Customer");
-        Log.w("Given_url_customer:",url);
+        Log.w("Given_url_customer:",url+jsonObject);
         ProgressDialog progressDialog=new ProgressDialog(this);
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Customer List Loading....");

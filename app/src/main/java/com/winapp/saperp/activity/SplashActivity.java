@@ -160,10 +160,10 @@ public class SplashActivity extends AppCompatActivity {
               //  String apiUrl=Constants.test_URL_OCT24;
 
                 //    String apiUrl=Constants.RAYMANG_URL_JULY;
-                  String apiUrl=Constants.FUXIN;
-               // String apiUrl=Constants.TRANS_ORIENT_LIVE;
+                 // String apiUrl=Constants.FUXIN;
+             //   String apiUrl=Constants.TRANS_ORIENT_LIVE;
                // String apiUrl=Constants.IMPERIAL;
-             //  String apiUrl=Constants.TRANS_ORIENT_DEMO;
+               String apiUrl=Constants.TRANS_ORIENT_DEMO;
 
 /*SQL app
 //          String apiUrl=Constants.AADHI_DEMO;
@@ -178,20 +178,22 @@ public class SplashActivity extends AppCompatActivity {
                 finish();
             }
 
-            // Real execute function with licence code
-          /*  if (InternetConnector_Receiver.isConnectingToInternet(SplashActivity.this)){
-                if (api_url!=null && !api_url.isEmpty()){
-                    // setValidateURL(api_url.toString());
-                    setLicenceValidate();
-                }else{
-                    Intent intent=new Intent(getApplicationContext(),RegisterActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            }else {
-                Toast.makeText(getApplicationContext(),"No Internet Found...!",Toast.LENGTH_SHORT).show();
-            }*/
 
+            // Real execute function with licence code
+//            if (InternetConnector_Receiver.isConnectingToInternet(SplashActivity.this)){
+//                if (api_url!=null && !api_url.isEmpty()){
+//                    // setValidateURL(api_url.toString());
+//                    setLicenceValidate();
+//                }else{
+//                    Intent intent=new Intent(getApplicationContext(),RegisterActivity.class);
+//                    startActivity(intent);
+//                    finish();
+//                }
+//            }else {
+//                Toast.makeText(getApplicationContext(),"No Internet Found...!",Toast.LENGTH_SHORT).show();
+//            }
+//
+//
         }, SPLASH_TIME);
 
 

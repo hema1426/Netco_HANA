@@ -350,6 +350,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.CategoriesActivity" />
+        <activity android:name=".activity.CategoriesTemp2Activity" />
         <activity
             android:name=".activity.SettingActivity"
             android:screenOrientation="portrait" />
@@ -428,7 +429,7 @@
         <activity
             android:name=".activity.DescriptionActivity"
             android:screenOrientation="portrait" />
-        <activity
+         <activity
             android:name=".activity.SchedulingActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

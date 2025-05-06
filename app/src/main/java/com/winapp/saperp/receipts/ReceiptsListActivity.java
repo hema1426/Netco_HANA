@@ -1592,13 +1592,15 @@ public class ReceiptsListActivity extends NavigationActivity {
         customerList=new ArrayList<>();
         searchableCustomerList=new ArrayList<>();
         searchableCustomerList.add("Select Customer");
-        Log.w("Given_url_customer:",url);
+
         JSONObject jsonObject=new JSONObject();
         try {
             jsonObject.put("GroupCode",groupCode);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Log.w("Given_url_customer:",url+jsonObject);
+
         JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(
                 Request.Method.POST,
                 url,

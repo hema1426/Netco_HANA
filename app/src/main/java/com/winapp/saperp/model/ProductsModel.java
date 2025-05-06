@@ -16,6 +16,7 @@ public class ProductsModel {
     private double retailPrice;
     private String minimumSellingPrice;
     private boolean isActive;
+    private boolean isCart;
     private String stockQty;
     private String qty;
     private String focQty;
@@ -24,13 +25,21 @@ public class ProductsModel {
     private String cartonPrice;
     private String pcsPerCartion;
     private String uomCode;
-    private String catagoryCode;
+    private String categoryCode;
     private String productBarcode;
     private String lastPrice;
     private String uomText;
     private String defaultUom;
     private String barcode;
     private String isItemFOC;
+
+    public boolean isCart() {
+        return isCart;
+    }
+
+    public void setCart(boolean cart) {
+        isCart = cart;
+    }
 
     public String getIsItemFOC() {
         return isItemFOC;
@@ -90,12 +99,12 @@ public class ProductsModel {
         this.productBarcode = productBarcode;
     }
 
-    public String getCatagoryCode() {
-        return catagoryCode;
+    public String getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCatagoryCode(String catagoryCode) {
-        this.catagoryCode = catagoryCode;
+    public void setCatagoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getUomCode() {

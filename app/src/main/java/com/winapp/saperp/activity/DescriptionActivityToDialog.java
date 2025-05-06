@@ -1,11 +1,14 @@
 package com.winapp.saperp.activity;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import static android.content.Context.MODE_PRIVATE;
+import static com.winapp.saperp.activity.CategoriesTemp2Activity.setupBadge;
+import static com.winapp.saperp.fragments.CategoriesTemp2TabFragments.productsAdapterNew;
+import static com.winapp.saperp.utils.Utils.fourDecimalPoint;
+import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -20,6 +23,7 @@ import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +44,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.RetryPolicy;
@@ -52,8 +61,12 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.gson.Gson;
 import com.winapp.saperp.R;
 import com.winapp.saperp.db.DBHelper;
+import com.winapp.saperp.fragments.CategoriesTemp2TabFragments;
 import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.ProductsModel;
@@ -63,7 +76,6 @@ import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.SessionManager;
 import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
-import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,10 +90,7 @@ import java.util.Objects;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-import static com.winapp.saperp.utils.Utils.fourDecimalPoint;
-import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
-
-public class DescriptionActivity extends AppCompatActivity {
+public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 
     private ImageView mainImage;
     private TextView itemName;
@@ -112,18 +121,18 @@ public class DescriptionActivity extends AppCompatActivity {
 
     public boolean isUomSetting = false;
     private String uomCode = "";
-    private double ctnStockVal =0.0;
+    private double ctnStockVal = 0.0;
     private String uomName = "";
     private String stockStr = "";
-    double net_amount=0.0;
-    double carton_amount=0.0;
-    double loose_amount=0.0;
-    int cnQty=0;
-    int lqty=0;
-    double pcspercarton=0;
+    double net_amount = 0.0;
+    double carton_amount = 0.0;
+    double loose_amount = 0.0;
+    int cnQty = 0;
+    int lqty = 0;
+    double pcspercarton = 0;
     // Customer details arraylist
     ArrayList<CustomerDetails> customerDetails = new ArrayList<>();
-    boolean isQtyEntered=false;
+    boolean isQtyEntered = false;
     private TextView totalTextView;
     private TextView taxTextView;
     private TextView netTotalTextView;
@@ -149,7 +158,7 @@ public class DescriptionActivity extends AppCompatActivity {
     LinearLayout uomSpinnerLay_cart;
     static ProgressDialog dialog;
     String selectCustomerId;
-    HashMap<String ,String> user;
+    HashMap<String, String> user;
     SessionManager session;
     String companyCode;
     String locationCode;
@@ -157,90 +166,107 @@ public class DescriptionActivity extends AppCompatActivity {
 
     private String negativeStockStr = "No";
 
-    boolean isReverseCalculationEnabled=true;
-    boolean isCartonPriceEdit=true;
-    boolean isPriceEdit=true;
+    boolean isReverseCalculationEnabled = true;
+    boolean isCartonPriceEdit = true;
+    boolean isPriceEdit = true;
 
     TextWatcher cartonPriceTextWatcher;
     TextWatcher loosePriceTextWatcher;
 
+    String productDetailStr;
+
+    public static DescriptionActivityToDialog newInstance(String productDetails) {
+        DescriptionActivityToDialog fragment = new DescriptionActivityToDialog();
+        Bundle args = new Bundle();
+        args.putString("productDetails", productDetails);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (Utils.isTablet(this)){
-            Log.w("This is Tablet","Success");
-            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                setContentView(R.layout.activity_desc_land);
-            } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                setContentView(R.layout.activity_description);
-            }
-        }else {
-            Log.w("This is not tablet","Success");
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//            setContentView(R.layout.cart_selectpdt_next);
-            setContentView(R.layout.activity_description);
-        }
-        Log.w("activity_cg",getClass().getSimpleName().toString());
+
+        productDetailStr = getArguments() != null ? getArguments().getString("productDetails") : "";
+
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.activity_description_dialog, container, false);
+
+        //if (Utils.isTablet(this)){
+        //    Log.w("This is Tablet","Success");
+//            setContentView(R.layout.activity_description_dialog);
+
+//        }else {
+//            Log.w("This is not tablet","Success");
+//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+////            setContentView(R.layout.cart_selectpdt_next);
+//            setContentView(R.layout.activity_description);
+//        }
+        Log.w("activity_cg", getClass().getSimpleName().toString());
 
 //        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        SharedPreferences sharedPreferences = getSharedPreferences("customerPref",MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
         selectCustomerId = sharedPreferences.getString("customerId", "");
 
-        session=new SessionManager(this);
-        dbHelper=new DBHelper(this);
-        sharedPreferenceUtil =new SharedPreferenceUtil(this);
+        session = new SessionManager(requireActivity());
+        dbHelper = new DBHelper(requireActivity());
+        sharedPreferenceUtil = new SharedPreferenceUtil(requireActivity());
 
         allowFOCStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ALLOW_FOC, "");
 
-        mainImage=findViewById(R.id.item_image);
-        itemName=findViewById(R.id.item_nameDesc);
-        availability=findViewById(R.id.availabilty);
-        netPrice =findViewById(R.id.price);
-        ctnPrice=findViewById(R.id.ctn_price);
-        ctnQty=findViewById(R.id.ctn_qty);
-        uomSpinnerLay_cart =findViewById(R.id.uomSpinnerLay_cart);
-        //pcsQty=findViewById(R.id.pcs_qty);
-        ctnQtyValue=findViewById(R.id.ctn_qty_value);
-        pcsQtyValue=findViewById(R.id.pcs_qty_value);
-        radioGroup=findViewById(R.id.radioGroup);
-        radioNormal=findViewById(R.id.radioNormal);
-        radioFoc=findViewById(R.id.radioFoc);
-        ctnMinus=findViewById(R.id.ctn_minus);
-        ctnPlus=findViewById(R.id.ctn_plus);
-        pcsMinus=findViewById(R.id.pcs_minus);
-        pcsPlus=findViewById(R.id.pcs_plus);
-        addToCart=findViewById(R.id.add_to_cart);
-        cartonText=findViewById(R.id.pcs);
-        unitPrice=findViewById(R.id.unit_price);
-        totalTextView=findViewById(R.id.total);
-        taxTextView=findViewById(R.id.tax);
-        netTotalTextView=findViewById(R.id.net_total);
-        taxTitle=findViewById(R.id.tax_title);
-        returnLayout=findViewById(R.id.return_layout);
-        showHideButton=findViewById(R.id.show_hide);
-        focSwitch=findViewById(R.id.foc_switch);
-        exchangeSwitch=findViewById(R.id.exchange_switch);
-        returnSwitch=findViewById(R.id.return_switch);
-        focEditText=findViewById(R.id.foc_text);
-        exchangeEditext=findViewById(R.id.exchange_text);
-        returnEditext=findViewById(R.id.return_text);
-        discountEditext=findViewById(R.id.discount_text);
-        pcsQtyLayout=findViewById(R.id.pcs_qty_layout);
-        qtyTextView=findViewById(R.id.qty);
-        unitPriceLayout=findViewById(R.id.unit_price_layout);
-        focLayout=findViewById(R.id.foc_layout);
-        uomCodeText=findViewById(R.id.uom_code);
-        uomSpinnerCart = findViewById(R.id.uomSpinner_cart);
-        user=session.getUserDetails();
-        companyCode=user.get(SessionManager.KEY_COMPANY_CODE);
-        locationCode=user.get(SessionManager.KEY_LOCATION_CODE);
-        negativeStockStr=user.get(SessionManager.KEY_NEGATIVE_STOCK);
+        mainImage = view.findViewById(R.id.item_image);
+        itemName = view.findViewById(R.id.item_nameDesc);
+        availability = view.findViewById(R.id.availabilty);
+        netPrice = view.findViewById(R.id.price);
+        ctnPrice = view.findViewById(R.id.ctn_price);
+        ctnQty = view.findViewById(R.id.ctn_qty);
+        uomSpinnerLay_cart = view.findViewById(R.id.uomSpinnerLay_cart);
+        //pcsQty=view.findViewById(R.id.pcs_qty);
+        ctnQtyValue = view.findViewById(R.id.ctn_qty_value);
+        pcsQtyValue = view.findViewById(R.id.pcs_qty_value);
+        radioGroup = view.findViewById(R.id.radioGroup);
+        radioNormal = view.findViewById(R.id.radioNormal);
+        radioFoc = view.findViewById(R.id.radioFoc);
+        ctnMinus = view.findViewById(R.id.ctn_minus);
+        ctnPlus = view.findViewById(R.id.ctn_plus);
+        pcsMinus = view.findViewById(R.id.pcs_minus);
+        pcsPlus = view.findViewById(R.id.pcs_plus);
+        addToCart = view.findViewById(R.id.add_to_cart);
+        cartonText = view.findViewById(R.id.pcs);
+        unitPrice = view.findViewById(R.id.unit_price);
+        totalTextView = view.findViewById(R.id.total);
+        taxTextView = view.findViewById(R.id.tax);
+        netTotalTextView = view.findViewById(R.id.net_total);
+        taxTitle = view.findViewById(R.id.tax_title);
+        returnLayout = view.findViewById(R.id.return_layout);
+        showHideButton = view.findViewById(R.id.show_hide);
+        focSwitch = view.findViewById(R.id.foc_switch);
+        exchangeSwitch = view.findViewById(R.id.exchange_switch);
+        returnSwitch = view.findViewById(R.id.return_switch);
+        focEditText = view.findViewById(R.id.foc_text);
+        exchangeEditext = view.findViewById(R.id.exchange_text);
+        returnEditext = view.findViewById(R.id.return_text);
+        discountEditext = view.findViewById(R.id.discount_text);
+        pcsQtyLayout = view.findViewById(R.id.pcs_qty_layout);
+        qtyTextView = view.findViewById(R.id.qty);
+        unitPriceLayout = view.findViewById(R.id.unit_price_layout);
+        focLayout = view.findViewById(R.id.foc_layout);
+        uomCodeText = view.findViewById(R.id.uom_code);
+        uomSpinnerCart = view.findViewById(R.id.uomSpinner_cart);
+        user = session.getUserDetails();
+        companyCode = user.get(SessionManager.KEY_COMPANY_CODE);
+        locationCode = user.get(SessionManager.KEY_LOCATION_CODE);
+        negativeStockStr = user.get(SessionManager.KEY_NEGATIVE_STOCK);
 
         pcsQtyValue.setSelectAllOnFocus(true);
         ctnQtyValue.setSelectAllOnFocus(true);
 
-        sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC,"0.0");
+        sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC, "0.0");
 
       /*  ArrayList<SettingsModel> settings1=dbHelper.getSettings();
         if (settings1!=null) {
@@ -263,8 +289,8 @@ public class DescriptionActivity extends AppCompatActivity {
             isReverseCalculationEnabled=false;
         }*/
 
-     //   getLowStockSetting();
-        isUomSetting = true ;
+        //   getLowStockSetting();
+        isUomSetting = true;
         returnEditext.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -304,10 +330,10 @@ public class DescriptionActivity extends AppCompatActivity {
         focSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.v("Switch State=", ""+isChecked);
-                if (isChecked){
+                Log.v("Switch State=", "" + isChecked);
+                if (isChecked) {
                     focEditText.setHint("FOC ctn");
-                }else {
+                } else {
                     focEditText.setHint("FOC pcs");
                 }
             }
@@ -316,10 +342,10 @@ public class DescriptionActivity extends AppCompatActivity {
         exchangeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.v("Switch State=", ""+isChecked);
-                if (isChecked){
+                Log.v("Switch State=", "" + isChecked);
+                if (isChecked) {
                     exchangeEditext.setHint("Exchange ctn");
-                }else {
+                } else {
                     exchangeEditext.setHint("Exchange pcs");
                 }
 
@@ -329,10 +355,10 @@ public class DescriptionActivity extends AppCompatActivity {
         returnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.v("Switch State=", ""+isChecked);
-                if (isChecked){
+                Log.v("Switch State=", "" + isChecked);
+                if (isChecked) {
                     returnEditext.setHint("Return ctn");
-                }else {
+                } else {
                     returnEditext.setHint("Return pcs");
                 }
                 setCalculation();
@@ -342,12 +368,12 @@ public class DescriptionActivity extends AppCompatActivity {
         showHideButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (showHideButton.getTag().equals("hide")){
+                if (showHideButton.getTag().equals("hide")) {
                     returnLayout.setVisibility(View.VISIBLE);
                     showHideButton.setTag("show");
                     Utils.slideUp(returnLayout);
                     showHideButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_up_24);
-                }else {
+                } else {
                     Utils.slideDown(returnLayout);
                     returnLayout.setVisibility(View.GONE);
                     showHideButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_down_24);
@@ -362,12 +388,12 @@ public class DescriptionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ctnQtyValue.clearFocus();
-                if (ctnQtyValue.getText().toString().isEmpty()){
+                if (ctnQtyValue.getText().toString().isEmpty()) {
                     ctnQtyValue.setText("0");
-                }else {
-                    if (!ctnQtyValue.getText().toString().equals("0")){
-                        int count=Integer.parseInt(ctnQtyValue.getText().toString());
-                        int ctn=count-1;
+                } else {
+                    if (!ctnQtyValue.getText().toString().equals("0")) {
+                        int count = Integer.parseInt(ctnQtyValue.getText().toString());
+                        int ctn = count - 1;
                         ctnQtyValue.setText(String.valueOf(ctn));
                         setCalculation();
                     }
@@ -380,16 +406,16 @@ public class DescriptionActivity extends AppCompatActivity {
             public void onClick(View view) {
                 ctnQtyValue.clearFocus();
                 getLowStockSetting();
-                double pcspercarton=Double.parseDouble(ctnQty.getText().toString());
-                double stock=Double.parseDouble(availability.getText().toString());
-                double allow_cn_qty=stock / pcspercarton;
-                double net_qty_value=Double.parseDouble(qtyTextView.getText().toString())+pcspercarton;
-                double net_qty_allow=net_qty_value / pcspercarton ;
+                double pcspercarton = Double.parseDouble(ctnQty.getText().toString());
+                double stock = Double.parseDouble(availability.getText().toString());
+                double allow_cn_qty = stock / pcspercarton;
+                double net_qty_value = Double.parseDouble(qtyTextView.getText().toString()) + pcspercarton;
+                double net_qty_allow = net_qty_value / pcspercarton;
                 Log.w("Net_Qty:", String.valueOf(net_qty_allow));
-                Log.w("Allow_cn_qty:",String.valueOf(allow_cn_qty));
-                if (net_qty_allow > allow_cn_qty){
+                Log.w("Allow_cn_qty:", String.valueOf(allow_cn_qty));
+                if (net_qty_allow > allow_cn_qty) {
 //                    if (isAllowLowStock){
-                    if (negativeStockStr.equalsIgnoreCase("Yes")){
+                    if (negativeStockStr.equalsIgnoreCase("Yes")) {
 
                         if (!ctnQtyValue.getText().toString().isEmpty()) {
                             int count = Integer.parseInt(ctnQtyValue.getText().toString());
@@ -402,10 +428,10 @@ public class DescriptionActivity extends AppCompatActivity {
                             ctnQtyValue.setText(String.valueOf(ctn));
                             setCalculation();
                         }
-                    }else {
+                    } else {
                         showLowStock();
                     }
-                }else {
+                } else {
                     if (!ctnQtyValue.getText().toString().isEmpty()) {
                         int count = Integer.parseInt(ctnQtyValue.getText().toString());
                         int ctn = count + 1;
@@ -425,12 +451,12 @@ public class DescriptionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 pcsQtyValue.clearFocus();
-                if (pcsQtyValue.getText().toString().isEmpty()){
+                if (pcsQtyValue.getText().toString().isEmpty()) {
                     pcsQtyValue.setText("0");
-                }else {
-                    if (!pcsQtyValue.getText().toString().equals("0")){
-                        int count=Integer.parseInt(pcsQtyValue.getText().toString());
-                        int ctn=count-1;
+                } else {
+                    if (!pcsQtyValue.getText().toString().equals("0")) {
+                        int count = Integer.parseInt(pcsQtyValue.getText().toString());
+                        int ctn = count - 1;
                         pcsQtyValue.setText(String.valueOf(ctn));
                         setCalculation();
                     }
@@ -443,35 +469,35 @@ public class DescriptionActivity extends AppCompatActivity {
             public void onClick(View view) {
                 pcsQtyValue.clearFocus();
                 getLowStockSetting();
-                double stock=Double.parseDouble(availability.getText().toString());
-                double net_qty=Double.parseDouble(qtyTextView.getText().toString());
-                if (net_qty + 1  > stock){
+                double stock = Double.parseDouble(availability.getText().toString());
+                double net_qty = Double.parseDouble(qtyTextView.getText().toString());
+                if (net_qty + 1 > stock) {
 //                    if (isAllowLowStock){
-                    if (negativeStockStr.equalsIgnoreCase("Yes")){
+                    if (negativeStockStr.equalsIgnoreCase("Yes")) {
 
-                        if (!pcsQtyValue.getText().toString().isEmpty()){
-                            int count=Integer.parseInt(pcsQtyValue.getText().toString());
-                            int ctn=count+1;
+                        if (!pcsQtyValue.getText().toString().isEmpty()) {
+                            int count = Integer.parseInt(pcsQtyValue.getText().toString());
+                            int ctn = count + 1;
                             pcsQtyValue.setText(String.valueOf(ctn));
                             setCalculation();
-                        }else {
-                            int count=0;
-                            int ctn=count+1;
+                        } else {
+                            int count = 0;
+                            int ctn = count + 1;
                             pcsQtyValue.setText(String.valueOf(ctn));
                             setCalculation();
                         }
-                    }else {
+                    } else {
                         showLowStock();
                     }
-                }else {
-                        if (!pcsQtyValue.getText().toString().isEmpty()){
-                        int count=Integer.parseInt(pcsQtyValue.getText().toString());
-                        int ctn=count+1;
+                } else {
+                    if (!pcsQtyValue.getText().toString().isEmpty()) {
+                        int count = Integer.parseInt(pcsQtyValue.getText().toString());
+                        int ctn = count + 1;
                         pcsQtyValue.setText(String.valueOf(ctn));
                         setCalculation();
-                    }else {
-                        int count=0;
-                        int ctn=count+1;
+                    } else {
+                        int count = 0;
+                        int ctn = count + 1;
                         pcsQtyValue.setText(String.valueOf(ctn));
                         setCalculation();
                     }
@@ -548,9 +574,9 @@ public class DescriptionActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 setCalculation();
 
-                if (isReverseCalculationEnabled){
-                    if (isCartonPriceEdit){
-                        if (ctnPrice.getText().toString().equals("")){
+                if (isReverseCalculationEnabled) {
+                    if (isCartonPriceEdit) {
+                        if (ctnPrice.getText().toString().equals("")) {
                             if (s.toString().equals(".")) {
                                 ctnPrice.setText("0.");
                                 unitPrice.removeTextChangedListener(loosePriceTextWatcher);
@@ -558,9 +584,9 @@ public class DescriptionActivity extends AppCompatActivity {
                                 unitPrice.addTextChangedListener(loosePriceTextWatcher);
                             }
                         }
-                        if (!ctnQty.getText().toString().equals("")){
-                            double pcspercarton=Double.parseDouble(ctnQty.getText().toString());
-                            double carton_price=0;
+                        if (!ctnQty.getText().toString().equals("")) {
+                            double pcspercarton = Double.parseDouble(ctnQty.getText().toString());
+                            double carton_price = 0;
                             if (!s.toString().equals(".")) {
                                 if (ctnPrice.getText().toString().equals("")) {
                                     carton_price = 0;
@@ -568,12 +594,12 @@ public class DescriptionActivity extends AppCompatActivity {
                                     carton_price = Double.parseDouble(ctnPrice.getText().toString());
                                 }
                             }
-                            if (pcspercarton>1){
-                                double unit_price=(carton_price / pcspercarton);
+                            if (pcspercarton > 1) {
+                                double unit_price = (carton_price / pcspercarton);
                                 unitPrice.removeTextChangedListener(loosePriceTextWatcher);
                                 unitPrice.setText(twoDecimalPoint(unit_price));
                                 unitPrice.addTextChangedListener(loosePriceTextWatcher);
-                            }else {
+                            } else {
                                 if (!s.toString().equals(".")) {
                                     if (!ctnPrice.getText().toString().isEmpty()) {
                                         unitPrice.removeTextChangedListener(loosePriceTextWatcher);
@@ -594,41 +620,40 @@ public class DescriptionActivity extends AppCompatActivity {
         ctnPrice.addTextChangedListener(cartonPriceTextWatcher);
 
         Gson gson = new Gson();
-        ProductsModel model = gson.fromJson(getIntent().getStringExtra("productDetails"), ProductsModel.class);
-        Log.w("modelpdtCart",""+model.getProductName());
-        SharedPreferences sharedPreferences1 = getSharedPreferences("customerPref",MODE_PRIVATE);
+        ProductsModel model = gson.fromJson(productDetailStr, ProductsModel.class);
+        Log.w("modelpdtCart", "" + model.getProductName());
+        SharedPreferences sharedPreferences1 = getActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
         selectCustomerId = sharedPreferences1.getString("customerId", "");
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
             try {
                 customerDetails = dbHelper.getCustomer(selectCustomerId);
-               Log.w("allowfoc11",""+allowFOCStr);
+                Log.w("allowfoc11", "" + allowFOCStr);
 
-                if(allowFOCStr.equalsIgnoreCase("Yes")){
+                if (allowFOCStr.equalsIgnoreCase("Yes")) {
                     focEditText.setEnabled(true);
-                }
-                else{
+                } else {
                     focEditText.setEnabled(false);
                 }
-               // getProductPrice(model.getProductCode());
+                // getProductPrice(model.getProductCode());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        if (model.getStockQty() !=null && !Objects.requireNonNull(model.getStockQty()).equals("null")){
+        if (model.getStockQty() != null && !Objects.requireNonNull(model.getStockQty()).equals("null")) {
             availability.setText(Utils.twoDecimalPoint(Double.parseDouble(model.getStockQty())));
-        }else {
+        } else {
             availability.setText("0");
         }
-        stockStr = model.getStockQty() ;
+        stockStr = model.getStockQty();
 
-        if (model.getPcsPerCarton() !=null && !model.getPcsPerCarton().equals("null")){
-            cartonText.setText("1 * "+model.getPcsPerCarton());
-        }else {
+        if (model.getPcsPerCarton() != null && !model.getPcsPerCarton().equals("null")) {
+            cartonText.setText("1 * " + model.getPcsPerCarton());
+        } else {
             cartonText.setText("1 * 1");
         }
 
-        if (getIntent()!=null){
+//        if (getIntent() != null) {
 //            getSupportActionBar().setTitle(model.getProductName());
             itemName.setText(model.getProductName());
             unitPrice.setText(model.getWholeSalePrice());
@@ -637,123 +662,123 @@ public class DescriptionActivity extends AppCompatActivity {
 //            allowFOC=getIntent().getStringExtra("AllowFOC_Catalog");
 
             // convert into int
-            int value = (int)data;
+            int value = (int) data;
             ctnQty.setText(String.valueOf(value));
             uomCodeText.setText(model.getUomCode());
             productsModel = model;
 
-            Log.w("uomcoddss",""+isUomSetting);
-            if(isUomSetting) {
+            Log.w("uomcoddss", "" + isUomSetting);
+            if (isUomSetting) {
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put("CustomerCode", selectCustomerId);
                     jsonObject.put("ItemCode", model.getProductCode());
-                    getUOM(jsonObject ,model);
+                    getUOM(jsonObject, model);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 uomSpinnerLay_cart.setVisibility(View.VISIBLE);
             }
 
-        }
+//        }
 
-        if (ctnQty.getText()!=null){
-            double data = Double.parseDouble(model.getPcsPerCarton());
-            // convert into int
-            int value = (int)data;
-            if (value==1){
-                pcsQtyLayout.setVisibility(View.GONE);
-                unitPriceLayout.setVisibility(View.GONE);
-            }else {
-                pcsQtyLayout.setVisibility(View.GONE);
-                unitPriceLayout.setVisibility(View.GONE);
-            }
-        }
+//      cg  if (ctnQty.getText() != null) {
+//            double data = Double.parseDouble(model.getPcsPerCarton());
+//            // convert into int
+//            int value = (int) data;
+//            if (value == 1) {
+//                pcsQtyLayout.setVisibility(View.GONE);
+//                unitPriceLayout.setVisibility(View.GONE);
+//            } else {
+//                pcsQtyLayout.setVisibility(View.GONE);
+//                unitPriceLayout.setVisibility(View.GONE);
+//            }
+//        }
 
 
         addToCart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                double discout = 0.0 ;
+                double discout = 0.0;
 
-                SharedPreferences sharedPreferences = getSharedPreferences("customerPref",MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
                 selectCustomerId = sharedPreferences.getString("customerId", "");
                 if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
                     if (!discountEditext.getText().toString().isEmpty()) {
                         discout = Double.parseDouble(discountEditext.getText().toString());
                     }
 
-                    if (!ctnPrice.getText().toString().isEmpty()){
+                    if (!ctnPrice.getText().toString().isEmpty()) {
                         if (!ctnPrice.getText().toString().equals(".")) {
 
-                            percentApi=calculatePercentage(discout, Double.parseDouble(ctnPrice.getText().toString()));
-                            Log.w("cartDis ",""+percentApi+discout+ctnPrice.getText().toString() );
+                            percentApi = calculatePercentage(discout, Double.parseDouble(ctnPrice.getText().toString()));
+                            Log.w("cartDis ", "" + percentApi + discout + ctnPrice.getText().toString());
                         }
                     }
 
-                    if (isProductExist(model.getProductCode().trim())){
-                        showExistingProductAlert(model.getProductCode(),model.getProductName(),model.getProductImage());
-                    }else {
-                        if (selectCustomerId!=null && !selectCustomerId.isEmpty()){
-                            String focType="pcs";
-                            String exchangeType="pcs";
-                            String returnType="pcs";
-                            String return_qty="0";
-                            String lPriceCalc="0";
-                            String loose_qty="0";
-                            String ctn_qty="0";
-                            String cartonprice="0";
-                            String discount="0";
-                            if (focSwitch.isChecked()){
-                                focType="ctn";
+                    if (isProductExist(model.getProductCode().trim())) {
+                        showExistingProductAlert(model.getProductCode(), model.getProductName(), model.getProductImage());
+                    } else {
+                        if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
+                            String focType = "pcs";
+                            String exchangeType = "pcs";
+                            String returnType = "pcs";
+                            String return_qty = "0";
+                            String lPriceCalc = "0";
+                            String loose_qty = "0";
+                            String ctn_qty = "0";
+                            String cartonprice = "0";
+                            String discount = "0";
+                            if (focSwitch.isChecked()) {
+                                focType = "ctn";
                             }
-                            if (exchangeSwitch.isChecked()){
-                                exchangeType="ctn";
+                            if (exchangeSwitch.isChecked()) {
+                                exchangeType = "ctn";
                             }
-                            if (returnSwitch.isChecked()){
-                                returnType="ctn";
-                            }
-
-
-                            if (!returnEditext.getText().toString().isEmpty()){
-                                return_qty=returnEditext.getText().toString();
+                            if (returnSwitch.isChecked()) {
+                                returnType = "ctn";
                             }
 
-                            if (!pcsQtyValue.getText().toString().isEmpty()){
-                                loose_qty=pcsQtyValue.getText().toString();
+
+                            if (!returnEditext.getText().toString().isEmpty()) {
+                                return_qty = returnEditext.getText().toString();
                             }
 
-                            if (!ctnQtyValue.getText().toString().isEmpty()){
-                                ctn_qty=ctnQtyValue.getText().toString();
+                            if (!pcsQtyValue.getText().toString().isEmpty()) {
+                                loose_qty = pcsQtyValue.getText().toString();
                             }
 
-                            if (!ctnPrice.getText().toString().isEmpty()){
+                            if (!ctnQtyValue.getText().toString().isEmpty()) {
+                                ctn_qty = ctnQtyValue.getText().toString();
+                            }
+
+                            if (!ctnPrice.getText().toString().isEmpty()) {
                                 if (!ctnPrice.getText().toString().equals(".")) {
 
                                     cartonprice = ctnPrice.getText().toString();
                                 }
                             }
 
-                            if (!discountEditext.getText().toString().isEmpty()){
-                                discount=discountEditext.getText().toString();
+                            if (!discountEditext.getText().toString().isEmpty()) {
+                                discount = discountEditext.getText().toString();
                             }
 
-                            if (!unitPrice.getText().toString().isEmpty()){
-                                lPriceCalc=unitPrice.getText().toString();
+                            if (!unitPrice.getText().toString().isEmpty()) {
+                                lPriceCalc = unitPrice.getText().toString();
                             }
 
-                            double return_amt=(Double.parseDouble(return_qty)*Double.parseDouble(lPriceCalc));
-                            double total=(Double.parseDouble(ctn_qty) * Double.parseDouble(cartonprice)) + (Double.parseDouble(loose_qty) * Double.parseDouble(lPriceCalc));
-                            double sub_total=total-return_amt-Double.parseDouble(discount);
+                            double return_amt = (Double.parseDouble(return_qty) * Double.parseDouble(lPriceCalc));
+                            double total = (Double.parseDouble(ctn_qty) * Double.parseDouble(cartonprice)) + (Double.parseDouble(loose_qty) * Double.parseDouble(lPriceCalc));
+                            double sub_total = total - return_amt - Double.parseDouble(discount);
 
                             if (pcsQtyValue.getText().toString().isEmpty() && ctnQtyValue.getText().toString().isEmpty() &&
-                                    !ctnQtyValue.getText().toString().equals(".")){
-                                isQtyEntered=false;
-                            }else isQtyEntered= !pcsQtyValue.getText().toString().equals("0") ||
+                                    !ctnQtyValue.getText().toString().equals(".")) {
+                                isQtyEntered = false;
+                            } else isQtyEntered = !pcsQtyValue.getText().toString().equals("0") ||
                                     (!ctnQtyValue.getText().toString().equals("0") &&
                                             !ctnQtyValue.getText().toString().equals("."));
 
-                            if (isQtyEntered && Double.parseDouble(netTotalTextView.getText().toString())>0){
+                            if (isQtyEntered && Double.parseDouble(netTotalTextView.getText().toString()) > 0) {
 
                                 boolean status = dbHelper.insertCart(
                                         model.getProductCode(),
@@ -775,12 +800,12 @@ public class DescriptionActivity extends AppCompatActivity {
                                         exchangeEditext.getText().toString(),
                                         exchangeType,
                                         discountEditext.getText().toString(),
-                                      //  String.valueOf(Utils.twoDecimalPoint(percentApi)),
+                                        //  String.valueOf(Utils.twoDecimalPoint(percentApi)),
                                         returnEditext.getText().toString(),
-                                        returnType,"",
+                                        returnType, "",
                                         String.valueOf(total),
                                         availability.getText().toString(),
-                                        uomCode,"0.00",
+                                        uomCode, "0.00",
                                         availability.getText().toString());
 
 
@@ -806,23 +831,29 @@ public class DescriptionActivity extends AppCompatActivity {
                             discountEditext.getText().toString(),
                             returnEditext.getText().toString(),
                             returnType);*/
-                                if (status){
-                                    Toast.makeText(getApplicationContext(),"Product Added Successfully",Toast.LENGTH_LONG).show();
+                                if (status) {
+                                    Toast.makeText(requireContext(), "Product Added Successfully", Toast.LENGTH_LONG).show();
+                                    setupBadge();
+                                    model.setCart(true);
+                                    if(productsAdapterNew != null) {
+                                        productsAdapterNew.notifyDataSetChanged();
+                                    }
+
                                     //Intent intent=new Intent(DescriptionActivity.this,MainHomeActivity.class);
                                     // startActivity(intent);
-                                    finish();
-                                }else {
-                                    Toast.makeText(getApplicationContext(),"Error in Add product",Toast.LENGTH_LONG).show();
+                                    dismiss();
+                                } else {
+                                    Toast.makeText(requireContext(), "Error in Add product", Toast.LENGTH_LONG).show();
                                 }
-                            }else {
+                            } else {
                                 showAlert();
                             }
-                        }else {
+                        } else {
                             showAlertCustomer();
                         }
                         //insertProduct();
                     }
-                }else {
+                } else {
                     showAlertCustomer();
                 }
 
@@ -831,31 +862,31 @@ public class DescriptionActivity extends AppCompatActivity {
 
 
         // Getting image from the Local DB
-        String imagePath1=dbHelper.getProductImage(model.getProductCode());
-        mainImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!imagePath1.isEmpty()) {
-                    String imageFullpath = Constants.folderPath + "/" + imagePath1;
-                    File file = new File(imageFullpath);
-                    if (file.exists()) {
-                        showImageFile(file);
-                    }else {
-                        showImageUrl(model.getProductImage());
-                    }
-                }else {
-                    showImageUrl(model.getProductImage());
-                }
-            }
-        });
+        String imagePath1 = dbHelper.getProductImage(model.getProductCode());
+//        mainImage.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (!imagePath1.isEmpty()) {
+//                    String imageFullpath = Constants.folderPath + "/" + imagePath1;
+//                    File file = new File(imageFullpath);
+//                    if (file.exists()) {
+//                        showImageFile(file);
+//                    } else {
+//                        showImageUrl(model.getProductImage());
+//                    }
+//                } else {
+//                    showImageUrl(model.getProductImage());
+//                }
+//            }
+//        });
 
 
         // Getting image from the Local DB
-        String imagePath=dbHelper.getProductImage(model.getProductCode());
-        if (!imagePath.isEmpty()){
-            String imageFullpath=Constants.folderPath+"/"+imagePath;
+        String imagePath = dbHelper.getProductImage(model.getProductCode());
+        if (!imagePath.isEmpty()) {
+            String imageFullpath = Constants.folderPath + "/" + imagePath;
             File file = new File(imageFullpath);
-            if (file.exists()){
+            if (file.exists()) {
                 Glide.with(this)
                         .load(file)
                         .error(R.drawable.no_image_found)
@@ -864,12 +895,13 @@ public class DescriptionActivity extends AppCompatActivity {
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                                 return false;
                             }
+
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 return false;
                             }
                         }).into(mainImage);
-            }else {
+            } else {
                 Glide.with(this)
                         .load(model.getProductImage())
                         .error(R.drawable.no_image_found)
@@ -878,13 +910,14 @@ public class DescriptionActivity extends AppCompatActivity {
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                                 return false;
                             }
+
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 return false;
                             }
                         }).into(mainImage);
-             }
-        }else {
+            }
+        } else {
             if (model.getProductImage() != null && !model.getProductImage().equals("null")) {
                 Glide.with(this)
                         .load(model.getProductImage())
@@ -894,6 +927,7 @@ public class DescriptionActivity extends AppCompatActivity {
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                                 return false;
                             }
+
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 return false;
@@ -905,96 +939,96 @@ public class DescriptionActivity extends AppCompatActivity {
         }
 
 
-      cartonQtyWatcher=new TextWatcher() {
-          @Override
-          public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        cartonQtyWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-          }
+            }
 
-          @Override
-          public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-          }
+            }
 
-          @Override
-          public void afterTextChanged(Editable editable) {
-              getLowStockSetting();
-              double net_qty=0.0;
-              double ctn_qty=0.0;
-              double pcs_ctn=0.0;
-              double pcs_qty=0.0;
-              if (!editable.toString().isEmpty()){
-                  ctn_qty=Double.parseDouble(editable.toString());
-              }
-              if (!ctnQty.getText().toString().isEmpty()){
-                  pcs_ctn=Double.parseDouble(ctnQty.getText().toString());
-              }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                getLowStockSetting();
+                double net_qty = 0.0;
+                double ctn_qty = 0.0;
+                double pcs_ctn = 0.0;
+                double pcs_qty = 0.0;
+                if (!editable.toString().isEmpty()) {
+                    ctn_qty = Double.parseDouble(editable.toString());
+                }
+                if (!ctnQty.getText().toString().isEmpty()) {
+                    pcs_ctn = Double.parseDouble(ctnQty.getText().toString());
+                }
 
-              if (!pcsQtyValue.getText().toString().isEmpty()){
-                  pcs_qty=Double.parseDouble(pcsQtyValue.getText().toString());
-              }
-              net_qty=(ctn_qty * pcs_ctn) + pcs_qty;
-              double stock=Double.parseDouble(availability.getText().toString());
-              if (net_qty  > stock){
+                if (!pcsQtyValue.getText().toString().isEmpty()) {
+                    pcs_qty = Double.parseDouble(pcsQtyValue.getText().toString());
+                }
+                net_qty = (ctn_qty * pcs_ctn) + pcs_qty;
+                double stock = Double.parseDouble(availability.getText().toString());
+                if (net_qty > stock) {
 //                  if (!isAllowLowStock){
-                  if (negativeStockStr.equalsIgnoreCase("No")){
-                      showLowStock();
-                      ctnQtyValue.removeTextChangedListener(cartonQtyWatcher);
-                      ctnQtyValue.setText("0");
-                      ctnQtyValue.addTextChangedListener(cartonQtyWatcher);
-                      ctnQtyValue.clearFocus();
-                  }
-              }
-              setCalculation();
-          }
-      };
-      ctnQtyValue.addTextChangedListener(cartonQtyWatcher);
+                    if (negativeStockStr.equalsIgnoreCase("No")) {
+                        showLowStock();
+                        ctnQtyValue.removeTextChangedListener(cartonQtyWatcher);
+                        ctnQtyValue.setText("0");
+                        ctnQtyValue.addTextChangedListener(cartonQtyWatcher);
+                        ctnQtyValue.clearFocus();
+                    }
+                }
+                setCalculation();
+            }
+        };
+        ctnQtyValue.addTextChangedListener(cartonQtyWatcher);
 
 
-      qtyWatcher=new TextWatcher() {
-          @Override
-          public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        qtyWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-          }
+            }
 
-          @Override
-          public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-          }
+            }
 
-          @Override
-          public void afterTextChanged(Editable editable) {
-              getLowStockSetting();
-              double net_qty=0.0;
-              double ctn_qty=0.0;
-              double pcs_ctn=0.0;
-              double pcs_qty=0.0;
-              if (!ctnQtyValue.getText().toString().isEmpty()){
-                  ctn_qty=Double.parseDouble(ctnQtyValue.getText().toString());
-              }
-              if (!ctnQty.getText().toString().isEmpty()){
-                  pcs_ctn=Double.parseDouble(ctnQty.getText().toString());
-              }
-              if (!editable.toString().isEmpty()){
-                  pcs_qty=Double.parseDouble(editable.toString());
-              }
-              net_qty=(ctn_qty * pcs_ctn) + pcs_qty;
-              double stock=Double.parseDouble(availability.getText().toString());
-              if (net_qty  > stock){
+            @Override
+            public void afterTextChanged(Editable editable) {
+                getLowStockSetting();
+                double net_qty = 0.0;
+                double ctn_qty = 0.0;
+                double pcs_ctn = 0.0;
+                double pcs_qty = 0.0;
+                if (!ctnQtyValue.getText().toString().isEmpty()) {
+                    ctn_qty = Double.parseDouble(ctnQtyValue.getText().toString());
+                }
+                if (!ctnQty.getText().toString().isEmpty()) {
+                    pcs_ctn = Double.parseDouble(ctnQty.getText().toString());
+                }
+                if (!editable.toString().isEmpty()) {
+                    pcs_qty = Double.parseDouble(editable.toString());
+                }
+                net_qty = (ctn_qty * pcs_ctn) + pcs_qty;
+                double stock = Double.parseDouble(availability.getText().toString());
+                if (net_qty > stock) {
 //                  if (!isAllowLowStock){
-                  if (negativeStockStr.equalsIgnoreCase("No")){
+                    if (negativeStockStr.equalsIgnoreCase("No")) {
 
-                      showLowStock();
-                      pcsQtyValue.removeTextChangedListener(qtyWatcher);
-                      pcsQtyValue.setText("0");
-                      pcsQtyValue.addTextChangedListener(qtyWatcher);
-                      pcsQtyValue.clearFocus();
-                  }
-              }
-              setCalculation();
-          }
-      };
-      pcsQtyValue.addTextChangedListener(qtyWatcher);
+                        showLowStock();
+                        pcsQtyValue.removeTextChangedListener(qtyWatcher);
+                        pcsQtyValue.setText("0");
+                        pcsQtyValue.addTextChangedListener(qtyWatcher);
+                        pcsQtyValue.clearFocus();
+                    }
+                }
+                setCalculation();
+            }
+        };
+        pcsQtyValue.addTextChangedListener(qtyWatcher);
 
 
 
@@ -1077,7 +1111,7 @@ public class DescriptionActivity extends AppCompatActivity {
 */
 
 
-    // Hide the FOC Layout for the Setting Based
+        // Hide the FOC Layout for the Setting Based
         /*ArrayList<SettingsModel> settings=dbHelper.getSettings();
         if (settings.size()>0) {
             for (SettingsModel mod : settings) {
@@ -1091,15 +1125,17 @@ public class DescriptionActivity extends AppCompatActivity {
             }
         }*/
 
+        return view;
+
     }
 
     public boolean isProductExist(String productId) {
-        boolean isExist=false;
+        boolean isExist = false;
         try {
             ArrayList<CartModel> localCart = dbHelper.getAllCartItems();
             if (localCart.size() > 0) {
                 for (CartModel cart : localCart) {
-                    if (cart.getCART_COLUMN_PID()!=null){
+                    if (cart.getCART_COLUMN_PID() != null) {
                         if (cart.getCART_COLUMN_PID().equals(productId)) {
                             isExist = true;
                             break;
@@ -1107,70 +1143,71 @@ public class DescriptionActivity extends AppCompatActivity {
                     }
                 }
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             Log.e("Exp_to_check_product:", Objects.requireNonNull(ex.getMessage()));
         }
         return isExist;
     }
 
-    public void showImageFile(File imageUrl) {
-        Dialog builder = new Dialog(DescriptionActivity.this,android.R.style.Theme_Light);
-        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        //  builder.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                //nothing;
-            }
-        });
+//    public void showImageFile(File imageUrl) {
+//        Dialog builder = new Dialog(DescriptionActivityToDialog.this, android.R.style.Theme_Light);
+//        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        //  builder.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+//        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//            @Override
+//            public void onDismiss(DialogInterface dialogInterface) {
+//                //nothing;
+//            }
+//        });
+//
+//        builder.setCanceledOnTouchOutside(true);
+//        ImageView imageView = new ImageView(DescriptionActivityToDialog.this);
+//        ImageView closeImage = new ImageView(DescriptionActivityToDialog.this);
+//        closeImage.setImageResource(R.drawable.ic_baseline_close_24);
+//
+//        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//        layoutParams.gravity = Gravity.RIGHT;
+//        //layoutParams.setMargins(10, 10, 10, 10); // (left, top, right, bottom)
+//        closeImage.setLayoutParams(layoutParams);
+//
+//        LinearLayout.LayoutParams layoutParams1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//        layoutParams.gravity = Gravity.CENTER;
+//        //layoutParams.setMargins(10, 10, 10, 10); // (left, top, right, bottom)
+//        imageView.setLayoutParams(layoutParams1);
+//
+//        FrameLayout frameLayout = new FrameLayout(DescriptionActivityToDialog.this);
+//        frameLayout.addView(imageView);
+//        frameLayout.addView(closeImage);
+//        builder.addContentView(frameLayout, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//
+//        Glide.with(DescriptionActivityToDialog.this)
+//                .asBitmap()
+//                //.apply(myOptions)
+//                .load(imageUrl)
+//                .error(R.drawable.no_image_found)
+//                .listener(new RequestListener<Bitmap>() {
+//                    @Override
+//                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+//                        imageView.setImageResource(R.drawable.no_image_found);
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+//                        return false;
+//                    }
+//                }).into(imageView);
+//        builder.show();
+//    }
 
-        builder.setCanceledOnTouchOutside(true);
-        ImageView imageView = new ImageView(DescriptionActivity.this);
-        ImageView closeImage=new ImageView(DescriptionActivity.this);
-        closeImage.setImageResource(R.drawable.ic_baseline_close_24);
-
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.RIGHT;
-        //layoutParams.setMargins(10, 10, 10, 10); // (left, top, right, bottom)
-        closeImage.setLayoutParams(layoutParams);
-
-        LinearLayout.LayoutParams layoutParams1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.CENTER;
-        //layoutParams.setMargins(10, 10, 10, 10); // (left, top, right, bottom)
-        imageView.setLayoutParams(layoutParams1);
-
-        FrameLayout frameLayout=new FrameLayout(DescriptionActivity.this);
-        frameLayout.addView(imageView);
-        frameLayout.addView(closeImage);
-        builder.addContentView(frameLayout, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        Glide.with(DescriptionActivity.this)
-                .asBitmap()
-                //.apply(myOptions)
-                .load(imageUrl)
-                .error(R.drawable.no_image_found)
-                .listener(new RequestListener<Bitmap>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        imageView.setImageResource(R.drawable.no_image_found);
-                        return false;
-                    }
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        return false;
-                    }
-                }).into(imageView);
-        builder.show();
-    }
-
-    public void getUOM(JSONObject jsonObject ,  ProductsModel model) {
+    public void getUOM(JSONObject jsonObject, ProductsModel model) {
         // Initialize a new RequestQueue instance
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url = Utils.getBaseUrl(this) + "ItemUOMDetails";
+        RequestQueue requestQueue = Volley.newRequestQueue(requireActivity());
+        String url = Utils.getBaseUrl(requireActivity()) + "ItemUOMDetails";
         // Initialize a new JsonArrayRequest instance
         Log.w("Given_UOM_URL:", url + jsonObject.toString());
 
-        SweetAlertDialog pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+        SweetAlertDialog pDialog = new SweetAlertDialog(requireActivity(), SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         pDialog.setTitleText("Loading UOM...");
         pDialog.setCancelable(false);
@@ -1200,8 +1237,8 @@ public class DescriptionActivity extends AppCompatActivity {
                 Log.w("UOM_TEXT:", uomArray.toString());
                 pDialog.dismiss();
                 if (uomList.size() > 0) {
-                    runOnUiThread(() -> {
-                        setUomList(uomList , model);
+                    requireActivity().runOnUiThread(() -> {
+                        setUomList(uomList, model);
                     });
                 }
             } catch (Exception e) {
@@ -1241,10 +1278,10 @@ public class DescriptionActivity extends AppCompatActivity {
         requestQueue.add(jsonObjectRequest);
     }
 
-    private void setUomList(ArrayList<UomModel> uomList ,  ProductsModel model) {
+    private void setUomList(ArrayList<UomModel> uomList, ProductsModel model) {
 
-        Log.w("UOMList:", uomList.toString() +".."+model.getDefaultUom()+"...."+model.getUomCode());
-        ArrayAdapter<UomModel> adapter = new ArrayAdapter<>(this, R.layout.cust_spinner_item, uomList);
+        Log.w("UOMList:", uomList.toString() + ".." + model.getDefaultUom() + "...." + model.getUomCode());
+        ArrayAdapter<UomModel> adapter = new ArrayAdapter<>(requireActivity(), R.layout.cust_spinner_item, uomList);
         uomSpinnerCart.setAdapter(adapter);
         setUOMCode(uomList);
         if (model != null) {
@@ -1255,7 +1292,7 @@ public class DescriptionActivity extends AppCompatActivity {
                 if (uomList.get(i).getUomCode().equals(model.getDefaultUom())) {
                     Log.w("cg_uoomcode_", model.getDefaultUom());
                     uomSpinnerCart.setSelection(i);
-                   // uomCode = uomList.get(i).getUomCode() ;
+                    // uomCode = uomList.get(i).getUomCode() ;
                     //uomText.setText(uomList.get(i).getUomCode());
                     ctnPrice.setText(uomList.get(i).getPrice());
                     break;
@@ -1273,25 +1310,26 @@ public class DescriptionActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                    uomName = uomSpinnerCart.getSelectedItem().toString();
-                    uomCode = uomList.get(position).getUomCode() ;
-                  //  uomText.setText(uomList.get(position).getUomCode());
-                   ctnPrice.setText(uomList.get(position).getPrice());
+                uomName = uomSpinnerCart.getSelectedItem().toString();
+                uomCode = uomList.get(position).getUomCode();
+                //  uomText.setText(uomList.get(position).getUomCode());
+                ctnPrice.setText(uomList.get(position).getPrice());
                 if (uomName.equals("CTN")) {
                     double baseCtnQty = Double.parseDouble(uomList.get(position).getBaseQty());
                     double pdtStock = Double.parseDouble(stockStr);
 
-                    ctnStockVal = pdtStock / baseCtnQty ;
+                    ctnStockVal = pdtStock / baseCtnQty;
                     availability.setText(String.valueOf(Utils.twoDecimalPoint(ctnStockVal)));
-                }else{
+                } else {
                     availability.setText(stockStr);
 
                 }
 
-                    Log.w("UOMQtyValueCart:", uomList.get(position).getUomEntry());
-                    Log.w("SelectedUOMCart:", uomName + "");
+                Log.w("UOMQtyValueCart:", uomList.get(position).getUomEntry());
+                Log.w("SelectedUOMCart:", uomName + "");
 
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -1299,53 +1337,53 @@ public class DescriptionActivity extends AppCompatActivity {
     }
 
 
-    public void showImageUrl(String imageUrl) {
-        Dialog builder = new Dialog(DescriptionActivity.this,android.R.style.Theme_Light);
-        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        // builder.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                //nothing;
-                dialogInterface.dismiss();
-            }
-        });
-
-        builder.setCanceledOnTouchOutside(true);
-
-        ImageView imageView = new ImageView(DescriptionActivity.this);
-        Glide.with(DescriptionActivity.this)
-                .asBitmap()
-                //.apply(myOptions)
-                .load(imageUrl)
-                .error(R.drawable.no_image_found)
-                .listener(new RequestListener<Bitmap>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        imageView.setImageResource(R.drawable.no_image_found);
-                        return false;
-                    }
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        return false;
-                    }
-                }).into(imageView);
-        builder.addContentView(imageView, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        builder.show();
-    }
+//    public void showImageUrl(String imageUrl) {
+//        Dialog builder = new Dialog(requireActivity(), android.R.style.Theme_Light);
+//        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        // builder.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+//        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//            @Override
+//            public void onDismiss(DialogInterface dialogInterface) {
+//                //nothing;
+//                dialogInterface.dismiss();
+//            }
+//        });
+//
+//        builder.setCanceledOnTouchOutside(true);
+//
+//        ImageView imageView = new ImageView(DescriptionActivityToDialog.this);
+//        Glide.with(DescriptionActivityToDialog.this)
+//                .asBitmap()
+//                //.apply(myOptions)
+//                .load(imageUrl)
+//                .error(R.drawable.no_image_found)
+//                .listener(new RequestListener<Bitmap>() {
+//                    @Override
+//                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+//                        imageView.setImageResource(R.drawable.no_image_found);
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+//                        return false;
+//                    }
+//                }).into(imageView);
+//        builder.addContentView(imageView, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT));
+//        builder.show();
+//    }
 
     /**
      * Get = the low stock invoice setting to allow the Negative stock allow the invoice
      */
-    public void getLowStockSetting(){
-        ArrayList<SettingsModel> settings=dbHelper.getSettings();
-        if (settings.size()>0) {
+    public void getLowStockSetting() {
+        ArrayList<SettingsModel> settings = dbHelper.getSettings();
+        if (settings.size() > 0) {
             for (SettingsModel model : settings) {
                 if (model.getSettingName().equals("allow_negative_switch")) {
-                    isAllowLowStock= model.getSettingValue().equals("1");
-                }
-                else if (model.getSettingName().equals("UomSwitch")) {
+                    isAllowLowStock = model.getSettingValue().equals("1");
+                } else if (model.getSettingName().equals("UomSwitch")) {
                     Log.w("SettingNameI:", model.getSettingName());
                     Log.w("SettingValueI:", model.getSettingValue());
                     if (model.getSettingValue().equals("1")) {
@@ -1358,9 +1396,9 @@ public class DescriptionActivity extends AppCompatActivity {
         }
     }
 
-    public void showAlertCustomer(){
+    public void showAlertCustomer() {
         try {
-            new SweetAlertDialog(DescriptionActivity.this, SweetAlertDialog.WARNING_TYPE)
+            new SweetAlertDialog(requireActivity(), SweetAlertDialog.WARNING_TYPE)
                     .setTitleText("Warning !")
                     .setContentText("Please Choose your Customer!")
                     .setConfirmText("Cancel")
@@ -1370,7 +1408,8 @@ public class DescriptionActivity extends AppCompatActivity {
                             sDialog.dismissWithAnimation();
                         }
                     }).show();
-        }catch (Exception ex){}
+        } catch (Exception ex) {
+        }
 
     }
 
@@ -1408,8 +1447,8 @@ public class DescriptionActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
-               // onBackPressed();
+                dismiss();
+                // onBackPressed();
                 break;
 
          /*   case R.id.action_remove:
@@ -1419,36 +1458,32 @@ public class DescriptionActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        finish();
-    }
 
-    public boolean validateStock(){
-        double net_qty=0.0;
-        double stock_qty=0.0;
-        boolean check=false;
-        if (qtyTextView.getText().toString().isEmpty()){
-            net_qty=0.0;
-        }else {
-            net_qty=Double.parseDouble(qtyTextView.getText().toString());
+
+    public boolean validateStock() {
+        double net_qty = 0.0;
+        double stock_qty = 0.0;
+        boolean check = false;
+        if (qtyTextView.getText().toString().isEmpty()) {
+            net_qty = 0.0;
+        } else {
+            net_qty = Double.parseDouble(qtyTextView.getText().toString());
         }
-        if (availability.getText().toString().isEmpty()){
-            stock_qty=0.0;
-        }else {
-            stock_qty=Double.parseDouble(availability.getText().toString());
+        if (availability.getText().toString().isEmpty()) {
+            stock_qty = 0.0;
+        } else {
+            stock_qty = Double.parseDouble(availability.getText().toString());
         }
-        if (net_qty>stock_qty) {
+        if (net_qty > stock_qty) {
             showLowStock();
-        }else {
-            check=true;
+        } else {
+            check = true;
         }
-        return  check;
+        return check;
     }
 
-    public void showLowStock(){
-        new SweetAlertDialog(DescriptionActivity.this, SweetAlertDialog.WARNING_TYPE)
+    public void showLowStock() {
+        new SweetAlertDialog(requireActivity(), SweetAlertDialog.WARNING_TYPE)
                 .setTitleText("Warning !")
                 .setContentText("Low Stock Please check!")
                 .setConfirmText("Cancel")
@@ -1462,47 +1497,47 @@ public class DescriptionActivity extends AppCompatActivity {
 
     public void setCalculation() {
         // Define the Required variables to calulate the Amount
-    //    try {
-            double cnQty = 0.0;
-            double lqty = 0.0;
-            double pcspercarton = 0.0;
-            double carton_amount = 0.0;
-            double net_amount = 0.0;
-            double loose_amount = 0.0;
-            double cprice = 0.0;
-            double lprice = 0.0;
-            double discount = 0.0;
-            double return_qty = 0;
+        //    try {
+        double cnQty = 0.0;
+        double lqty = 0.0;
+        double pcspercarton = 0.0;
+        double carton_amount = 0.0;
+        double net_amount = 0.0;
+        double loose_amount = 0.0;
+        double cprice = 0.0;
+        double lprice = 0.0;
+        double discount = 0.0;
+        double return_qty = 0;
 
-            if (!ctnPrice.getText().toString().isEmpty()) {
-                if (!ctnPrice.getText().toString().equals(".")) {
+        if (!ctnPrice.getText().toString().isEmpty()) {
+            if (!ctnPrice.getText().toString().equals(".")) {
 
-                    cprice = Double.parseDouble(ctnPrice.getText().toString());
-                }
+                cprice = Double.parseDouble(ctnPrice.getText().toString());
             }
-            if (!unitPrice.getText().toString().isEmpty()) {
-                lprice = Double.parseDouble(unitPrice.getText().toString());
-            }
+        }
+        if (!unitPrice.getText().toString().isEmpty()) {
+            lprice = Double.parseDouble(unitPrice.getText().toString());
+        }
 
-            if (!ctnQtyValue.getText().toString().isEmpty()) {
-                cnQty = Double.parseDouble(ctnQtyValue.getText().toString());
-            }
+        if (!ctnQtyValue.getText().toString().isEmpty()) {
+            cnQty = Double.parseDouble(ctnQtyValue.getText().toString());
+        }
 
-            if (!pcsQtyValue.getText().toString().isEmpty()) {
-                lqty = Double.parseDouble(pcsQtyValue.getText().toString());
-            }
+        if (!pcsQtyValue.getText().toString().isEmpty()) {
+            lqty = Double.parseDouble(pcsQtyValue.getText().toString());
+        }
 
-            if (!discountEditext.getText().toString().isEmpty()) {
-                discount = Double.parseDouble(discountEditext.getText().toString());
-            }
+        if (!discountEditext.getText().toString().isEmpty()) {
+            discount = Double.parseDouble(discountEditext.getText().toString());
+        }
 
-            if (!ctnQty.getText().toString().isEmpty()) {
-                pcspercarton = Double.parseDouble(ctnQty.getText().toString());
-            }
+        if (!ctnQty.getText().toString().isEmpty()) {
+            pcspercarton = Double.parseDouble(ctnQty.getText().toString());
+        }
 
-            if (!returnEditext.getText().toString().isEmpty()) {
-                return_qty = Integer.parseInt(returnEditext.getText().toString());
-            }
+        if (!returnEditext.getText().toString().isEmpty()) {
+            return_qty = Integer.parseInt(returnEditext.getText().toString());
+        }
 
           /*  // calculating the net total
             if (pcspercarton > 1) {
@@ -1517,80 +1552,80 @@ public class DescriptionActivity extends AppCompatActivity {
                 Log.w("Net_amount_2:", String.valueOf(net_amount));
             }*/
 
-            net_amount = (cnQty * cprice);
-            Log.w("Net_amount_2:", String.valueOf(net_amount));
-            double net_qty=(cnQty);
-            int value = (int)net_qty;
-            qtyTextView.setText(String.valueOf(value));
+        net_amount = (cnQty * cprice);
+        Log.w("Net_amount_2:", String.valueOf(net_amount));
+        double net_qty = (cnQty);
+        int value = (int) net_qty;
+        qtyTextView.setText(String.valueOf(value));
 
-            if (return_qty != 0) {
-                if (returnSwitch.isChecked()) {
-                    return_qty = Double.parseDouble(returnEditext.getText().toString()) * pcspercarton;
-                } else {
-                    return_qty = Double.parseDouble(returnEditext.getText().toString());
-                }
-                double return_amt=0.0;
-                if (pcspercarton>1){
-                     return_amt = (return_qty * lprice);
-                }else if (pcspercarton==1){
-                     return_amt = (return_qty * cprice);
-                }
-                net_amount = net_amount - return_amt;
+        if (return_qty != 0) {
+            if (returnSwitch.isChecked()) {
+                return_qty = Double.parseDouble(returnEditext.getText().toString()) * pcspercarton;
+            } else {
+                return_qty = Double.parseDouble(returnEditext.getText().toString());
             }
-            if (discount != 0.0) {
-                net_amount = net_amount - discount;
+            double return_amt = 0.0;
+            if (pcspercarton > 1) {
+                return_amt = (return_qty * lprice);
+            } else if (pcspercarton == 1) {
+                return_amt = (return_qty * cprice);
             }
+            net_amount = net_amount - return_amt;
+        }
+        if (discount != 0.0) {
+            net_amount = net_amount - discount;
+        }
 //        if (!discountEditext.getText().toString().isEmpty()) {
 //            discount = Double.parseDouble(discountEditext.getText().toString());
 //        }
 //            percentApi=calculatePercentage(discount,cprice);
 //        Log.w("cartDis ",""+percentApi);
 
-            netPrice.setText(twoDecimalPoint(net_amount));
-            taxCalculation(net_amount);
+        netPrice.setText(twoDecimalPoint(net_amount));
+        taxCalculation(net_amount);
 
-            sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC, Utils.twoDecimalPoint(percentApi));
+        sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC, Utils.twoDecimalPoint(percentApi));
 
 //        } catch (Exception ex) {
 //        }
     }
 
- /*   // calculation for the product
-    public void setCalculation(){
+    /*   // calculation for the product
+       public void setCalculation(){
 
-        try {
-            // Define the Required variables to calulate the Amount
+           try {
+               // Define the Required variables to calulate the Amount
 
-            double cprice=Double.parseDouble(ctnPrice.getText().toString());
-            double lprice=Double.parseDouble(unitPrice.getText().toString());
+               double cprice=Double.parseDouble(ctnPrice.getText().toString());
+               double lprice=Double.parseDouble(unitPrice.getText().toString());
 
-            if (!ctnQtyValue.getText().toString().isEmpty()){
-                cnQty=Integer.parseInt(ctnQtyValue.getText().toString());
-            }
+               if (!ctnQtyValue.getText().toString().isEmpty()){
+                   cnQty=Integer.parseInt(ctnQtyValue.getText().toString());
+               }
 
-            if (!pcsQtyValue.getText().toString().isEmpty()){
-                lqty=Integer.parseInt(pcsQtyValue.getText().toString());
-            }
-            pcspercarton=Double.parseDouble(ctnQty.getText().toString());
+               if (!pcsQtyValue.getText().toString().isEmpty()){
+                   lqty=Integer.parseInt(pcsQtyValue.getText().toString());
+               }
+               pcspercarton=Double.parseDouble(ctnQty.getText().toString());
 
-            // calculating the net total
-            if (pcspercarton>1){
-                carton_amount=(cnQty*cprice);
-                loose_amount=(lqty*lprice);
-                net_amount=carton_amount+loose_amount;
-                netPrice.setText(twoDecimalPoint(net_amount));
-            }else {
-                carton_amount=(cnQty*lprice);
-                netPrice.setText(twoDecimalPoint(carton_amount));
-            }
+               // calculating the net total
+               if (pcspercarton>1){
+                   carton_amount=(cnQty*cprice);
+                   loose_amount=(lqty*lprice);
+                   net_amount=carton_amount+loose_amount;
+                   netPrice.setText(twoDecimalPoint(net_amount));
+               }else {
+                   carton_amount=(cnQty*lprice);
+                   netPrice.setText(twoDecimalPoint(carton_amount));
+               }
 
-            taxCalculation(Double.parseDouble(netPrice.getText().toString()));
-        }catch (Exception ex){}
-    }
-*/
-    public void taxCalculation(double subTotal){
+               taxCalculation(Double.parseDouble(netPrice.getText().toString()));
+           }catch (Exception ex){}
+       }
+   */
+    public void taxCalculation(double subTotal) {
 
-        SharedPreferences sharedPreferences = getSharedPreferences("customerPref",MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
         String selectCustomerId = sharedPreferences.getString("customerId", "");
 
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
@@ -1666,14 +1701,14 @@ public class DescriptionActivity extends AppCompatActivity {
         }
     }
 
-    public void showAlert(){
-        String message="";
-        if (isQtyEntered){
-            message="Enter the price of the product !";
-        }else {
-            message="Please Add the Qty !";
+    public void showAlert() {
+        String message = "";
+        if (isQtyEntered) {
+            message = "Enter the price of the product !";
+        } else {
+            message = "Please Add the Qty !";
         }
-        new SweetAlertDialog(DescriptionActivity.this, SweetAlertDialog.WARNING_TYPE)
+        new SweetAlertDialog(requireActivity(), SweetAlertDialog.WARNING_TYPE)
                 .setTitleText("Warning !")
                 .setContentText(message)
                 .setConfirmText("Cancel")
@@ -1688,18 +1723,18 @@ public class DescriptionActivity extends AppCompatActivity {
     public void getProductPrice(String productId) throws JSONException {
         //  {"CompanyCode":"1","CustomerCode":"0003432","LocationCode":"HQ","ProductCode":"0000009"}
         // Initialize a new RequestQueue instance
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("CompanyCode",companyCode);
-        jsonObject.put("CustomerCode",selectCustomerId);
-        jsonObject.put("LocationCode",locationCode);
-        jsonObject.put("ProductCode",productId);
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("CompanyCode", companyCode);
+        jsonObject.put("CustomerCode", selectCustomerId);
+        jsonObject.put("LocationCode", locationCode);
+        jsonObject.put("ProductCode", productId);
+        RequestQueue requestQueue = Volley.newRequestQueue(requireActivity());
         //http://223.25.81.205:100//es/data/api/ProductApi/GetCustomerProductPrice?Requestdata={"CompanyCode":"10","CustomerCode":"TEST B ","LocationCode":"HQ","ProductCode":"ALU001"}
-        String url=Utils.getBaseUrl(this) +"ProductApi/GetCustomerProductPrice?Requestdata="+jsonObject.toString();
+        String url = Utils.getBaseUrl(requireActivity()) + "ProductApi/GetCustomerProductPrice?Requestdata=" + jsonObject.toString();
         // String url="http://223.25.81.205:100/es/data/api/ProductApi/GetCustomerProductPrice?Requestdata="+jsonObject.toString();
         // Initialize a new JsonArrayRequest instance
-        Log.w("Given_product_url:",url);
-        dialog=new ProgressDialog(this);
+        Log.w("Given_product_url:", url);
+        dialog = new ProgressDialog(requireActivity());
         dialog.setMessage("Getting Product price...");
         dialog.setCancelable(false);
         dialog.show();
@@ -1708,26 +1743,26 @@ public class DescriptionActivity extends AppCompatActivity {
                 url,
                 null,
                 response -> {
-                    try{
-                        Log.w("ProductPriceResponse::",response.toString());
-                        JSONArray jsonArray=new JSONArray(response.toString());
-                        for (int i =0;i<jsonArray.length();i++){
-                            JSONObject object=jsonArray.optJSONObject(i);
+                    try {
+                        Log.w("ProductPriceResponse::", response.toString());
+                        JSONArray jsonArray = new JSONArray(response.toString());
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject object = jsonArray.optJSONObject(i);
                             unitPrice.setText(object.optString("Price"));
                             ctnPrice.setText(object.optString("CartonPrice"));
                         }
                         dialog.dismiss();
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }, error -> {
             // Do something when error occurred
-            Log.w("Error_throwing:",error.toString());
-        }){
+            Log.w("Error_throwing:", error.toString());
+        }) {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE,Constants.API_SECRET_PASSWORD);
+                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
                 String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
                 params.put("Authorization", auth);
                 return params;
@@ -1738,10 +1773,12 @@ public class DescriptionActivity extends AppCompatActivity {
             public int getCurrentTimeout() {
                 return 50000;
             }
+
             @Override
             public int getCurrentRetryCount() {
                 return 50000;
             }
+
             @Override
             public void retry(VolleyError error) throws VolleyError {
 
@@ -1751,17 +1788,17 @@ public class DescriptionActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
-    public void showExistingProductAlert(String productId,String productName,String productImage){
-        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+    public void showExistingProductAlert(String productId, String productName, String productImage) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(requireActivity());
         builder1.setTitle("Warning !");
-        builder1.setMessage(productName+" - "+productId+ "\nAlready Exist Do you want to replace ? ");
+        builder1.setMessage(productName + " - " + productId + "\nAlready Exist Do you want to replace ? ");
         builder1.setCancelable(false);
         builder1.setPositiveButton(
                 "YES",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
-                        insertProduct(productId,productName,productImage);
+                        insertProduct(productId, productName, productImage);
                     }
                 });
         builder1.setNegativeButton(
@@ -1777,8 +1814,8 @@ public class DescriptionActivity extends AppCompatActivity {
         alert11.show();
     }
 
-    public void insertProduct(String productId,String productName,String productImage){
-        if (selectCustomerId!=null && !selectCustomerId.isEmpty()) {
+    public void insertProduct(String productId, String productName, String productImage) {
+        if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
             String focType = "pcs";
             String exchangeType = "pcs";
             String returnType = "pcs";
@@ -1812,8 +1849,8 @@ public class DescriptionActivity extends AppCompatActivity {
             }
 
             if (!ctnPrice.getText().toString().isEmpty()) {
-                if (!ctnPrice.getText().toString().equals(".")){
-                cartonprice = ctnPrice.getText().toString();
+                if (!ctnPrice.getText().toString().equals(".")) {
+                    cartonprice = ctnPrice.getText().toString();
                 }
             }
 
@@ -1862,7 +1899,7 @@ public class DescriptionActivity extends AppCompatActivity {
                         String.valueOf(total),
                         availability.getText().toString(),
                         uomCode,
-                        "0.00",availability.getText().toString());
+                        "0.00", availability.getText().toString());
 
 
                     /*boolean status= dbHelper.insertCart(
@@ -1888,17 +1925,17 @@ public class DescriptionActivity extends AppCompatActivity {
                             returnEditext.getText().toString(),
                             returnType);*/
                 if (status) {
-                    Toast.makeText(getApplicationContext(), "Product Added Successfully", Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireActivity(), "Product Added Successfully", Toast.LENGTH_LONG).show();
                     //Intent intent=new Intent(DescriptionActivity.this,MainHomeActivity.class);
                     // startActivity(intent);
-                    finish();
+                    dismiss();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error in Add product", Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireActivity(), "Error in Add product", Toast.LENGTH_LONG).show();
                 }
             } else {
                 showAlert();
             }
-        }else {
+        } else {
             showAlertCustomer();
         }
     }

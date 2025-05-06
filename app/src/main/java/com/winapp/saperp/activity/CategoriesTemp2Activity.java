@@ -1,11 +1,7 @@
 package com.winapp.saperp.activity;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
+import static com.winapp.saperp.activity.AddInvoiceActivityOld.activityFrom;
+import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -33,6 +29,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.RetryPolicy;
@@ -43,7 +46,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 import com.winapp.saperp.R;
 import com.winapp.saperp.adapter.CustomerNameAdapter;
-import com.winapp.saperp.adapter.ViewPagerAdapter;
+import com.winapp.saperp.adapter.ViewPagerTemp2Adapter;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.model.AllCategories;
 import com.winapp.saperp.model.CartModel;
@@ -71,14 +74,11 @@ import java.util.Objects;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-import static com.winapp.saperp.activity.AddInvoiceActivityOld.activityFrom;
-import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
-
-public class CategoriesActivity extends AppCompatActivity {
+public class CategoriesTemp2Activity extends AppCompatActivity {
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private ViewPagerAdapter viewPagerAdapter;
+    private ViewPagerTemp2Adapter viewPagerAdapter;
     private int noOfTabs = 3;
     private SweetAlertDialog pDialog;
     private SessionManager session;
@@ -123,11 +123,12 @@ public class CategoriesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_categories);
+        setContentView(R.layout.activity_categories_temp2);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Catalog");
 
-        Log.w("activity_cg",getClass().getSimpleName().toString()+" - ProductAdapterLoadMore");
+        Log.w("activity_cg",getClass().getSimpleName().toString()
+                +" - ProductAdapterLoadMore"+" - CategoriesTabFragments");
 
         // product loading apis
 //        https://c21326-EasySales-Test.cloudiax.com/api/CategoryDetails {"CategoryCode": "102", "LocationCode": "01"}
@@ -172,7 +173,7 @@ public class CategoriesActivity extends AppCompatActivity {
         }
 
         try {
-            getCustomersGroups(username);
+         getCustomersGroups(username);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -306,7 +307,7 @@ public class CategoriesActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         Log.w("Given_urlGroup:", url+jsonObject);
-        dialog = new ProgressDialog(CategoriesActivity.this);
+        dialog = new ProgressDialog(CategoriesTemp2Activity.this);
         dialog.setMessage("Loading Customers Groups...");
         dialog.setCancelable(false);
         dialog.show();
@@ -392,8 +393,8 @@ public class CategoriesActivity extends AppCompatActivity {
             @Override
             public void run() {
 //                synchronized (this) {
-                RequestQueue requestQueue = Volley.newRequestQueue(CategoriesActivity.this);
-                String url = Utils.getBaseUrl(CategoriesActivity.this) + "CustomerList";
+                RequestQueue requestQueue = Volley.newRequestQueue(CategoriesTemp2Activity.this);
+                String url = Utils.getBaseUrl(CategoriesTemp2Activity.this) + "CustomerList";
                 customerList = new ArrayList<>();
                 customerList.clear();
                 allCustomersList = new ArrayList<>();
@@ -512,7 +513,7 @@ public class CategoriesActivity extends AppCompatActivity {
         Log.w("JsonValueForCustomer:", jsonObject.toString());
         String url = Utils.getBaseUrl(getApplicationContext()) + "Customer";
         Log.w("Given_url_cart:", url);
-        ProgressDialog progressDialog = new ProgressDialog(CategoriesActivity.this);
+        ProgressDialog progressDialog = new ProgressDialog(CategoriesTemp2Activity.this);
         progressDialog.setCancelable(false);
         progressDialog.setMessage("Customer Details Loading...");
         if (isloader) {
@@ -644,7 +645,7 @@ public class CategoriesActivity extends AppCompatActivity {
     }
 
     public void showAlertDialog() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(CategoriesActivity.this);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(CategoriesTemp2Activity.this);
         builder.setCancelable(false);
         builder.setTitle("Warning..!");
         builder.setMessage("All Data Will be Cleared are you sure want to back ?");
@@ -673,7 +674,7 @@ public class CategoriesActivity extends AppCompatActivity {
                         dialog.cancel();
                         dbHelper.removeAllItems();
                         setupBadge();
-                        Utils.refreshActionBarMenu(CategoriesActivity.this);
+                        Utils.refreshActionBarMenu(CategoriesTemp2Activity.this);
                         try {
                             setCustomerDetails(customerId);
                         } catch (Exception e) {
@@ -748,6 +749,7 @@ public class CategoriesActivity extends AppCompatActivity {
                             }
                             pDialog.dismiss();
                             if (allCategoriesList.size() > 0) {
+                                Log.d("cg_allcategories:", ""+allCategoriesList.size());
                                 setCatagoriesTabs(allCategoriesList);
                                 viewPager.setVisibility(View.VISIBLE);
                                 emptyLayout.setVisibility(View.GONE);
@@ -797,7 +799,8 @@ public class CategoriesActivity extends AppCompatActivity {
     }
 
     private void setCatagoriesTabs(ArrayList<AllCategories> allCategoriesList) {
-        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), allCategoriesList.size(), allCategoriesList);
+        viewPagerAdapter = new ViewPagerTemp2Adapter(getSupportFragmentManager(),
+                allCategoriesList.size(), allCategoriesList);
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setOffscreenPageLimit(allCategoriesList.size());
         tabLayout.setupWithViewPager(viewPager);
@@ -874,7 +877,7 @@ public class CategoriesActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         setupBadge();
-        Utils.refreshActionBarMenu(CategoriesActivity.this);
+        Utils.refreshActionBarMenu(CategoriesTemp2Activity.this);
     }
 
     @Override
@@ -915,7 +918,7 @@ public class CategoriesActivity extends AppCompatActivity {
 
             return true;
         } else if (id == R.id.action_search) {
-            Intent intent = new Intent(CategoriesActivity.this, SearchProductActivity.class);
+            Intent intent = new Intent(CategoriesTemp2Activity.this, SearchProductActivity.class);
             startActivity(intent);
         }
 

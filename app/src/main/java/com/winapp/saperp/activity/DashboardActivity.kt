@@ -487,6 +487,7 @@ class DashboardActivity : NavigationActivity() {
         catalogCard!!.setOnClickListener(View.OnClickListener { /* Intent intent=new Intent(DashboardActivity.this,SchedulingActivity.class);
                 startActivity(intent);*/
             val intent = Intent(this@DashboardActivity, CategoriesActivity::class.java)
+            //val intent = Intent(this@DashboardActivity, CategoriesTemp2Activity::class.java)
             startActivity(intent)
         })
         salesOrderLayout!!.setOnClickListener(View.OnClickListener {

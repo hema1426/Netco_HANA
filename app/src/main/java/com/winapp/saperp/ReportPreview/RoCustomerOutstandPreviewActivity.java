@@ -158,7 +158,7 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
         String toDateString = new SimpleDateFormat("yyyyMMdd").format(toDate);
 
         try {
-            getCustomerStatement(customer_code,fromDateString,toDateString,"O",1);
+            getCustomerStatement(customer_code,fromDateString,toDateString,"",1);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -217,11 +217,16 @@ public class RoCustomerOutstandPreviewActivity extends AppCompatActivity {
                             custInvoiceDetailModel.setInvoiceDate(object.optString("invoiceDate"));
                             custInvoiceDetailModel.setNetTotal(Utils.twoDecimalPoint(Double.parseDouble(object.optString("netTotal"))));
                             custInvoiceDetailModel.setBalanceAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("balance"))));
-                            custInvoiceDetailModel.setPaidAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("paidAmt"))));
-
+                            if(object.optString("paidAmt") != null || !object.optString("paidAmt").isEmpty()) {
+                                custInvoiceDetailModel.setPaidAmount(Utils.twoDecimalPoint(Double.parseDouble(object.optString("paidAmt"))));
+                            }else{
+                                custInvoiceDetailModel.setPaidAmount("0.0");
+                            }
                             nettotal1 += Double.parseDouble(object.optString("netTotal"));
                             balance1 += Double.parseDouble(object.optString("balance"));
-                            paidAmtt += Double.parseDouble(object.optString("paidAmt"));
+                            if(object.optString("paidAmt") != null || !object.optString("paidAmt").isEmpty()) {
+                                paidAmtt += Double.parseDouble(object.optString("paidAmt"));
+                            }
 
                             mNettotal = Double.parseDouble(twoDecimalPoint(nettotal1));
                             mBalance = Double.parseDouble(twoDecimalPoint(balance1));

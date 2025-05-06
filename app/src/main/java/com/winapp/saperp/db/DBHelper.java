@@ -105,6 +105,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 "cartonprice text,unitcost text,uomcode text,pcspercarton text,barcode text)"
         );
 
+        db.execSQL("create table " + TABLE_CATALOG_PRODUCTS + " " +
+                "(ID INTEGER PRIMARY KEY AUTOINCREMENT,productid text,productname text,productweight text," +
+                "productimage text,retailprice text,wholesaleprice text,stockqty text," +
+                "cartonprice text,unitcost text,uomcode text,pcspercarton text,barcode text,categoryCode text)"
+        );
+
         db.execSQL("create table " + TABLE_COMPANIES + " " +
                 "(ID INTEGER PRIMARY KEY AUTOINCREMENT,companyid text,companyname text,isactive text)"
         );
@@ -891,9 +897,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 cv.put("unitcost", products.get(i).getUnitCost());
                 cv.put("uomcode", products.get(i).getUomCode());
                 cv.put("pcspercarton", products.get(i).getPcsPerCarton());
-                db.insertOrThrow(TABLE_PRODUCTS, null, cv);
+                cv.put("categoryCode", products.get(i).getCategoryCode());
+                db.insertOrThrow(TABLE_CATALOG_PRODUCTS, null, cv);
             }
-            Log.w("Insert_all_success", "Success");
+            Log.w("Insert_catelog_all", "Success");
             db.close();
         } catch (Exception e) {
             Log.e("Problem", e + " ");
@@ -960,11 +967,11 @@ public class DBHelper extends SQLiteOpenHelper {
         return products;
     }
 
-    public ArrayList<ProductsModel> getAllCatalogProducts() {
+    public ArrayList<ProductsModel> getAllCatalogProducts(String categoryId) {
         ArrayList<ProductsModel> productsList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         @SuppressLint("Recycle")
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCTS, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATALOG_PRODUCTS  + " WHERE categoryCode='" + categoryId + "'",   null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             ProductsModel model = new ProductsModel();
@@ -973,11 +980,13 @@ public class DBHelper extends SQLiteOpenHelper {
             model.setWeight(cursor.getString(cursor.getColumnIndex("productweight")));
             model.setProductImage(cursor.getString(cursor.getColumnIndex("productimage")));
             model.setRetailPrice(Double.parseDouble(cursor.getString(cursor.getColumnIndex("retailprice"))));
+            model.setWholeSalePrice(cursor.getString(cursor.getColumnIndex("wholesaleprice")));
             model.setStockQty(cursor.getString(cursor.getColumnIndex("stockqty")));
             model.setCartonPrice(cursor.getString(cursor.getColumnIndex("cartonprice")));
             model.setUnitCost(cursor.getString(cursor.getColumnIndex("unitcost")));
             model.setUomCode(cursor.getString(cursor.getColumnIndex("uomcode")));
             model.setPcsPerCarton(cursor.getString(cursor.getColumnIndex("pcspercarton")));
+            model.setCatagoryCode(cursor.getString(cursor.getColumnIndex("categoryCode")));
             productsList.add(model);
             cursor.moveToNext();
         }

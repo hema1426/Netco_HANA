@@ -61,7 +61,13 @@
         <item name="android:capitalize">characters</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <style name="catalogDialog" parent="Theme.AppCompat.Light.Dialog">
 
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+
+    </style>
     <style name="NavigationDrawerStyle">
 
         <item name="android:textSize">14sp</item><!-- text size in menu-->
