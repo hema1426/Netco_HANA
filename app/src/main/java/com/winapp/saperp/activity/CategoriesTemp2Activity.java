@@ -172,6 +172,9 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             selectCustomer.setText("Select Customer");
         }
 
+        if(dbHelper.getCustomerNew().size() > 0){
+            Log.w("custSize_catag",""+dbHelper.getCustomerNew().size());
+        }
         try {
          getCustomersGroups(username);
         } catch (Exception e) {
@@ -439,7 +442,26 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                                         model.setTaxCode(object.optString("taxCode"));
                                         model.setAllowFOC(object.optString("allowFOC"));
                                         model.setBillDiscPercentage(object.optString("discountPercentage"));
+                                        String phone_no = object.optString("DelPhoneNo");
+                                        String customer_code = object.optString("customerCode");
+                                        String customer_name = object.optString("customerName");
 
+                                        dbHelper.removeCustomer();
+                                        dbHelper.insertCustomer(
+                                                customer_code,
+                                                customer_name,
+                                                phone_no,
+                                                object.optString("address1"),
+                                                object.optString("Address2"),
+                                                object.optString("Address3"),
+                                                object.optString("IsActive"),
+                                                object.optString("HaveTax"),
+                                                object.optString("taxType"),
+                                                object.optString("taxPerc"),
+                                                object.optString("taxCode"),
+                                                object.optString("CreditLimit"),
+                                                "Singapore",
+                                                object.optString("currencyCode"));
 
                                         if (object.optString("outstandingAmount").equals("null") || object.optString("outstandingAmount").isEmpty()) {
                                             model.setOutstandingAmount("0.00");

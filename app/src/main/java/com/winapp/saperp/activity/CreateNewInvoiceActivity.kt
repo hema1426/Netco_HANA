@@ -3893,7 +3893,11 @@ class CreateNewInvoiceActivity : AppCompatActivity(), OnClickListener {
                             product.lastPrice = productObject.optString("lastSalesPrice")
                             product.minimumSellingPrice =
                                 productObject.optString("minimumSellingPrice")
-                            product.defaultUom = productObject.optString("defaultSalesUOM")
+                            if(!shortCodeStr.equals("FUXIN",true)) {
+                                product.defaultUom = productObject.optString("defaultSalesUOM")
+                            }else{
+                                product.defaultUom = "CTN"
+                            }
                             if (productObject.optString("stockInHand") != "null") {
                                 product.stockQty = productObject.optString("stockInHand")
                             } else {

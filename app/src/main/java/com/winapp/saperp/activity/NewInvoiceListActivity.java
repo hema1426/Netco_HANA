@@ -1644,7 +1644,6 @@ public class NewInvoiceListActivity extends NavigationActivity
                                         String signature = salesObject.optString("signature");
                                         Utils.setSignature(signature);
                                     }
-
                                     dbHelper.removeCustomer();
                                     dbHelper.insertCustomer(
                                             customer_code,

@@ -838,6 +838,28 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return true;
     }
+    public ArrayList<CustomerDetails> getCustomerNew() {
+        ArrayList<CustomerDetails> customerDetails = new ArrayList<>();
+        String customerName = null;
+        SQLiteDatabase db = this.getWritableDatabase(); //get the database that was created in this instance
+        @SuppressLint("Recycle")
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CUSTOMER, null);
+        if (cursor.moveToLast()) {
+            CustomerDetails customer=new CustomerDetails();
+            customer.setCustomerCode(cursor.getString(cursor.getColumnIndex("cid")));
+            customer.setCustomerName(cursor.getString(cursor.getColumnIndex("customername")));
+            customer.setTaxPerc(cursor.getString(cursor.getColumnIndex("taxperc")));
+            customer.setTaxType(cursor.getString(cursor.getColumnIndex("taxtype")));
+            customer.setTaxCode(cursor.getString(cursor.getColumnIndex("taxcode")));
+            customer.setCustomerAddress1(cursor.getString(cursor.getColumnIndex("address1")));
+            customer.setCurrencyCode(cursor.getString(cursor.getColumnIndex("currencycode")));
+            customer.setCreditLimit(cursor.getString(cursor.getColumnIndex("creditlimit")));
+            customerDetails.add(customer);
+        }else {
+            Log.e("error not found", "user can't be found or database empty2");
+        }
+        return customerDetails;
+    }
 
     public void insertProducts(Context context, ArrayList<ProductsModel> products) {
         int size = products.size();
@@ -1017,7 +1039,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return customerDetails;
     }
-
     public ArrayList<CustomerDetails> getCustomer() {
         ArrayList<CustomerDetails> customerDetails = new ArrayList<>();
      /*   String customerName = null;
