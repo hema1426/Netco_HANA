@@ -13,11 +13,14 @@ import android.widget.Toast;
 import com.winapp.saperp.activity.AddInvoiceActivityOld;
 import com.winapp.saperp.activity.MainHomeActivity;
 import com.winapp.saperp.fragments.ProductFragment;
+import com.winapp.saperp.model.AllCategories;
 import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.CashCollectionInvoiceModel;
 import com.winapp.saperp.model.CreateInvoiceModel;
 import com.winapp.saperp.model.CustomerDetails;
+import com.winapp.saperp.model.CustomerGroupModel;
 import com.winapp.saperp.model.CustomerModel;
+import com.winapp.saperp.model.OrderHeader;
 import com.winapp.saperp.model.ProductImageModel;
 import com.winapp.saperp.model.ProductsModel;
 import com.winapp.saperp.model.ReturnProductsModel;
@@ -33,11 +36,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "Catalog.db";
     public static final String TABLE_CART = "Cart";
+    public static final String TABLE_CART_TEMP2 = "CartTemp2";
     public static final String TABLE_CUSTOMER = "Customers";
     public static final String TABLE_CUSTOMER_URL = "CustomerUrl";
     public static final String TABLE_PRODUCTS = "Products";
     public static final String TABLE_COMPANIES = "Companies";
     public static final String TABLE_CATALOG_PRODUCTS = "CatalogProducts";
+    public static final String TABLE_CATEGORIES = "Categories";
     public static final String TABLE_CASH_COLLECTION = "CashCollection";
     public static final String TABLE_SETTINGS = "Settings";
     public static final String TABLE_USER_ROLL_SETTINGS = "UserSettings";
@@ -48,6 +53,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CUSTOMER_TAX_TABLE = "CustomerTaxTable";
     public static final String CREATE_INVOICE_TABLE = "CreateInvoiceTable";
     public static final String RETURN_PRODUCT_TABLE = "Return_Products";
+    public static final String TABLE_CUSTOMER_GROUP_LIST = "CustomerGroupList";
+    public static final String TABLE_ORDER_HEADER = "CustomerOrderHeader";
 
 
     public String PRODUCT_CODE = "product_code";
@@ -90,6 +97,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 "(ID INTEGER PRIMARY KEY   AUTOINCREMENT,pid text, pname text,ctnqty text,qty text,price text, pimage text,netprice text,netweight text," +
                 "ctnprice text,unitprice text,pcspercarton text,tax text,total text,taxtype text,foc_qty text,foc_type text,exchange_qty text,exchange_type text,discount text,return_qty text,return_type text,stockrefno text,sub_total text,stock_qty text,uomcode text,minimumsellingprice text,stock_qtyp text)"
         );
+        db.execSQL("create table " + TABLE_CART_TEMP2 + " " +
+                "(ID INTEGER PRIMARY KEY   AUTOINCREMENT, orderid text,custid text, pid text, pname text,ctnqty text,qty text,price text, pimage text,netprice text,netweight text," +
+                "ctnprice text,unitprice text,pcspercarton text,tax text,total text,taxtype text,foc_qty text,foc_type text,exchange_qty text,exchange_type text,discount text,return_qty text,return_type text,stockrefno text,sub_total text,stock_qty text,uomcode text,minimumsellingprice text,stock_qtyp text)"
+        );
 
         db.execSQL("create table " + TABLE_CUSTOMER_URL + " " +
                 "(ID INTEGER PRIMARY KEY AUTOINCREMENT,customerurl text)"
@@ -97,7 +108,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.execSQL("create table " + TABLE_CUSTOMER + " " +
                 "(cid text,customername text,phoneno text,address1 text,address2 text, address3 text,isactive text,havetax text,taxtype text," +
-                " taxperc text,taxcode text,creditlimit text,country text,currencycode text)"
+                " taxperc text,taxcode text,creditlimit text,country text,currencycode text, groupcode text,outstandingamount text)"
         );
 
         db.execSQL("create table " + TABLE_PRODUCTS + " " +
@@ -110,7 +121,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 "productimage text,retailprice text,wholesaleprice text,stockqty text," +
                 "cartonprice text,unitcost text,uomcode text,pcspercarton text,barcode text,categoryCode text)"
         );
-
+        db.execSQL("create table " + TABLE_CATEGORIES + " " +
+                "(ID INTEGER PRIMARY KEY AUTOINCREMENT,categorycode text,categoryname text)"
+        );
         db.execSQL("create table " + TABLE_COMPANIES + " " +
                 "(ID INTEGER PRIMARY KEY AUTOINCREMENT,companyid text,companyname text,isactive text)"
         );
@@ -148,23 +161,43 @@ public class DBHelper extends SQLiteOpenHelper {
         );
 
         db.execSQL("CREATE TABLE " + CREATE_INVOICE_TABLE + " " +
-                "(ID INTEGER PRIMARY KEY AUTOINCREMENT," + PRODUCT_CODE + " TEXT," + PRODUCT_NAME + " TEXT," + UOM_CODE + " TEXT," + UOM_TEXT + " TEXT," + ACTUAL_QTY + " TEXT," + STOCK_QTY + " TEXT," + RETURN_QTY + " TEXT," + NET_QTY + " TEXT," + FOC_QTY + " TEXT," + PRICE + " TEXT," + TOTAL + " TEXT," + SUB_TOTAL + " TEXT," + GST_AMOUNT + " TEXT," + NET_TOTAL + " TEXT," + ITEM_DISC + " TEXT,"+ BILL_DISC +" TEXT,"+ SALEABLE + " TEXT,"+ DAMAGED +" TEXT,"+ EXCHANGE_QTY +" TEXT,"+ MINIMUMSELL_PRICE +" TEXT,"+STOCK_QTYP+ " TEXT,"+ UPDATE_TIME +" TEXT,"+ISITEM_FOC+ " TEXT )"
+                "(ID INTEGER PRIMARY KEY AUTOINCREMENT," + PRODUCT_CODE + " TEXT," + PRODUCT_NAME + " TEXT," + UOM_CODE + " TEXT," + UOM_TEXT + " TEXT," + ACTUAL_QTY + " TEXT," + STOCK_QTY + " TEXT," + RETURN_QTY + " TEXT," + NET_QTY + " TEXT," + FOC_QTY + " TEXT," + PRICE + " TEXT," + TOTAL + " TEXT," + SUB_TOTAL + " TEXT," + GST_AMOUNT + " TEXT," + NET_TOTAL + " TEXT," + ITEM_DISC + " TEXT," + BILL_DISC + " TEXT," + SALEABLE + " TEXT," + DAMAGED + " TEXT," + EXCHANGE_QTY + " TEXT," + MINIMUMSELL_PRICE + " TEXT," + STOCK_QTYP + " TEXT," + UPDATE_TIME + " TEXT," + ISITEM_FOC + " TEXT )"
 
         );
 
         db.execSQL("CREATE TABLE " + RETURN_PRODUCT_TABLE + " " +
                 "(ID INTEGER PRIMARY KEY AUTOINCREMENT,productcode text,productname text,returnqty text,returnreason text)"
         );
+        db.execSQL("create table " + TABLE_CUSTOMER_GROUP_LIST + " " +
+                "(ID INTEGER PRIMARY KEY AUTOINCREMENT,custgroupcode text,custgroupname text)"
+        );
+
+        db.execSQL("create table " + TABLE_ORDER_HEADER + " " +
+                "(ID INTEGER PRIMARY KEY AUTOINCREMENT,orderid text," +
+                "invoiceNumber text,mode text,invoiceDate text,customerCode text,customerName text," +
+                "haveTax text,taxType text, taxPerc text, " +
+                "taxCode text,currencyRate text,currencyName text,customerReferenceNo text," +
+                "taxTotal text,subTotal text,total text,netTotal  text," +
+                "itemDiscount text,billDiscount text," +
+                "currentDateTime text,totalDiscount text,deliveryCode text," +
+                "status text,createUser text,modifyUser text,companyName text," +
+                "stockUpdated text,invoiceType text,companyCode text,locationCode text," +
+                "latitude text,longitude text,CurrentAddress text,signature text" +
+                ")"
+        );
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CART);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CART_TEMP2);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CUSTOMER);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CUSTOMER_URL);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_COMPANIES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATALOG_PRODUCTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CASH_COLLECTION);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SETTINGS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER_ROLL_SETTINGS);
@@ -175,6 +208,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + CUSTOMER_TAX_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + CREATE_INVOICE_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + RETURN_PRODUCT_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CUSTOMER_GROUP_LIST);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ORDER_HEADER);
         onCreate(db);
     }
 
@@ -308,6 +343,93 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return productImage;
+    }
+
+    public void insertCustomerGroup(ArrayList<CustomerGroupModel> custGroupList) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        if (custGroupList.size() > 0) {
+            try {
+                for (CustomerGroupModel groupModel : custGroupList) {
+                    ContentValues cv = new ContentValues();
+                    cv.put("custgroupcode", groupModel.getCustomerGroupCode());
+                    cv.put("custgroupname", groupModel.getCustomerGroupName());
+
+                    db.insert(TABLE_CUSTOMER_GROUP_LIST, null, cv);
+                }
+                db.close();
+            } catch (Exception e) {
+                Log.e("custgrouperror", e + " ");
+            }
+        }
+    }
+
+    public void insertOrderHeader(OrderHeader groupModel) {
+        SQLiteDatabase db = this.getWritableDatabase();
+//        if (orderList.size() > 0) {
+            try {
+//                for (OrderHeader groupModel : orderList) {
+                    ContentValues cv = new ContentValues();
+                    cv.put("orderid", groupModel.getOrderId());
+                    cv.put("invoiceNumber", groupModel.getInvoiceNumber());
+                    cv.put("mode", groupModel.getMode());
+                    cv.put("invoiceDate", groupModel.getInvoiceDate());
+                    cv.put("customerCode", groupModel.getCustomerCode());
+                    cv.put("customerName", groupModel.getCustomerName());
+                    cv.put("haveTax", groupModel.getHaveTax());
+                    cv.put("taxType", groupModel.getTaxType());
+                    cv.put("taxPerc", groupModel.getTaxPerc());
+                    cv.put("currencyRate", groupModel.getCurrencyRate());
+                    cv.put("currencyName", groupModel.getCurrencyName());
+                    cv.put("customerReferenceNo", groupModel.getCustomerReferenceNo());
+                    cv.put("taxTotal", groupModel.getTaxTotal());
+                    cv.put("subTotal", groupModel.getSubTotal());
+                    cv.put("total", groupModel.getTotal());
+                    cv.put("netTotal", groupModel.getNetTotal());
+                    cv.put("itemDiscount", groupModel.getItemDiscount());
+                    cv.put("billDiscount", groupModel.getBillDiscount());
+                    cv.put("currentDateTime", groupModel.getCurrentDateTime());
+                    cv.put("totalDiscount", groupModel.getTotalDiscount());
+                    cv.put("deliveryCode", groupModel.getDeliveryCode());
+                    cv.put("CurrencyRate", groupModel.getCurrencyRate());
+                    cv.put("status", groupModel.getStatus());
+                    cv.put("createUser", groupModel.getCreateUser());
+                    cv.put("modifyUser", groupModel.getModifyUser());
+                    cv.put("companyName", groupModel.getCompanyName());
+                    cv.put("stockUpdated", groupModel.getStockUpdated());
+                    cv.put("invoiceType", groupModel.getInvoiceType());
+                    cv.put("companyCode", groupModel.getCompanyCode());
+                    cv.put("locationCode", groupModel.getLocationCode());
+                    cv.put("latitude", groupModel.getLatitude());
+                    cv.put("longitude", groupModel.getLongitude());
+                    cv.put("CurrentAddress", groupModel.getCurrentAddress());
+                    cv.put("signature", groupModel.getSignature());
+
+
+                    db.insert(TABLE_ORDER_HEADER, null, cv);
+//                }
+                db.close();
+            } catch (Exception e) {
+                Log.e("custgrouperror", e + " ");
+            }
+//        }
+    }
+
+    @SuppressLint("Range")
+    public ArrayList<CustomerGroupModel> getCustomerGroup() {
+        ArrayList<CustomerGroupModel> custgroupList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CUSTOMER_GROUP_LIST, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            CustomerGroupModel model = new CustomerGroupModel();
+            model.setCustomerGroupCode(cursor.getString(cursor.getColumnIndex("custgroupcode")));
+            model.setCustomerGroupName(cursor.getString(cursor.getColumnIndex("custgroupname")));
+
+            custgroupList.add(model);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return custgroupList;
     }
 
     public void insertCustomerTaxValues(ArrayList<CustomerDetails> customerTaxValues) {
@@ -808,6 +930,36 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean insertCustomer(String cid, String customername, String phoneno, String add1, String add2, String add3, String isactive, String havetax
+            , String taxtype, String taxperc, String taxcode, String creditlimit, String country, String currencycode,
+                                  String groupCode, String outstandingAmount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("cid", cid);
+            contentValues.put("customername", customername);
+            contentValues.put("phoneno", phoneno);
+            contentValues.put("address1", add1);
+            contentValues.put("address2", add2);
+            contentValues.put("address3", add3);
+            contentValues.put("isactive", isactive);
+            contentValues.put("havetax", havetax);
+            contentValues.put("taxtype", taxtype);
+            contentValues.put("taxcode", taxcode);
+            contentValues.put("taxperc", taxperc);
+            contentValues.put("creditlimit", creditlimit);
+            contentValues.put("country", country);
+            contentValues.put("currencycode", currencycode);
+            contentValues.put("groupcode", groupCode);
+            contentValues.put("outstandingamount", outstandingAmount);
+            db.insert(TABLE_CUSTOMER, null, contentValues);
+            Log.w("Values_inserted", "Success");
+        } catch (Exception ex) {
+
+        }
+        return true;
+    }
+
 
     public boolean insertCustomersDetails(ArrayList<CustomerDetails> customerDetails) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -838,25 +990,33 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return true;
     }
-    public ArrayList<CustomerDetails> getCustomerNew() {
-        ArrayList<CustomerDetails> customerDetails = new ArrayList<>();
+
+    public ArrayList<CustomerModel> getCustomerNew(String groupCode) {
+        ArrayList<CustomerModel> customerDetails = new ArrayList<>();
         String customerName = null;
         SQLiteDatabase db = this.getWritableDatabase(); //get the database that was created in this instance
-        @SuppressLint("Recycle")
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CUSTOMER, null);
-        if (cursor.moveToLast()) {
-            CustomerDetails customer=new CustomerDetails();
-            customer.setCustomerCode(cursor.getString(cursor.getColumnIndex("cid")));
-            customer.setCustomerName(cursor.getString(cursor.getColumnIndex("customername")));
-            customer.setTaxPerc(cursor.getString(cursor.getColumnIndex("taxperc")));
-            customer.setTaxType(cursor.getString(cursor.getColumnIndex("taxtype")));
-            customer.setTaxCode(cursor.getString(cursor.getColumnIndex("taxcode")));
-            customer.setCustomerAddress1(cursor.getString(cursor.getColumnIndex("address1")));
-            customer.setCurrencyCode(cursor.getString(cursor.getColumnIndex("currencycode")));
-            customer.setCreditLimit(cursor.getString(cursor.getColumnIndex("creditlimit")));
-            customerDetails.add(customer);
-        }else {
-            Log.e("error not found", "user can't be found or database empty2");
+        Cursor cursor;
+        if (groupCode.equalsIgnoreCase("all")) {
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_CUSTOMER, null);
+        } else
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_CUSTOMER + " WHERE groupcode='" + groupCode + "'", null);
+        while (cursor != null && cursor.moveToNext()) {
+            CustomerModel model = new CustomerModel();
+            model.setCustomerCode(cursor.getString(cursor.getColumnIndex("cid")));
+            model.setCustomerName(cursor.getString(cursor.getColumnIndex("customername")));
+            model.setAddress1(cursor.getString(cursor.getColumnIndex("address1")));
+            model.setAddress2(cursor.getString(cursor.getColumnIndex("address2")));
+            model.setAddress3(cursor.getString(cursor.getColumnIndex("address3")));
+            model.setCustomerAddress(cursor.getString(cursor.getColumnIndex("address1")));
+            model.setHaveTax(cursor.getString(cursor.getColumnIndex("havetax")));
+            model.setTaxType(cursor.getString(cursor.getColumnIndex("taxtype")));
+            model.setTaxPerc(cursor.getString(cursor.getColumnIndex("taxperc")));
+            model.setTaxCode(cursor.getString(cursor.getColumnIndex("taxcode")));
+            model.setOutstandingAmount(cursor.getString(cursor.getColumnIndex("outstandingamount")));
+//            model.setAllowFOC(cursor.getString(cursor.getColumnIndex("allowFOC")));
+//            model.setBillDiscPercentage(cursor.getString(cursor.getColumnIndex("discountPercentage")));
+
+            customerDetails.add(model);
         }
         return customerDetails;
     }
@@ -929,6 +1089,46 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void insertCategories(ArrayList<AllCategories> categoriesArrayList) {
+        int size = categoriesArrayList.size();
+        // Check that both lists have the same size
+        if (size == 0) {
+            throw new IllegalArgumentException();
+            // Or some more elegant way to handle this error condition
+        }
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            for (int i = 0; i < size; ++i) {
+                ContentValues cv = new ContentValues();
+                cv.put("categorycode", categoriesArrayList.get(i).getCategoryCode());
+                cv.put("categoryname", categoriesArrayList.get(i).getDescription());
+                db.insertOrThrow(TABLE_CATEGORIES, null, cv);
+            }
+            Log.w("Insert_category", "Success");
+            db.close();
+        } catch (Exception e) {
+            Log.e("Problem", e + " ");
+        }
+    }
+    public ArrayList<AllCategories> getAllCategories() {
+        ArrayList<AllCategories> categoryList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        @SuppressLint("Recycle")
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATEGORIES, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            AllCategories model = new AllCategories();
+            model.setCategoryCode(cursor.getString(cursor.getColumnIndex("categorycode")));
+            model.setCateGoryGroupName(cursor.getString(cursor.getColumnIndex("categoryname")));
+            model.setDescription(cursor.getString(cursor.getColumnIndex("categoryname")));
+            categoryList.add(model);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        db.close();
+        return categoryList;
+    }
+
     public void removeAllProducts() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_PRODUCTS, null, null);
@@ -993,7 +1193,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ArrayList<ProductsModel> productsList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         @SuppressLint("Recycle")
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATALOG_PRODUCTS  + " WHERE categoryCode='" + categoryId + "'",   null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATALOG_PRODUCTS + " WHERE categoryCode='" + categoryId + "'", null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             ProductsModel model = new ProductsModel();
@@ -1039,6 +1239,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return customerDetails;
     }
+
     public ArrayList<CustomerDetails> getCustomer() {
         ArrayList<CustomerDetails> customerDetails = new ArrayList<>();
      /*   String customerName = null;
@@ -1069,12 +1270,11 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
-
     public boolean insertCreateInvoiceCartEdit(String productCode, String productName, String
             uomcode, String actualQty, String returnQty, String netQty, String foc, String price,
-            String stock, String total, String subTotal, String gstAmount, String netTotal ,
-          String itemDisc ,String billDisc ,String saleable ,String damaged ,String exchangeQty,
-          String minimumSellPrice,String productStock,String updateTime , String isItemFOC) {
+                                               String stock, String total, String subTotal, String gstAmount, String netTotal,
+                                               String itemDisc, String billDisc, String saleable, String damaged, String exchangeQty,
+                                               String minimumSellPrice, String productStock, String updateTime, String isItemFOC) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         // contentValues.put(PRODUCT_CODE, productCode+" ");
@@ -1112,9 +1312,9 @@ public class DBHelper extends SQLiteOpenHelper {
                                            String uomText, String actualQty, String returnQty,
                                            String netQty, String foc,
                                            String price, String stock, String total, String subTotal,
-                                           String gstAmount, String netTotal, String itemDisc ,String billDisc
-            ,String saleable,String damaged,String exchangeQty,String minimumSellPrice
-            ,String productStock,String updateTime , String isItemFOC) {
+                                           String gstAmount, String netTotal, String itemDisc, String billDisc
+            , String saleable, String damaged, String exchangeQty, String minimumSellPrice
+            , String productStock, String updateTime, String isItemFOC) {
         Cursor cursor = null;
         String netqty = null;
         String focQty = null;
@@ -1129,67 +1329,67 @@ public class DBHelper extends SQLiteOpenHelper {
                         focQty = cursor.getString(cursor.getColumnIndex("foc_qty"));
                     } while (cursor.moveToNext());
                 }
-               // if (Double.parseDouble(netqty) > 0 || Double.parseDouble(focQty) > 0) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(PRODUCT_CODE, productCode);
-                    contentValues.put(PRODUCT_NAME, productName);
-                    contentValues.put(UOM_CODE, uomcode);
-                    contentValues.put(ACTUAL_QTY, actualQty);
-                    contentValues.put(RETURN_QTY, returnQty);
-                    contentValues.put(PRICE, price);
-                    contentValues.put(NET_QTY, netQty);
-                    contentValues.put(FOC_QTY, foc);
-                    contentValues.put(TOTAL, total);
-                    contentValues.put(SUB_TOTAL, subTotal);
-                    contentValues.put(GST_AMOUNT, gstAmount);
-                    contentValues.put(NET_TOTAL, netTotal);
-                    contentValues.put(STOCK_QTY, stock);
-                    contentValues.put(ITEM_DISC, itemDisc);
-                    contentValues.put(BILL_DISC, billDisc);
-                    contentValues.put(SALEABLE, saleable);
-                    contentValues.put(DAMAGED, damaged);
-                    contentValues.put(EXCHANGE_QTY, exchangeQty);
-                    contentValues.put(MINIMUMSELL_PRICE, minimumSellPrice);
-                    contentValues.put(STOCK_QTYP, productStock);
-                    contentValues.put(UPDATE_TIME, updateTime);
-                    contentValues.put(ISITEM_FOC, isItemFOC);
+                // if (Double.parseDouble(netqty) > 0 || Double.parseDouble(focQty) > 0) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(PRODUCT_CODE, productCode);
+                contentValues.put(PRODUCT_NAME, productName);
+                contentValues.put(UOM_CODE, uomcode);
+                contentValues.put(ACTUAL_QTY, actualQty);
+                contentValues.put(RETURN_QTY, returnQty);
+                contentValues.put(PRICE, price);
+                contentValues.put(NET_QTY, netQty);
+                contentValues.put(FOC_QTY, foc);
+                contentValues.put(TOTAL, total);
+                contentValues.put(SUB_TOTAL, subTotal);
+                contentValues.put(GST_AMOUNT, gstAmount);
+                contentValues.put(NET_TOTAL, netTotal);
+                contentValues.put(STOCK_QTY, stock);
+                contentValues.put(ITEM_DISC, itemDisc);
+                contentValues.put(BILL_DISC, billDisc);
+                contentValues.put(SALEABLE, saleable);
+                contentValues.put(DAMAGED, damaged);
+                contentValues.put(EXCHANGE_QTY, exchangeQty);
+                contentValues.put(MINIMUMSELL_PRICE, minimumSellPrice);
+                contentValues.put(STOCK_QTYP, productStock);
+                contentValues.put(UPDATE_TIME, updateTime);
+                contentValues.put(ISITEM_FOC, isItemFOC);
 
-                    db.update(CREATE_INVOICE_TABLE, contentValues, "update_time = ?", new String[]{updateTime});
-                    //db.update(CREATE_INVOICE_TABLE, contentValues, "product_code = ?", new String[]{productCode});
-                    Log.w("Cart_updated", "Success");
-                    Toast.makeText(context, "Product Updated Successfully", Toast.LENGTH_LONG).show();
-                    Log.w("InsertProductValuesIn1:", contentValues.toString());
-                } else {
+                db.update(CREATE_INVOICE_TABLE, contentValues, "update_time = ?", new String[]{updateTime});
+                //db.update(CREATE_INVOICE_TABLE, contentValues, "product_code = ?", new String[]{productCode});
+                Log.w("Cart_updated", "Success");
+                Toast.makeText(context, "Product Updated Successfully", Toast.LENGTH_LONG).show();
+                Log.w("InsertProductValuesIn1:", contentValues.toString());
+            } else {
 
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(PRODUCT_CODE, productCode);
-                    contentValues.put(PRODUCT_NAME, productName);
-                    contentValues.put(UOM_CODE, uomcode);
-                    contentValues.put(ACTUAL_QTY, actualQty);
-                    contentValues.put(RETURN_QTY, returnQty);
-                    contentValues.put(PRICE, price);
-                    contentValues.put(NET_QTY, netQty);
-                    contentValues.put(FOC_QTY, foc);
-                    contentValues.put(TOTAL, total);
-                    contentValues.put(SUB_TOTAL, subTotal);
-                    contentValues.put(GST_AMOUNT, gstAmount);
-                    contentValues.put(NET_TOTAL, netTotal);
-                    contentValues.put(STOCK_QTY, stock);
-                    contentValues.put(UOM_TEXT, uomText);
-                    contentValues.put(ITEM_DISC, itemDisc);
-                    contentValues.put(BILL_DISC, billDisc);
-                    contentValues.put(SALEABLE, saleable);
-                    contentValues.put(DAMAGED, damaged);
-                    contentValues.put(EXCHANGE_QTY, exchangeQty);
-                    contentValues.put(MINIMUMSELL_PRICE, minimumSellPrice);
-                    contentValues.put(STOCK_QTYP, productStock);
-                    contentValues.put(UPDATE_TIME, updateTime);
-                    contentValues.put(ISITEM_FOC, isItemFOC);
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(PRODUCT_CODE, productCode);
+                contentValues.put(PRODUCT_NAME, productName);
+                contentValues.put(UOM_CODE, uomcode);
+                contentValues.put(ACTUAL_QTY, actualQty);
+                contentValues.put(RETURN_QTY, returnQty);
+                contentValues.put(PRICE, price);
+                contentValues.put(NET_QTY, netQty);
+                contentValues.put(FOC_QTY, foc);
+                contentValues.put(TOTAL, total);
+                contentValues.put(SUB_TOTAL, subTotal);
+                contentValues.put(GST_AMOUNT, gstAmount);
+                contentValues.put(NET_TOTAL, netTotal);
+                contentValues.put(STOCK_QTY, stock);
+                contentValues.put(UOM_TEXT, uomText);
+                contentValues.put(ITEM_DISC, itemDisc);
+                contentValues.put(BILL_DISC, billDisc);
+                contentValues.put(SALEABLE, saleable);
+                contentValues.put(DAMAGED, damaged);
+                contentValues.put(EXCHANGE_QTY, exchangeQty);
+                contentValues.put(MINIMUMSELL_PRICE, minimumSellPrice);
+                contentValues.put(STOCK_QTYP, productStock);
+                contentValues.put(UPDATE_TIME, updateTime);
+                contentValues.put(ISITEM_FOC, isItemFOC);
 
-                    db.insert(CREATE_INVOICE_TABLE, null, contentValues);
-                    Log.w("InsertProductValuesIn2:", contentValues.toString());
-                }
-          //  }
+                db.insert(CREATE_INVOICE_TABLE, null, contentValues);
+                Log.w("InsertProductValuesIn2:", contentValues.toString());
+            }
+            //  }
 //        else {
 //                ContentValues contentValues = new ContentValues();
 //                contentValues.put(PRODUCT_CODE, productCode);
@@ -1217,8 +1417,7 @@ public class DBHelper extends SQLiteOpenHelper {
 //                db.insert(CREATE_INVOICE_TABLE, null, contentValues);
 //                Log.w("InsertProductValuesIn3:", contentValues.toString());
 //            }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
         } finally {
             //  cursor.close();
             //   db.close();
@@ -1234,13 +1433,104 @@ public class DBHelper extends SQLiteOpenHelper {
         return r.nextInt(high - low) + low;
     }
 
+    public boolean insertCartTemp2(String pid,
+                                   String pname, String ctnqty, String qty, String price, String pimage, String netprice, String netweight,
+                                   String ctnprice, String unitprice, String pcspercarton, String tax, String subtotal, String taxtype, String foc_qty,
+                                   String foc_type, String exchange_qty, String exchange_type, String discount,
+                                   String return_qty, String return_type, String ref_no, String total, String stock,
+                                   String uomcode, String minimumsellingprice, String productStock) {
+        Cursor cursor = null;
+        String netqty = null;
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            String q = "SELECT qty FROM " + TABLE_CART_TEMP2 + " WHERE pid='" + pid + "'";
+            cursor = db.rawQuery(q, null);
+            if (cursor.getCount() != 0) {
+                if (cursor.moveToFirst()) {
+                    do {
+                        netqty = cursor.getString(cursor.getColumnIndex("qty"));
+                    } while (cursor.moveToNext());
+                }
+
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("pname", pname);
+                contentValues.put("ctnqty", ctnqty);
+                contentValues.put("qty", qty);
+                contentValues.put("price", price);
+                contentValues.put("pimage", pimage);
+                contentValues.put("netprice", netprice);
+                contentValues.put("netweight", netweight);
+                contentValues.put("ctnprice", ctnprice);
+                contentValues.put("unitprice", unitprice);
+                contentValues.put("pcspercarton", pcspercarton);
+                contentValues.put("tax", tax);
+                contentValues.put("total", total);
+                contentValues.put("sub_total", subtotal);
+                contentValues.put("taxtype", taxtype);
+                contentValues.put("foc_qty", foc_qty);
+                contentValues.put("foc_type", foc_type);
+                contentValues.put("exchange_qty", exchange_qty);
+                contentValues.put("exchange_type", exchange_type);
+                contentValues.put("discount", discount);
+                contentValues.put("return_qty", return_qty);
+                contentValues.put("return_type", return_type);
+                contentValues.put("stockrefno", ref_no);
+                contentValues.put("stock_qty", stock);
+                contentValues.put("uomcode", uomcode);
+                contentValues.put("minimumsellingprice", minimumsellingprice);
+                contentValues.put("stock_qtyp", productStock);
+
+                db.update(TABLE_CART_TEMP2, contentValues, "pid = ?", new String[]{pid});
+                Log.w("Cart_updated", "Success");
+                Toast.makeText(context, "Product Updated2 Successfully", Toast.LENGTH_LONG).show();
+                Log.w("InsertProductValues1:", contentValues.toString());
+            } else {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("pid", pid);
+                contentValues.put("pname", pname);
+                contentValues.put("ctnqty", ctnqty);
+                contentValues.put("qty", qty);
+                contentValues.put("price", price);
+                contentValues.put("pimage", pimage);
+                contentValues.put("netprice", netprice);
+                contentValues.put("netweight", netweight);
+                contentValues.put("ctnprice", ctnprice);
+                contentValues.put("unitprice", unitprice);
+                contentValues.put("pcspercarton", pcspercarton);
+                contentValues.put("tax", tax);
+                contentValues.put("total", total);
+                contentValues.put("sub_total", subtotal);
+                contentValues.put("taxtype", taxtype);
+                contentValues.put("foc_qty", foc_qty);
+                contentValues.put("foc_type", foc_type);
+                contentValues.put("exchange_qty", exchange_qty);
+                contentValues.put("exchange_type", exchange_type);
+                contentValues.put("discount", discount);
+                contentValues.put("return_qty", return_qty);
+                contentValues.put("return_type", return_type);
+                contentValues.put("stockrefno", ref_no);
+                contentValues.put("stock_qty", stock);
+                contentValues.put("uomcode", uomcode);
+                contentValues.put("minimumsellingprice", minimumsellingprice);
+                contentValues.put("stock_qtyp", productStock);
+
+                db.insert(TABLE_CART_TEMP2, null, contentValues);
+                Log.w("InsertProductValues:", contentValues.toString());
+            }
+        } catch (Exception ex) {
+        } finally {
+            cursor.close();
+            db.close();
+        }
+        return true;
+    }
 
     public boolean insertCart(String pid,
                               String pname, String ctnqty, String qty, String price, String pimage, String netprice, String netweight,
                               String ctnprice, String unitprice, String pcspercarton, String tax, String subtotal, String taxtype, String foc_qty,
                               String foc_type, String exchange_qty, String exchange_type, String discount,
                               String return_qty, String return_type, String ref_no, String total, String stock,
-                              String uomcode, String minimumsellingprice ,String productStock) {
+                              String uomcode, String minimumsellingprice, String productStock) {
         Cursor cursor = null;
         String netqty = null;
         SQLiteDatabase db = this.getWritableDatabase();
@@ -1333,16 +1623,51 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public int numberOfRowsTemp2() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int numRows = (int) DatabaseUtils.queryNumEntries(db, TABLE_CART_TEMP2);
+        return numRows;
+    }
+
     public int numberOfRows() {
         SQLiteDatabase db = this.getReadableDatabase();
         int numRows = (int) DatabaseUtils.queryNumEntries(db, TABLE_CART);
         return numRows;
     }
 
-    public int numberOfRowsInInvoice() {
+    public int numberOfRowsInInvoice() {  // TODO: 23-05-2025
         SQLiteDatabase db = this.getReadableDatabase();
         int numRows = (int) DatabaseUtils.queryNumEntries(db, CREATE_INVOICE_TABLE);
         return numRows;
+    }
+
+    @SuppressLint("Recycle")
+    public boolean updateProductStockTemp2(String pid, int value, String action) {
+        String q = "SELECT stockqty FROM " + TABLE_PRODUCTS + " WHERE productid='" + pid + "'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = null;
+        String netqty = null;
+        cursor = db.rawQuery(q, null);
+        if (cursor.moveToFirst()) {
+            do {
+                netqty = cursor.getString(cursor.getColumnIndex("stockqty"));
+            } while (cursor.moveToNext());
+        }
+        if (action.equals("addInvoice")) {
+            assert netqty != null;
+            double qt = Double.parseDouble(netqty) - value;
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("stockqty", String.valueOf(qt));
+            db.update(TABLE_PRODUCTS, contentValues, "productid = ?", new String[]{pid});
+            Log.w("Net_qty_AddInvoice", qt + "");
+        } else {
+            double qt = Double.parseDouble(netqty) + value;
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("stockqty", String.valueOf(qt));
+            db.update(TABLE_PRODUCTS, contentValues, "productid = ?", new String[]{pid});
+            Log.w("Net_qty_RemoveInvoice", qt + "");
+        }
+        return true;
     }
 
     @SuppressLint("Recycle")
@@ -1373,6 +1698,32 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return true;
     }
+
+    public boolean updateCartTemp2(String id, String qty, String ctnQty, String sub_total, String tax, String net_total) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        double total_value = Double.parseDouble(sub_total) + Double.parseDouble(tax);
+        contentValues.put("qty", qty);
+        contentValues.put("ctnqty", ctnQty);
+        contentValues.put("sub_total", sub_total);
+        contentValues.put("total", String.valueOf(total_value));
+        contentValues.put("tax", tax);
+        contentValues.put("netprice", net_total);
+        // MY_TABLE_NAME, cv, "_id = ?", new String[]{id}
+        db.update(TABLE_CART_TEMP2, contentValues, "pid = ?", new String[]{id});
+        return true;
+    }
+
+    public boolean updateCartTemp2OrderId(String orderId, String custId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+         contentValues.put("orderid", orderId);
+        contentValues.put("custid", custId);
+        // MY_TABLE_NAME, cv, "_id = ?", new String[]{id}
+        db.update(TABLE_CART_TEMP2, contentValues, "orderid is NULL",null);
+        return true;
+    }
+
 
 
     public boolean updateCart(String id, String qty, String ctnQty, String sub_total, String tax, String net_total) {
@@ -1409,6 +1760,11 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.w("Net_qty", netqty);
     }
 
+    public Integer deleteProductTemp2(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_CART_TEMP2, "pid = ?", new String[]{id});
+    }
+
     public Integer deleteProduct(String id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_CART, "pid = ?", new String[]{id});
@@ -1418,7 +1774,8 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(CREATE_INVOICE_TABLE, "product_code = ?", new String[]{id});
     }
-    public Integer deleteInvoiceProductNew(String id,String updateTime) {
+
+    public Integer deleteInvoiceProductNew(String id, String updateTime) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(CREATE_INVOICE_TABLE, "update_time = ?", new String[]{updateTime});
     }
@@ -1463,6 +1820,94 @@ public class DBHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
+    public ArrayList<CartModel> getAllCartItem_Temp2() {
+        ArrayList<CartModel> array_list = new ArrayList<CartModel>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        @SuppressLint("Recycle")
+        Cursor cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2, null);
+        cursor.moveToFirst();
+
+        while (!cursor.isAfterLast()) {
+            CartModel data = new CartModel();
+            data.setUniqueId(cursor.getColumnIndex(String.valueOf(cursor.getColumnIndex("ID"))));
+            data.setCART_COLUMN_PID(cursor.getString(cursor.getColumnIndex("pid")));
+            data.setCART_COLUMN_PNAME(cursor.getString(cursor.getColumnIndex("pname")));
+            data.setCART_COLUMN_PRICE(cursor.getString(cursor.getColumnIndex("price")));
+            data.setCART_COLUMN_QTY(cursor.getString(cursor.getColumnIndex("qty")));
+            data.setCART_PCS_PER_CARTON(cursor.getString(cursor.getColumnIndex("pcspercarton")));
+            data.setCART_COLUMN_NET_PRICE(cursor.getString(cursor.getColumnIndex("netprice")));
+            data.setCART_COLUMN_IMAGE(cursor.getString(cursor.getColumnIndex("pimage")));
+            data.setCART_COLUMN_WEIGHT(cursor.getString(cursor.getColumnIndex("netweight")));
+            data.setCART_COLUMN_CTN_PRICE(cursor.getString(cursor.getColumnIndex("ctnprice")));
+            data.setCART_UNIT_PRICE(cursor.getString(cursor.getColumnIndex("unitprice")));
+            data.setCART_COLUMN_CTN_QTY(cursor.getString(cursor.getColumnIndex("ctnqty")));
+            data.setCART_TAX_VALUE(cursor.getString(cursor.getColumnIndex("tax")));
+            data.setCART_TOTAL_VALUE(cursor.getString(cursor.getColumnIndex("total")));
+            data.setSubTotal(cursor.getString(cursor.getColumnIndex("sub_total")));
+            data.setFoc_qty(cursor.getString(cursor.getColumnIndex("foc_qty")));
+            data.setFoc_type(cursor.getString(cursor.getColumnIndex("foc_type")));
+            data.setExchange_qty(cursor.getString(cursor.getColumnIndex("exchange_qty")));
+            data.setExchange_type(cursor.getString(cursor.getColumnIndex("exchange_type")));
+            data.setDiscount(cursor.getString(cursor.getColumnIndex("discount")));
+            data.setReturn_qty(cursor.getString(cursor.getColumnIndex("return_qty")));
+            data.setReturn_type(cursor.getString(cursor.getColumnIndex("return_type")));
+            data.setStockRefNo(cursor.getString(cursor.getColumnIndex("stockrefno")));
+            data.setStockQty(cursor.getString(cursor.getColumnIndex("stock_qty")));
+            data.setUomCode(cursor.getString(cursor.getColumnIndex("uomcode")));
+            data.setMinimumSellingPrice(cursor.getString(cursor.getColumnIndex("minimumsellingprice")));
+            data.setStockProductQty(cursor.getString(cursor.getColumnIndex("stock_qtyp")));
+            array_list.add(data);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return array_list;
+    }
+
+
+
+
+    public ArrayList<CartModel> getAllCartItems2() {
+        ArrayList<CartModel> array_list = new ArrayList<CartModel>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        @SuppressLint("Recycle")
+        Cursor cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2, null);
+        cursor.moveToFirst();
+
+        while (!cursor.isAfterLast()) {
+            CartModel data = new CartModel();
+            data.setUniqueId(cursor.getColumnIndex(String.valueOf(cursor.getColumnIndex("ID"))));
+            data.setCART_COLUMN_PID(cursor.getString(cursor.getColumnIndex("pid")));
+            data.setCART_COLUMN_PNAME(cursor.getString(cursor.getColumnIndex("pname")));
+            data.setCART_COLUMN_PRICE(cursor.getString(cursor.getColumnIndex("price")));
+            data.setCART_COLUMN_QTY(cursor.getString(cursor.getColumnIndex("qty")));
+            data.setCART_PCS_PER_CARTON(cursor.getString(cursor.getColumnIndex("pcspercarton")));
+            data.setCART_COLUMN_NET_PRICE(cursor.getString(cursor.getColumnIndex("netprice")));
+            data.setCART_COLUMN_IMAGE(cursor.getString(cursor.getColumnIndex("pimage")));
+            data.setCART_COLUMN_WEIGHT(cursor.getString(cursor.getColumnIndex("netweight")));
+            data.setCART_COLUMN_CTN_PRICE(cursor.getString(cursor.getColumnIndex("ctnprice")));
+            data.setCART_UNIT_PRICE(cursor.getString(cursor.getColumnIndex("unitprice")));
+            data.setCART_COLUMN_CTN_QTY(cursor.getString(cursor.getColumnIndex("ctnqty")));
+            data.setCART_TAX_VALUE(cursor.getString(cursor.getColumnIndex("tax")));
+            data.setCART_TOTAL_VALUE(cursor.getString(cursor.getColumnIndex("total")));
+            data.setSubTotal(cursor.getString(cursor.getColumnIndex("sub_total")));
+            data.setFoc_qty(cursor.getString(cursor.getColumnIndex("foc_qty")));
+            data.setFoc_type(cursor.getString(cursor.getColumnIndex("foc_type")));
+            data.setExchange_qty(cursor.getString(cursor.getColumnIndex("exchange_qty")));
+            data.setExchange_type(cursor.getString(cursor.getColumnIndex("exchange_type")));
+            data.setDiscount(cursor.getString(cursor.getColumnIndex("discount")));
+            data.setReturn_qty(cursor.getString(cursor.getColumnIndex("return_qty")));
+            data.setReturn_type(cursor.getString(cursor.getColumnIndex("return_type")));
+            data.setStockRefNo(cursor.getString(cursor.getColumnIndex("stockrefno")));
+            data.setStockQty(cursor.getString(cursor.getColumnIndex("stock_qty")));
+            data.setUomCode(cursor.getString(cursor.getColumnIndex("uomcode")));
+            data.setMinimumSellingPrice(cursor.getString(cursor.getColumnIndex("minimumsellingprice")));
+            data.setStockProductQty(cursor.getString(cursor.getColumnIndex("stock_qtyp")));
+            array_list.add(data);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return array_list;
+    }
     public ArrayList<CartModel> getAllCartItems() {
         ArrayList<CartModel> array_list = new ArrayList<CartModel>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1506,11 +1951,18 @@ public class DBHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
+    public void removeAllItemsTemp2() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_CART_TEMP2, null, null);
+        db.close();
+    }
+
     public void removeAllItems() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_CART, null, null);
         db.close();
     }
+
     public void removeSettings() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_SETTINGS, null, null);

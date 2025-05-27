@@ -3924,7 +3924,7 @@ class CreateNewInvoiceActivity : AppCompatActivity(), OnClickListener {
                                     }
                                 }
                                 product.setUomText(uomList.toString());
-                                product.setProductUOMList(uomList);*/
+                                product.setProductUOMList(uomList); */
 
                             productList!!.add(product)
                         }

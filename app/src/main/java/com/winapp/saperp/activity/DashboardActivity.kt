@@ -116,6 +116,7 @@ class DashboardActivity : NavigationActivity() {
     var isCheckedCatalog = false
     var isCheckedCustomer = false
     var isCheckedProduct = false
+    var isCatalogModuleTemp2 = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -294,6 +295,12 @@ class DashboardActivity : NavigationActivity() {
                         } else {
                             false
                         }
+                    } else if (model.settingName == "catalog_temp2_switch") {
+                        Log.w("SettingNameCata:", model.settingName)
+                        Log.w("SettingValueCata:", model.settingValue)
+                        isCatalogModuleTemp2 = (model.settingValue == "1")
+                        Log.d("isCatalogModuleTemp2:", isCatalogModuleTemp2.toString())
+
                     }
                 }
             }
@@ -486,9 +493,13 @@ class DashboardActivity : NavigationActivity() {
         })
         catalogCard!!.setOnClickListener(View.OnClickListener { /* Intent intent=new Intent(DashboardActivity.this,SchedulingActivity.class);
                 startActivity(intent);*/
-            val intent = Intent(this@DashboardActivity, CategoriesActivity::class.java)
-           // val intent = Intent(this@DashboardActivity, CategoriesTemp2Activity::class.java)
-            startActivity(intent)
+            if(isCatalogModuleTemp2) {
+                 val intent = Intent(this@DashboardActivity, CategoriesTemp2Activity::class.java)
+                startActivity(intent)
+            }else {
+                val intent = Intent(this@DashboardActivity,CategoriesActivity::class.java)
+                startActivity(intent)
+            }
         })
         salesOrderLayout!!.setOnClickListener(View.OnClickListener {
             sharedPreferenceUtil!!.setStringPreference(sharedPreferenceUtil!!.KEY_ACTIVITY, "SalesOrder")
@@ -599,6 +610,9 @@ class DashboardActivity : NavigationActivity() {
         cart.setVisible(false)
         val search = menu.findItem(R.id.action_search)
         search.setVisible(false)
+        val threedot = menu.findItem(R.id.three_dotCart)
+        threedot.setVisible(false)
+
         val actionView = menuItem.actionView
         textCartItemCount = actionView!!.findViewById(R.id.cart_badge)
         setupBadge()
@@ -949,6 +963,21 @@ class DashboardActivity : NavigationActivity() {
         dbHelper!!.removeAllReturn()
         dbHelper!!.removeAllInvoiceItems()
         dbHelper!!.removeAllItems()
+        //todo
+        val settings = dbHelper!!.settings
+        if (settings != null) {
+            if (settings.size > 0) {
+                for (model in settings) {
+                    if (model.settingName == "catalog_temp2_switch") {
+                        Log.w("SettingNameCata:", model.settingName)
+                        Log.w("SettingValueCata:", model.settingValue)
+                        isCatalogModuleTemp2 = (model.settingValue == "1")
+                        Log.d("isCatalogModuleTemp2ii:", isCatalogModuleTemp2.toString())
+                    }
+                }
+                  }
+                }
+
         Utils.clearCustomerSession(this)
         super.onResume()
     }

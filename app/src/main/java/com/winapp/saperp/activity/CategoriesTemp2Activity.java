@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -71,6 +72,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -127,8 +130,8 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Catalog");
 
-        Log.w("activity_cg",getClass().getSimpleName().toString()
-                +" - ProductAdapterLoadMore"+" - CategoriesTabFragments");
+        Log.w("activity_cg", getClass().getSimpleName().toString()
+                + " - ProductAdapterLoadMore" + " - CategoriesTabFragments");
 
         // product loading apis
 //        https://c21326-EasySales-Test.cloudiax.com/api/CategoryDetails {"CategoryCode": "102", "LocationCode": "01"}
@@ -163,23 +166,36 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         customerNameEdittext = findViewById(R.id.customer_search);
         btnCancel = findViewById(R.id.btn_cancel);
         //emptyLayout=findViewById(R.id.empty_layout);
+        Executor executor = Executors.newSingleThreadExecutor();
 
-        String customerId = sharedPreferences.getString("customerId", "");
-        if (customerId != null && !customerId.equals("empty") && !customerId.isEmpty()) {
-            customerDetails = dbHelper.getCustomer(customerId);
-            selectCustomer.setText(customerDetails.get(0).getCustomerName());
-        } else {
-            selectCustomer.setText("Select Customer");
-        }
 
-        if(dbHelper.getCustomerNew().size() > 0){
-            Log.w("custSize_catag",""+dbHelper.getCustomerNew().size());
-        }
-        try {
-         getCustomersGroups(username);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        executor.execute(() -> {
+//            String customerId = sharedPreferences.getString("customerId", "");
+//            if (customerId != null && !customerId.equals("empty") && !customerId.isEmpty())
+//                customerDetails = dbHelper.getCustomer(customerId);
+
+            ArrayList<CustomerGroupModel> groupCustList = dbHelper.getCustomerGroup();
+
+            runOnUiThread(() -> {
+//                if (customerDetails.size() > 0) {
+//                    selectCustomer.setText(customerDetails.get(0).getCustomerName());
+//                } else {
+//                    selectCustomer.setText("Select Customer");
+//                }
+
+                if (groupCustList.size() > 0) {
+                    Log.w("custSize_cata_group", "" + groupCustList.size());
+                    setCustomerGroupSpinner(groupCustList);
+                } else {
+                    try {
+                        getCustomersGroups(username);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        });
+
 
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
@@ -249,14 +265,37 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             }
         });
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pDialog = new SweetAlertDialog(CategoriesTemp2Activity.this, SweetAlertDialog.PROGRESS_TYPE);
+                        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+                        pDialog.setTitleText(" Loading...");
+                        pDialog.setCancelable(false);
+                        pDialog.show();
+                    }
+                });
+            }
+        }, 10);
+
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 viewCloseBottomSheet();
             }
         });
+        allCategoriesList = new ArrayList<>();
+        allCategoriesList = dbHelper.getAllCategories();
+        if (allCategoriesList.size() > 0) {
+            Log.w("catalo_catagori", "" + allCategoriesList.size());
+            setCatagoriesTabs(allCategoriesList);
+        } else {
+            getCategories();
+        }
 
-        getCategories();
         // new GetCategoriesTask().execute();
 
         if (activityFrom != null) {
@@ -266,7 +305,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                     || activityFrom.equals("ReOrderInvoice")
                     || activityFrom.equals("ReOrderSales")
             ) {
-                dbHelper.removeAllItems();
+                dbHelper.removeAllItemsTemp2();
                 Utils.clearCustomerSession(this);
             }
         }
@@ -309,7 +348,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.w("Given_urlGroup:", url+jsonObject);
+        Log.w("Given_urlGroup:", url + jsonObject);
         dialog = new ProgressDialog(CategoriesTemp2Activity.this);
         dialog.setMessage("Loading Customers Groups...");
         dialog.setCancelable(false);
@@ -334,6 +373,8 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                         }
                         if (customersGroupList.size() > 0) {
                             setCustomerGroupSpinner(customersGroupList);
+                            //todo
+                            dbHelper.insertCustomerGroup(customersGroupList);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -381,7 +422,16 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String groupCode = customersGroupList.get(position).getCustomerGroupCode();
                 String groupName = customersGroupList.get(position).getCustomerGroupName();
-                getCustomers(groupCode);
+                // TODO: 19-05-2025
+                ArrayList<CustomerModel> customerDetails = dbHelper.getCustomerNew(groupCode);
+                if (customerDetails.size() > 0) {
+                    Log.w("custSize_catag", "" + customerDetails.size());
+                    customerList = customerDetails;
+                    setAdapter(customerDetails);
+                } else {
+                    getCustomers(groupCode);
+                }
+                //  }
             }
 
             @Override
@@ -417,7 +467,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Log.w("AllCustomerUrl:", url+jsonObject);
+                Log.w("AllCustomerUrl:", url + jsonObject);
                 JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
                         response -> {
                             try {
@@ -445,8 +495,16 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                                         String phone_no = object.optString("DelPhoneNo");
                                         String customer_code = object.optString("customerCode");
                                         String customer_name = object.optString("customerName");
-
+                                        String groupCode = object.optString("groupCode");
                                         dbHelper.removeCustomer();
+
+
+                                        if (object.optString("outstandingAmount").equals("null") || object.optString("outstandingAmount").isEmpty()) {
+                                            model.setOutstandingAmount("0.00");
+                                        } else {
+                                            model.setOutstandingAmount(object.optString("outstandingAmount"));
+                                        }
+
                                         dbHelper.insertCustomer(
                                                 customer_code,
                                                 customer_name,
@@ -461,13 +519,11 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                                                 object.optString("taxCode"),
                                                 object.optString("CreditLimit"),
                                                 "Singapore",
-                                                object.optString("currencyCode"));
+                                                object.optString("currencyCode"),
+                                                groupCode,
+                                                model.getOutstandingAmount()
+                                        );
 
-                                        if (object.optString("outstandingAmount").equals("null") || object.optString("outstandingAmount").isEmpty()) {
-                                            model.setOutstandingAmount("0.00");
-                                        } else {
-                                            model.setOutstandingAmount(object.optString("outstandingAmount"));
-                                        }
                                         customerList.add(model);
                                     }
                                 } else {
@@ -614,6 +670,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
 
             ArrayList<CustomerDetails> taxList = new ArrayList<>();
             taxList.add(model);
+            //todo
             dbHelper.insertCustomerTaxValues(taxList);
         } catch (Exception exception) {
         }
@@ -651,13 +708,13 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         customerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         customerNameAdapter = new CustomerNameAdapter(customerNames, (customerId, customerName, pos) -> {
             viewCloseBottomSheet();
-            int count = dbHelper.numberOfRows();
-            if (count > 0) {
-                showProductDeleteAlert(customerId);
-            } else {
-                selectCustomer.setText(customerName);
-                setCustomerDetails(customerId);
-            }
+//            int count = dbHelper.numberOfRowsTemp2();
+//            if (count > 0) {
+//                showProductDeleteAlert(customerId);
+//            } else {
+            selectCustomer.setText(customerName);
+            setCustomerDetails(customerId);
+//            }
 
         });
         customerView.setAdapter(customerNameAdapter);
@@ -694,7 +751,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                 "OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
-                        dbHelper.removeAllItems();
+                        dbHelper.removeAllItemsTemp2();
                         setupBadge();
                         Utils.refreshActionBarMenu(CategoriesTemp2Activity.this);
                         try {
@@ -717,6 +774,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
 
     public void setCustomerDetails(String customerId) {
         Utils.setCustomerSession(this, customerId);
+        //todo
         getCustomerDetails(customerId, true, "");
     }
 
@@ -743,7 +801,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         pDialog.setTitleText("Categories Loading...");
         pDialog.setCancelable(false);
         pDialog.show();
-        Log.w("Given_url_catal:",url);
+        Log.w("Given_url_catal:", url);
 
         JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
@@ -769,10 +827,11 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                                 allCategoriesList.add(categories);
                                 //}
                             }
-                            pDialog.dismiss();
+//                            pDialog.dismiss();
                             if (allCategoriesList.size() > 0) {
-                                Log.d("cg_allcategories:", ""+allCategoriesList.size());
+                                Log.d("cg_allcategories:", "" + allCategoriesList.size());
                                 setCatagoriesTabs(allCategoriesList);
+                                dbHelper.insertCategories(allCategoriesList);
                                 viewPager.setVisibility(View.VISIBLE);
                                 emptyLayout.setVisibility(View.GONE);
                             } else {
@@ -821,12 +880,48 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     }
 
     private void setCatagoriesTabs(ArrayList<AllCategories> allCategoriesList) {
-        viewPagerAdapter = new ViewPagerTemp2Adapter(getSupportFragmentManager(),
-                allCategoriesList.size(), allCategoriesList);
-        viewPager.setAdapter(viewPagerAdapter);
-        viewPager.setOffscreenPageLimit(allCategoriesList.size());
-        tabLayout.setupWithViewPager(viewPager);
-        pDialog.dismiss();
+        Log.w("cg_cat::", "" + allCategoriesList.size());
+//        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+//        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+//        pDialog.setTitleText(" Loading...");
+//        pDialog.setCancelable(false);
+//        pDialog.show();
+
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        viewPagerAdapter = new ViewPagerTemp2Adapter(getSupportFragmentManager(),
+                                allCategoriesList.size(), allCategoriesList);
+//                        viewPager.setOffscreenPageLimit(5);
+                        viewPager.setAdapter(viewPagerAdapter);
+
+                       tabLayout.setupWithViewPager(viewPager);  // viewpager only click item
+                    }
+                });
+            }
+        }, 50);
+
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (pDialog != null && pDialog.isShowing())
+                            pDialog.dismiss();
+
+                    }
+                });
+            }
+        }, 150);
+
+
+//        pDialog.dismiss();
     }
 
     @Override
@@ -838,6 +933,9 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         textCartItemCount = actionView.findViewById(R.id.cart_badge);
         final MenuItem search = menu.findItem(R.id.choose_company);
         final MenuItem locati = menu.findItem(R.id.choose_location);
+        final MenuItem threedot = menu.findItem(R.id.action_orderHistory);
+        threedot.setVisible(true);
+
         search.setVisible(false);
         locati.setVisible(false);
 
@@ -846,10 +944,11 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 onOptionsItemSelected(menuItem);
-                Intent intent = new Intent(getApplicationContext(), CartActivity.class);
+                Intent intent = new Intent(getApplicationContext(), CartTemp2Activity.class);
                 startActivity(intent);
             }
         });
+
         MenuItem item = menu.findItem(R.id.action_search);
         item.setVisible(false);
         return true;
@@ -906,7 +1005,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem myItem = menu.findItem(R.id.action_total);
         //  myItem.setTitle("Total: 100");
-        ArrayList<CartModel> localCart = helper.getAllCartItems();
+        ArrayList<CartModel> localCart = helper.getAllCartItem_Temp2();
         double price = 0;
         for (int j = 0; j < localCart.size(); j++) {
             if (localCart.get(j).getCART_COLUMN_NET_PRICE() != null && !localCart.get(j).getCART_COLUMN_NET_PRICE().equals("null")) {
@@ -935,12 +1034,15 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             }
         } else if (id == R.id.action_cart) {
             // setFragment(new SchedulingFragment());
-
-            String a = "1011";
+//            String a = "1011";
 
             return true;
         } else if (id == R.id.action_search) {
             Intent intent = new Intent(CategoriesTemp2Activity.this, SearchProductActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.action_orderHistory) {
+            Log.w("orderhisCata", "");
+            Intent intent = new Intent(CategoriesTemp2Activity.this, OrderHistoryListActivity.class);
             startActivity(intent);
         }
 
@@ -948,7 +1050,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     }
 
     public static void setupBadge() {
-        mCartItemCount = helper.numberOfRows();
+        mCartItemCount = helper.numberOfRowsTemp2();
         if (textCartItemCount != null) {
             if (mCartItemCount == 0) {
                 if (textCartItemCount.getVisibility() != View.GONE) {

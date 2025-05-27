@@ -815,6 +815,8 @@ public class CategoriesActivity extends AppCompatActivity {
         final MenuItem locati = menu.findItem(R.id.choose_location);
         search.setVisible(false);
         locati.setVisible(false);
+        final MenuItem threedot = menu.findItem(R.id.three_dotCart);
+        threedot.setVisible(false);
 
         setupBadge();
         actionView.setOnClickListener(new View.OnClickListener() {

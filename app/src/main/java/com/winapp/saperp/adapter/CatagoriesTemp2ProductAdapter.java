@@ -111,15 +111,17 @@ public class CatagoriesTemp2ProductAdapter extends RecyclerView.Adapter {
             ElementsViewHolder productViewHolder = (ElementsViewHolder) holder;
             try {
                 final ProductsModel products = productsList.get(position);
-                dbHelper = new DBHelper(mContext);
-                customerDetails = dbHelper.getCustomer();
+//                dbHelper = new DBHelper(mContext);
+//                customerDetails = dbHelper.getCustomer();
                 // loading products cover using Glide library
-                Log.w("iscartVal",""+products.isCart());
+                //// TODO: 21-05-2025
+//                Log.w("iscartVal",""+products.isCart());
                 if(products.isCart()){
-                    productViewHolder.addCart_catImgl.setImageResource(R.drawable.tick_green);
+                    productViewHolder.addCart_catImgl.setImageDrawable(mContext.getDrawable(R.drawable.tick_green));
                 }else{
-                    productViewHolder.addCart_catImgl.setImageResource(R.drawable.add_orange);
+                    productViewHolder.addCart_catImgl.setImageDrawable(mContext.getDrawable(R.drawable.add_orange));
                 }
+
                 productViewHolder.productName.setText(products.getProductName().trim());
                 productViewHolder.productPrice.setText("$ " + String.valueOf(products.getWholeSalePrice()));
                 productViewHolder.ctnQty.setText("CTN : " + (int) Double.parseDouble(products.getPcsPerCarton()));
@@ -185,7 +187,7 @@ public class CatagoriesTemp2ProductAdapter extends RecyclerView.Adapter {
                 }*/
 
                 // Getting image from the Local DB
-                String imagePath = dbHelper.getProductImage(products.getProductCode());
+                 String imagePath = dbHelper.getProductImage(products.getProductCode());
                 if (!imagePath.isEmpty()) {
                     String imageFullpath = Constants.folderPath + "/" + imagePath;
                     File file = new File(imageFullpath);
@@ -428,7 +430,14 @@ public class CatagoriesTemp2ProductAdapter extends RecyclerView.Adapter {
             addCart_catImgl = view.findViewById(R.id.addCart_catagories);
             //  progressBar = view.findViewById(R.id.progressBar);
             statusLayout = view.findViewById(R.id.status_layout);
+
+            dbHelper = new DBHelper(mContext);
+            customerDetails = dbHelper.getCustomer();
+
+
         }
+
+
     }
 
     public class LoadMoreViewHolder extends RecyclerView.ViewHolder {

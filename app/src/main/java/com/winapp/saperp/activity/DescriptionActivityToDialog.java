@@ -2,7 +2,7 @@ package com.winapp.saperp.activity;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.winapp.saperp.activity.CategoriesTemp2Activity.setupBadge;
-import static com.winapp.saperp.fragments.CategoriesTemp2TabFragments.productsAdapterNew;
+
 import static com.winapp.saperp.utils.Utils.fourDecimalPoint;
 import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
 
@@ -780,7 +780,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 
                             if (isQtyEntered && Double.parseDouble(netTotalTextView.getText().toString()) > 0) {
 
-                                boolean status = dbHelper.insertCart(
+                                boolean status = dbHelper.insertCartTemp2(
                                         model.getProductCode(),
                                         model.getProductName(),
                                         ctnQtyValue.getText().toString(),
@@ -835,9 +835,9 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
                                     Toast.makeText(requireContext(), "Product Added Successfully", Toast.LENGTH_LONG).show();
                                     setupBadge();
                                     model.setCart(true);
-                                    if(productsAdapterNew != null) {
-                                        productsAdapterNew.notifyDataSetChanged();
-                                    }
+//                                    if(productsAdapterNew != null) {
+//                                        productsAdapterNew.notifyDataSetChanged();
+//                                    }
 
                                     //Intent intent=new Intent(DescriptionActivity.this,MainHomeActivity.class);
                                     // startActivity(intent);
@@ -1132,7 +1132,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
     public boolean isProductExist(String productId) {
         boolean isExist = false;
         try {
-            ArrayList<CartModel> localCart = dbHelper.getAllCartItems();
+            ArrayList<CartModel> localCart = dbHelper.getAllCartItem_Temp2();
             if (localCart.size() > 0) {
                 for (CartModel cart : localCart) {
                     if (cart.getCART_COLUMN_PID() != null) {
@@ -1873,7 +1873,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 
             if (isQtyEntered && Double.parseDouble(netTotalTextView.getText().toString()) > 0) {
 
-                boolean status = dbHelper.insertCart(
+                boolean status = dbHelper.insertCartTemp2(
                         productId,
                         productName,
                         ctnQtyValue.getText().toString(),

@@ -50,4 +50,18 @@
         android:orderInCategory="100"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/three_dotCart"
+        app:showAsAction="always"
+        android:icon="@drawable/three_dot_32"
+        android:title="">
+        <menu>
+            <item android:id="@+id/action_orderHistory"
+                app:showAsAction="ifRoom"
+                android:title="Order History" />
+        </menu>
+
+    </item>
+
+
 </menu>

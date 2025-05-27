@@ -351,9 +351,14 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activity.CategoriesActivity" />
         <activity android:name=".activity.CategoriesTemp2Activity" />
+        <activity android:name=".activity.CartTemp2Activity" />
         <activity
             android:name=".activity.SettingActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.OrderHistoryListActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activity.PrinterActivity"
             android:screenOrientation="portrait" />

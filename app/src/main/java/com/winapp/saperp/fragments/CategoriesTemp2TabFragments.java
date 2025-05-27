@@ -12,8 +12,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -96,12 +98,12 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
     private String catagoriesId;
     private View progressBarLayout;
     private ProductsAdapter productsAdapter;
-    public static CatagoriesTemp2ProductAdapter productsAdapterNew;
+    public CatagoriesTemp2ProductAdapter productsAdapterNew;
     private RecyclerView productsView;
     SweetAlertDialog pDialog;
-    public static ArrayList<ProductsModel> productListFilter;
-    public static ArrayList<ProductsModel> productListDisplay;
-    public static ArrayList<ProductsModel> newProductList;
+    public ArrayList<ProductsModel> productListFilter;
+    public ArrayList<ProductsModel> productListDisplay;
+    public ArrayList<ProductsModel> newProductList;
     private RecyclerView lettersRecyclerview;
     SortAdapter adapter;
     ArrayList<String> letters;
@@ -181,6 +183,7 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
         super.onCreate(savedInstanceState);
         catagoriesId = getArguments() != null ? getArguments().getString(ARG_SECTION_NUMBER) : "1";
         Log.w("CatagoriesId", catagoriesId);
+        Log.w("CatagPage", "CatagoriesTemp2ProductAdapter");
     }
 
     @Override
@@ -241,26 +244,35 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
         // portraitLayout=view.findViewById(R.id.description_layout_portrait);
         // landscapeLayout=view.findViewById(R.id.description_layout_land);
 
-        ArrayList<ProductsModel> productList = dbHelper.getAllCatalogProducts(catagoriesId);
-        Log.d("cg_catelog_local:", "" + dbHelper.getAllCatalogProducts(catagoriesId).size());
-
-        if (productList.size() > 0) {
-            newProductList = new ArrayList<>();
-            productListFilter = new ArrayList<>();
-            productListFilter.addAll(productList);
-            emptyLayout.setVisibility(View.GONE);
-            //  pDialog.dismiss();
-            populateCategoriesData(productList);
-        } else {
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("CategoryCode", catagoriesId);
-                jsonObject.put("LocationCode", locationCode);
-                getAllProducts(jsonObject);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+//   cg     ArrayList<ProductsModel> productList = dbHelper.getAllCatalogProducts(catagoriesId);
+//        Log.d("cg_catelog_local:", "" + dbHelper.getAllCatalogProducts(catagoriesId).size());
+//
+//        if (productList.size() > 0) {
+//            newProductList = new ArrayList<>();
+//            productListFilter = new ArrayList<>();
+//            productListFilter.addAll(productList);
+//            emptyLayout.setVisibility(View.GONE);
+//
+//
+//
+////            new Thread(() -> getActivity().runOnUiThread(new Runnable() {
+////                public void run() {
+//                    populateCategoriesData(productList);
+//
+//
+////                }
+////            }));
+//
+//        } else {
+//            JSONObject jsonObject = new JSONObject();
+//            try {
+//                jsonObject.put("CategoryCode", catagoriesId);
+//                jsonObject.put("LocationCode", locationCode);
+//                getAllProducts(jsonObject);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         int spanCount = 0;
         int dp = 0;
@@ -279,31 +291,31 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
         // categoriesView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
         productsView.addItemDecoration(new GridSpacingItemDecoration(spanCount, GridSpacingItemDecoration.dpToPx(getActivity(), dp), true));
         productsView.setItemAnimator(new DefaultItemAnimator());
-        // define the sorting letters
-        lettersRecyclerview.setHasFixedSize(true);
-        // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        lettersRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-        SortAdapter adapter = new SortAdapter(Utils.getSorting(), new SortAdapter.CallBack() {
-            @Override
-            public void sortProduct(String letter) {
-                if (letter.equals("All")) {
-                    JSONObject jsonObject = new JSONObject();
-                    try {
-                        jsonObject.put("CompanyCode", companyCode);
-                        jsonObject.put("LocationCode", locationCode);
-                        jsonObject.put("CategoryCode", catagoriesId);
-                        jsonObject.put("PageSize", 50);
-                        jsonObject.put("PageNo", pageNo);
-                        getAllProducts(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    filter(letter);
-                }
-            }
-        });
-        lettersRecyclerview.setAdapter(adapter);
+//        // define the sorting letters
+//        lettersRecyclerview.setHasFixedSize(true);
+//        // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+//        lettersRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+//        SortAdapter adapter = new SortAdapter(Utils.getSorting(), new SortAdapter.CallBack() {
+//            @Override
+//            public void sortProduct(String letter) {
+//                if (letter.equals("All")) {
+//                    JSONObject jsonObject = new JSONObject();
+//                    try {
+//                        jsonObject.put("CompanyCode", companyCode);
+//                        jsonObject.put("LocationCode", locationCode);
+//                        jsonObject.put("CategoryCode", catagoriesId);
+//                        jsonObject.put("PageSize", 50);
+//                        jsonObject.put("PageNo", pageNo);
+//                        getAllProducts(jsonObject);
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                } else {
+//                    filter(letter);
+//                }
+//            }
+//        });
+//        lettersRecyclerview.setAdapter(adapter);
 
         // Setting the sorting
         sortButton.setOnClickListener(new View.OnClickListener() {
@@ -567,7 +579,7 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                 String selectCustomerId = sharedPreferences.getString("customerId", "");
                 if (!selectCustomerId.isEmpty()) {
                     if (isQtyEntered) {
-                        boolean status = dbHelper.insertCart(
+                        boolean status = dbHelper.insertCartTemp2(
                                 model.getProductCode(),
                                 model.getProductName(),
                                 ctnQtyValue.getText().toString(),
@@ -665,6 +677,74 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
 
 
         return view;
+    }
+
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // define the sorting letters
+        lettersRecyclerview.setHasFixedSize(true);
+        // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        lettersRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        SortAdapter adapter = new SortAdapter(Utils.getSorting(), new SortAdapter.CallBack() {
+            @Override
+            public void sortProduct(String letter) {
+                if (letter.equals("All")) {
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("CompanyCode", companyCode);
+                        jsonObject.put("LocationCode", locationCode);
+                        jsonObject.put("CategoryCode", catagoriesId);
+                        jsonObject.put("PageSize", 50);
+                        jsonObject.put("PageNo", pageNo);
+                        getAllProducts(jsonObject);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    filter(letter);
+                }
+            }
+        });
+        lettersRecyclerview.setAdapter(adapter);
+
+
+        ArrayList<ProductsModel> productList = dbHelper.getAllCatalogProducts(catagoriesId);
+        Log.d("cg_catelog_local:", "" + dbHelper.getAllCatalogProducts(catagoriesId).size());
+
+        if (productList.size() > 0) {
+            newProductList = new ArrayList<>();
+            productListFilter = new ArrayList<>();
+            productListFilter.addAll(productList);
+            emptyLayout.setVisibility(View.GONE);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            populateCategoriesData(productList);
+
+                        }
+                    });
+                }
+            }, 10);
+
+        } else {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("CategoryCode", catagoriesId);
+                jsonObject.put("LocationCode", locationCode);
+                getAllProducts(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     public void setData(ProductsModel model) {
@@ -1211,7 +1291,7 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                             @Override
                             public void showBottomDescription(String model) {
                                 DescriptionActivityToDialog bottomSheet = DescriptionActivityToDialog.newInstance(model);
-                                bottomSheet.show( getActivity().getSupportFragmentManager()  , "MyBottomSheetTag");
+                                bottomSheet.show(getActivity().getSupportFragmentManager(), "MyBottomSheetTag");
                             }
                         });
 //                productsAdapterNew.setCallback(this);
