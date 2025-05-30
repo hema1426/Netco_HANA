@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,7 +37,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -48,12 +46,10 @@ import com.winapp.saperp.adapter.OrderHistoryCatalogAdapter;
 import com.winapp.saperp.adapter.SelectCustomerAdapter;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.fragments.CustomerFragment;
-import com.winapp.saperp.iminPrinter.IminPrinterV2;
-import com.winapp.saperp.model.AppUtils;
+import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.CustomerModel;
-import com.winapp.saperp.model.OrderHistoryCatalogCustModel;
-import com.winapp.saperp.model.OrderHistoryCatalogProductModel;
+import com.winapp.saperp.model.OrderHeader;
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel;
 import com.winapp.saperp.model.SettingsModel;
 import com.winapp.saperp.model.UserListModel;
@@ -62,6 +58,7 @@ import com.winapp.saperp.utils.BarCodeScanner;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.ImageUtil;
 import com.winapp.saperp.utils.SessionManager;
+import com.winapp.saperp.utils.SettingUtils;
 import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.UserAdapter;
 import com.winapp.saperp.utils.Utils;
@@ -73,7 +70,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -93,12 +89,12 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
     public static RecyclerView orderHistoryView;
     public static OrderHistoryCatalogAdapter orderHistoryCatalogAdapter;
-    private ArrayList<OrderHistoryCatalogCustModel> orderHistoryList;
+    private ArrayList<OrderHeader> orderHistoryList;
     private SweetAlertDialog pDialog;
     private SessionManager session;
-    private HashMap<String,String > user;
+    private HashMap<String, String> user;
     private String companyId;
-    int pageNo=1;
+    int pageNo = 1;
     private BottomSheetBehavior behavior;
     private ArrayList<CustomerModel> customerList;
     private SelectCustomerAdapter customerNameAdapter;
@@ -109,6 +105,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     public EditText customerNameEdittext;
     public DBHelper dbHelper;
     public TextView netTotalText;
+    public boolean isPrintEnable = false;
     double netTotalApi = 0.00;
     private ArrayList<CustomerDetails> customerDetails;
     public LinearLayout transLayout;
@@ -151,18 +148,18 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     private SharedPreferences sharedPreferences;
     public View progressLayout;
     boolean redirectInvoice;
-    public static String selectedCustomerId="";
-    public String isFound="true";
+    public static String selectedCustomerId = "";
+    public String isFound = "true";
     private Button createSalesOrder;
-    private int customerSelectCode=13;
-    public String createInvoiceSetting="true";
-    public String editSo="false";
-    private int FILTER_CUSTOMER_CODE=134;
+    private int customerSelectCode = 13;
+    public String createInvoiceSetting = "true";
+    public String editSo = "false";
+    private int FILTER_CUSTOMER_CODE = 134;
     String currentDate;
     private ArrayList<UserListModel> usersList;
     private Spinner salesManSpinner;
-    private String selectedUser="";
-    public static String shortCodeStr = "" ;
+    private String selectedUser = "";
+    public static String shortCodeStr = "";
     public String userPermission = "";
 
     @Override
@@ -175,51 +172,51 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         getSupportActionBar().setTitle("Order History");
 
         orderHistoryView = findViewById(R.id.orderHistoryList);
-        dbHelper=new DBHelper(this);
-        session=new SessionManager(this);
-        user=session.getUserDetails();
+        dbHelper = new DBHelper(this);
+        session = new SessionManager(this);
+        user = session.getUserDetails();
         sharedPreferenceUtil = new SharedPreferenceUtil(this);
 
-        companyId=user.get(SessionManager.KEY_COMPANY_CODE);
-        userName=user.get(SessionManager.KEY_USER_NAME);
-        locationCode=user.get((SessionManager.KEY_LOCATION_CODE));
+        companyId = user.get(SessionManager.KEY_COMPANY_CODE);
+        userName = user.get(SessionManager.KEY_USER_NAME);
+        locationCode = user.get((SessionManager.KEY_LOCATION_CODE));
 
-        customerView=findViewById(R.id.customerList);
-        netTotalText=findViewById(R.id.net_total_List);
-        customerNameEdittext=findViewById(R.id.customer_search);
-        transLayout=findViewById(R.id.trans_layout);
-        customerDetails=dbHelper.getCustomer();
-        customerLayout=findViewById(R.id.customer_layout);
-        salesOrderOptionLayout=findViewById(R.id.sales_option);
-        soCustomerName=findViewById(R.id.name);
-        soNumber=findViewById(R.id.so_no);
-        optionCancel=findViewById(R.id.option_cancel);
-        cancelSheet=findViewById(R.id.cancel_sheet);
-        editSalesOrder=findViewById(R.id.edit_salesorder);
-        deleteSaleOrder=findViewById(R.id.delete_salesorder);
-        convertToInvoice=findViewById(R.id.convert_to_invoice);
-        editLayout=findViewById(R.id.edit_layout);
-        deleteLayout=findViewById(R.id.delete_layout);
-        convertLayout=findViewById(R.id.convert_layout);
-        printPreview=findViewById(R.id.print_preview);
-        printPreviewLayout=findViewById(R.id.print_preview_layout);
-        searchFilterView=findViewById(R.id.search_filter);
-        customerNameText=findViewById(R.id.customer_name_value);
-        fromDate=findViewById(R.id.from_date);
-        toDate =findViewById(R.id.to_date);
-        salesOrderStatusSpinner =findViewById(R.id.invoice_status);
-        emptyLayout=findViewById(R.id.empty_layout);
-        cancelSearch=findViewById(R.id.btn_cancel);
-        searchButton=findViewById(R.id.btn_search);
-        outstandingLayout=findViewById(R.id.outstanding_layout);
-        progressLayout=findViewById(R.id.progress_layout);
-        createSalesOrder=findViewById(R.id.create_sales);
-        salesManSpinner=findViewById(R.id.salesman_spinner);
+        customerView = findViewById(R.id.customerList);
+        netTotalText = findViewById(R.id.net_total_List);
+        customerNameEdittext = findViewById(R.id.customer_search);
+        transLayout = findViewById(R.id.trans_layout);
+        customerDetails = dbHelper.getCustomer();
+        customerLayout = findViewById(R.id.customer_layout);
+        salesOrderOptionLayout = findViewById(R.id.sales_option);
+        soCustomerName = findViewById(R.id.name);
+        soNumber = findViewById(R.id.so_no);
+        optionCancel = findViewById(R.id.option_cancel);
+        cancelSheet = findViewById(R.id.cancel_sheet);
+        editSalesOrder = findViewById(R.id.edit_salesorder);
+        deleteSaleOrder = findViewById(R.id.delete_salesorder);
+        convertToInvoice = findViewById(R.id.convert_to_invoice);
+        editLayout = findViewById(R.id.edit_layout);
+        deleteLayout = findViewById(R.id.delete_layout);
+        convertLayout = findViewById(R.id.convert_layout);
+        printPreview = findViewById(R.id.print_preview);
+        printPreviewLayout = findViewById(R.id.print_preview_layout);
+        searchFilterView = findViewById(R.id.search_filter);
+        customerNameText = findViewById(R.id.customer_name_value);
+        fromDate = findViewById(R.id.from_date);
+        toDate = findViewById(R.id.to_date);
+        salesOrderStatusSpinner = findViewById(R.id.invoice_status);
+        emptyLayout = findViewById(R.id.empty_layout);
+        cancelSearch = findViewById(R.id.btn_cancel);
+        searchButton = findViewById(R.id.btn_search);
+        outstandingLayout = findViewById(R.id.outstanding_layout);
+        progressLayout = findViewById(R.id.progress_layout);
+        createSalesOrder = findViewById(R.id.create_sales);
+        salesManSpinner = findViewById(R.id.salesman_spinner);
         salesManSpinner.setOnItemSelectedListener(this);
 
         shortCodeStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil
-                .KEY_SHORT_CODE,"");
-       // userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
+                .KEY_SHORT_CODE, "");
+        // userPermission = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ADMIN_PERMISSION,"");
 
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
@@ -229,36 +226,32 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         toDate.setText(formattedDate);
 
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE);
-        printerType=sharedPreferences.getString("printer_type","");
-        printerMacId=sharedPreferences.getString("mac_address","");
+        printerType = sharedPreferences.getString("printer_type", "");
+        printerMacId = sharedPreferences.getString("mac_address", "");
 
-        Log.w("Printer_Mac_Id:",printerMacId);
-        Log.w("Printer_Type:",printerType);
+        Log.w("Printer_Mac_Id:", printerMacId);
+        Log.w("Printer_Type:", printerType);
 
-        dbHelper.removeAllItems();
-        dbHelper.removeAllInvoiceItems();
 
-        AppUtils.setProductsList(null);
-
-        ArrayList<SettingsModel> settings=dbHelper.getSettings();
-        if (settings!=null) {
+        ArrayList<SettingsModel> settings = dbHelper.getSettings();
+        if (settings != null) {
             if (settings.size() > 0) {
                 for (SettingsModel model : settings) {
                     if (model.getSettingName().equals("create_invoice_switch")) {
                         Log.w("SettingName:", model.getSettingName());
                         Log.w("SettingValue:", model.getSettingValue());
                         if (model.getSettingValue().equals("1")) {
-                            createInvoiceSetting="true";
-                        }else {
-                            createInvoiceSetting="false";
+                            createInvoiceSetting = "true";
+                        } else {
+                            createInvoiceSetting = "false";
                         }
-                    }else if (model.getSettingName().equals("editSO")){
+                    } else if (model.getSettingName().equals("editSO")) {
                         Log.w("SettingName:", model.getSettingName());
                         Log.w("SettingValue:", model.getSettingValue());
                         if (model.getSettingValue().equals("True")) {
-                            editSo="true";
-                        }else {
-                            editSo="false";
+                            editSo = "true";
+                        } else {
+                            editSo = "false";
                         }
                     }
                 }
@@ -267,8 +260,9 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
         //dbHelper.removeAllProducts();
 
-
-
+        orderHistoryList = new ArrayList<>();
+        orderHistoryList = dbHelper.getCatelogOrderHistory();
+        Log.w("orderHisSize:", ""+orderHistoryList);
     /*    customerList=dbHelper.getAllCustomers();
         if (customerList!=null && customerList.size()>0){
             setAdapter(customerList);
@@ -283,66 +277,39 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         SimpleDateFormat df1 = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
         currentDate = df1.format(c1);
 
-        orderHistoryList = new ArrayList<>();
-
-        try {
-            getSalesOrderList(companyId,"1",currentDate,currentDate);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
         orderHistoryView.setHasFixedSize(true);
         orderHistoryView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        orderHistoryCatalogAdapter=new OrderHistoryCatalogAdapter(this, orderHistoryView,
+        orderHistoryCatalogAdapter = new OrderHistoryCatalogAdapter(this, orderHistoryView,
                 orderHistoryList, new OrderHistoryCatalogAdapter.CallBack() {
             @Override
-            public void calculateNetTotal(ArrayList<OrderHistoryCatalogCustModel> salesList) {
+            public void calculateNetTotal(ArrayList<OrderHeader> salesList) {
 
             }
 
             //            @Override
-//            public void calculateNetTotal(ArrayList<OrderHistoryCatalogCustModel>  salesList) {
+//            public void calculateNetTotal(ArrayList<OrderHeader>  salesList) {
 //                setNettotalFun(salesList);
 //            }
             @Override
-            public void showMoreOption(String salesorderId,String customerName,String status){
+            public void showMoreOption(String salesorderId, String customerName, String status) {
                 customerLayout.setVisibility(View.GONE);
                 salesOrderOptionLayout.setVisibility(View.VISIBLE);
                 soNumber.setText(salesorderId);
                 soCustomerName.setText(customerName);
-                salesOrderStatus =status;
+                salesOrderStatus = status;
                 if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 }
-               // viewCloseBottomSheet();
+                // viewCloseBottomSheet();
+            }
+
+            @Override
+            public void syncNowCall(OrderHeader order, ArrayList<CartModel> cartModel) {
+              //  syncNow(order,cartModel);
             }
         });
         orderHistoryView.setAdapter(orderHistoryCatalogAdapter);
 
-        /*salesOrderAdapter.setOnLoadMoreListener(new SalesOrderAdapterNew.OnLoadMoreListener() {
-            @Override
-            public void onLoadMore() {
-                Log.e("haint", "Load More");
-                salesOrderList.add(null);
-                salesOrderAdapter.notifyItemInserted(salesOrderList.size() - 1);
-                //Load more data for reyclerview
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e("haint", "Load More 2");
-
-                        //Remove loading item
-                        salesOrderList.remove(salesOrderList.size() - 1);
-                        salesOrderAdapter.notifyItemRemoved(salesOrderList.size());
-                        //Load data
-                        int index = salesOrderList.size();
-                        int end = index + 20;
-                        pageNo=pageNo+1;
-                        //getSalesOrderList(companyId, String.valueOf(pageNo));
-                    }
-                }, 5000);
-            }
-        });*/
 
         View bottomSheet = findViewById(R.id.design_bottom_sheet);
         behavior = BottomSheetBehavior.from(bottomSheet);
@@ -358,9 +325,9 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_EXPANDED");
-                        if (salesOrderOptionLayout.getVisibility()==View.VISIBLE){
+                        if (salesOrderOptionLayout.getVisibility() == View.VISIBLE) {
                             getSupportActionBar().setTitle("Select Option");
-                        }else {
+                        } else {
                             getSupportActionBar().setTitle("Select Customer");
                         }
                         transLayout.setVisibility(View.VISIBLE);
@@ -369,20 +336,20 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                         break;
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_COLLAPSED");
-                        getSupportActionBar().setTitle("Sales Order");
+                        getSupportActionBar().setTitle("Order History");
                         transLayout.setVisibility(View.GONE);
-                        if (redirectInvoice){
-                            if (createInvoiceSetting.equals("true")){
-                                Intent intent=new Intent(getApplicationContext(),CreateNewInvoiceActivity.class);
-                                intent.putExtra("customerName",soCustomerName.getText().toString());
-                                intent.putExtra("customerCode",selectedCustomerId.toString());
+                        if (redirectInvoice) {
+                            if (createInvoiceSetting.equals("true")) {
+                                Intent intent = new Intent(getApplicationContext(), CreateNewInvoiceActivity.class);
+                                intent.putExtra("customerName", soCustomerName.getText().toString());
+                                intent.putExtra("customerCode", selectedCustomerId.toString());
                                 startActivity(intent);
                                 finish();
-                            }else {
-                                CustomerFragment.isLoad=true;
-                                Intent intent=new Intent(OrderHistoryListActivity.this, AddInvoiceActivityOld.class);
-                                intent.putExtra("customerId",selectedCustomerId);
-                                intent.putExtra("activityFrom","SalesOrder");
+                            } else {
+                                CustomerFragment.isLoad = true;
+                                Intent intent = new Intent(OrderHistoryListActivity.this, AddInvoiceActivityOld.class);
+                                intent.putExtra("customerId", selectedCustomerId);
+                                intent.putExtra("activityFrom", "SalesOrder");
                                 startActivity(intent);
                                 finish();
                             }
@@ -405,14 +372,16 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
             }
+
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
             }
+
             @Override
             public void afterTextChanged(Editable editable) {
-                String cusname=editable.toString();
-                if (!cusname.isEmpty()){
+                String cusname = editable.toString();
+                if (!cusname.isEmpty()) {
                     filter(cusname);
                 }
             }
@@ -435,7 +404,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         createSalesOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSearchCustomerNameClicked=false;
+                isSearchCustomerNameClicked = false;
                 customerLayout.setVisibility(View.VISIBLE);
                 salesOrderOptionLayout.setVisibility(View.GONE);
                 searchFilterView.setVisibility(View.GONE);
@@ -451,129 +420,60 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         editLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    viewCloseBottomSheet();
-                    if (!salesOrderStatus.equals("Closed") && !salesOrderStatus.equals("InProgress Invoice")){
-                        if (editSo.equals("true")){
-                            getSalesOrderDetails(soNumber.getText().toString(),"Edit");
-                        }else {
-                            Toast.makeText(getApplicationContext(),
-                                    "You Don't have permission to Edit",Toast.LENGTH_SHORT).show();
-                        }
-                    }else {
-                        Toast.makeText(getApplicationContext(),
-                                "This Sales order already Closed",Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    viewCloseBottomSheet();
+//                    if (!salesOrderStatus.equals("Closed") && !salesOrderStatus.equals("InProgress Invoice")) {
+//                        if (editSo.equals("true")) {
+//                            getSalesOrderDetails(soNumber.getText().toString(), "Edit");
+//                        } else {
+//                            Toast.makeText(getApplicationContext(),
+//                                    "You Don't have permission to Edit", Toast.LENGTH_SHORT).show();
+//                        }
+//                    } else {
+//                        Toast.makeText(getApplicationContext(),
+//                                "This Sales order already Closed", Toast.LENGTH_SHORT).show();
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
             }
         });
 
-        editSalesOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    viewCloseBottomSheet();
-                    if (!salesOrderStatus.equals("Closed") && !salesOrderStatus.equals("InProgress Invoice")){
-                        if (editSo.equals("true")){
-                            getSalesOrderDetails(soNumber.getText().toString(),"Edit");
-                        }else {
-                            Toast.makeText(getApplicationContext(),
-                                    "You Don't have permission to Edit",Toast.LENGTH_SHORT).show();
-                        }
-                    }else {
-                        Toast.makeText(getApplicationContext(),"This Sales order already Closed",Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        deleteLayout.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                viewCloseBottomSheet();
+//                if (salesOrderStatus.equals("Open")) {
+//                    if (editSo.equals("true")) {
+//                        showRemoveAlert(soNumber.getText().toString());
+//                    } else {
+//                        Toast.makeText(getApplicationContext(),
+//                                "You Don't have permission to Delete", Toast.LENGTH_SHORT).show();
+//                    }
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "Can't Delete Closed SalesOrder", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
 
-        deleteLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewCloseBottomSheet();
-                if (salesOrderStatus.equals("Open")){
-                    if (editSo.equals("true")) {
-                        showRemoveAlert(soNumber.getText().toString());
-                    }else {
-                        Toast.makeText(getApplicationContext(),
-                                "You Don't have permission to Delete",Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    Toast.makeText(getApplicationContext(),"Can't Delete Closed SalesOrder",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        deleteSaleOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewCloseBottomSheet();
-                if (salesOrderStatus.equals("Open")){
-                    if (editSo.equals("true")) {
-                        showRemoveAlert(soNumber.getText().toString());
-                    }else {
-                        Toast.makeText(getApplicationContext(),
-                                "You Don't have permission to Delete",Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    Toast.makeText(getApplicationContext(),"Can't Delete Closed SalesOrder",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        convertLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    viewCloseBottomSheet();
-                    if (!salesOrderStatus.equals("Closed") && !salesOrderStatus.equals("InProgress Invoice")){
-                        getSalesOrderDetails(soNumber.getText().toString(),"ConvertInvoice");
-                    }else {
-                        Toast.makeText(getApplicationContext(),"This Sales order already Closed",Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        convertToInvoice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    viewCloseBottomSheet();
-                    if (!salesOrderStatus.equals("Closed") && !salesOrderStatus.equals("InProgress Invoice")){
-                        getSalesOrderDetails(soNumber.getText().toString(),"ConvertInvoice");
-                    }else {
-                        Toast.makeText(getApplicationContext(),"This Sales order already Closed",Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         customerNameText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSearchCustomerNameClicked=true;
-               // viewCloseBottomSheet();
-                Intent intent=new Intent(getApplicationContext(),FilterCustomerListActivity.class);
-                startActivityForResult(intent,FILTER_CUSTOMER_CODE);
+                isSearchCustomerNameClicked = true;
+                // viewCloseBottomSheet();
+                Intent intent = new Intent(getApplicationContext(), FilterCustomerListActivity.class);
+                startActivityForResult(intent, FILTER_CUSTOMER_CODE);
             }
         });
 
         printPreview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              //  viewCloseBottomSheet();
+                //  viewCloseBottomSheet();
                 behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                Intent intent=new Intent(OrderHistoryListActivity.this, SalesOrderPrintPreview.class);
-                intent.putExtra("soNumber",soNumber.getText().toString());
+                Intent intent = new Intent(OrderHistoryListActivity.this, SalesOrderPrintPreview.class);
+                intent.putExtra("soNumber", soNumber.getText().toString());
                 startActivity(intent);
             }
         });
@@ -581,10 +481,10 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         printPreviewLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              //  viewCloseBottomSheet();
+                //  viewCloseBottomSheet();
                 behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                Intent intent=new Intent(OrderHistoryListActivity.this, SalesOrderPrintPreview.class);
-                intent.putExtra("soNumber",soNumber.getText().toString());
+                Intent intent = new Intent(OrderHistoryListActivity.this, SalesOrderPrintPreview.class);
+                intent.putExtra("soNumber", soNumber.getText().toString());
                 startActivity(intent);
             }
         });
@@ -608,47 +508,47 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String customer_name=customerNameText.getText().toString();
+                String customer_name = customerNameText.getText().toString();
                 SimpleDateFormat sdformat = new SimpleDateFormat("dd/MM/yyyy");
                 Date d1 = null;
-                Date d2=null;
+                Date d2 = null;
                 try {
                     d1 = sdformat.parse(fromDate.getText().toString());
                     d2 = sdformat.parse(toDate.getText().toString());
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                if(d1.compareTo(d2) > 0) {
-                    Toast.makeText(getApplicationContext(),"From date should not be greater than to date",Toast.LENGTH_SHORT).show();
-                } else{
+                if (d1.compareTo(d2) > 0) {
+                    Toast.makeText(getApplicationContext(), "From date should not be greater than to date", Toast.LENGTH_SHORT).show();
+                } else {
                     searchFilterView.setVisibility(View.GONE);
-                    isSearchCustomerNameClicked=true;
+                    isSearchCustomerNameClicked = true;
                     try {
                         String oldFromDate = fromDate.getText().toString();
-                        String oldToDate=toDate.getText().toString();
+                        String oldToDate = toDate.getText().toString();
                         Date fromDate = new SimpleDateFormat("dd/MM/yyyy").parse(oldFromDate);
                         Date toDate = new SimpleDateFormat("dd/MM/yyyy").parse(oldToDate);
                         // Use SimpleDateFormat#format() to format a Date into a String in a certain pattern.
 
                         String fromDateString = new SimpleDateFormat("yyyyMMdd").format(fromDate);
                         String toDateString = new SimpleDateFormat("yyyyMMdd").format(toDate);
-                        System.out.println(fromDateString+"-"+toDateString); // 2011-01-18
-                        String invoice_status="";
-                        String usernamel="";
-                        if (salesOrderStatusSpinner.getSelectedItem().equals("ALL")){
-                            invoice_status="";
-                        }else if (salesOrderStatusSpinner.getSelectedItem().equals("CLOSED")){
-                            invoice_status="C";
-                        }else if (salesOrderStatusSpinner.getSelectedItem().equals("OPEN")){
-                            invoice_status="O";
+                        System.out.println(fromDateString + "-" + toDateString); // 2011-01-18
+                        String invoice_status = "";
+                        String usernamel = "";
+                        if (salesOrderStatusSpinner.getSelectedItem().equals("ALL")) {
+                            invoice_status = "";
+                        } else if (salesOrderStatusSpinner.getSelectedItem().equals("CLOSED")) {
+                            invoice_status = "C";
+                        } else if (salesOrderStatusSpinner.getSelectedItem().equals("OPEN")) {
+                            invoice_status = "O";
                         }
 //                        if (userPermission.equalsIgnoreCase("True")) {
 //                            usernamel = "All" ;
 //                        }else {
 //                            usernamel  = userName;
 //                        }
-                       // setFilterSearch(OrderHistoryListActivity.this,userName,companyId,selectedCustomerId,invoice_status,fromDateString,toDateString);
-                    } catch ( ParseException e) {
+                        // setFilterSearch(OrderHistoryListActivity.this,userName,companyId,selectedCustomerId,invoice_status,fromDateString,toDateString);
+                    } catch (ParseException e) {
                         e.printStackTrace();
                     }
                     ///filterSearch(customer_name, salesOrderStatusSpinner.getSelectedItem().toString(),fromDate.getText().toString(),toDate.getText().toString());
@@ -660,7 +560,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         cancelSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSearchCustomerNameClicked=false;
+                isSearchCustomerNameClicked = false;
                 customerNameText.setText("");
                 fromDate.setText(formattedDate);
                 toDate.setText(formattedDate);
@@ -670,10 +570,500 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
             }
         });
     }
+//    public void syncNow(  OrderHeader orderHeader, ArrayList<CartModel> cartModel) {
+//
+//            JSONObject rootJsonObject = new JSONObject();
+//            JSONObject invoiceHeader = new JSONObject();
+//            JSONObject signatureObject = new JSONObject();
+//            JSONObject invoiceImageObject = new JSONObject();
+//            JSONArray invoiceDetailsArray = new JSONArray();
+//            JSONObject invoiceObject = new JSONObject();
+//            JSONArray returnProductArray = new JSONArray();
+//
+//            // Sales Header Add values
+//            ArrayList<CartModel> localCart = dbHelper.getAllCartItem_Temp2(orderHeader.getOrderId());
+//            double net_sub_total = 0.0;
+//            double net_tax = 0.0;
+//            double net_total = 0.0;
+//            double net_discount = 0;
+//            double total_value = 0;
+//            if (localCart.size() > 0) {
+//                for (CartModel model : localCart) {
+//                    if (model.getSubTotal() != null && !model.getSubTotal().isEmpty()) {
+//                        net_sub_total += Double.parseDouble(model.getSubTotal());
+//                    }
+//                    if (model.getCART_TAX_VALUE() != null && !model.getCART_TAX_VALUE().isEmpty()) {
+//                        net_tax += Double.parseDouble(model.getCART_TAX_VALUE());
+//                    }
+//                    if (model.getCART_COLUMN_NET_PRICE() != null && !model.getCART_COLUMN_NET_PRICE().isEmpty()) {
+//                        net_total += Double.parseDouble(model.getCART_COLUMN_NET_PRICE());
+//                    }
+//                    if (model.getDiscount() != null && !model.getDiscount().equals("null") && !model.getDiscount().isEmpty()) {
+//                        net_discount += Double.parseDouble(model.getDiscount());
+//                    }
+//                    if (model.getCART_TOTAL_VALUE() != null && !model.getCART_TOTAL_VALUE().equals("null")) {
+//                        total_value += Double.parseDouble(model.getCART_TOTAL_VALUE());
+//                    }
+//                }
+//            }
+//
+//
+//            String currentTimestamp = String.valueOf(System.currentTimeMillis());
+//
+//            custNameShared = sharedPreferenceUtil.getStringPreference(
+//                    sharedPreferenceUtil.KEY_CUSTOMER_NAME, "");
+//            custCodeShared = sharedPreferenceUtil.getStringPreference(
+//                    sharedPreferenceUtil.KEY_CUSTOMER_CODE, "");
+//            custTaxTypeShared = sharedPreferenceUtil.getStringPreference(
+//                    sharedPreferenceUtil.KEY_CUSTOMER_TAXTYPE, "");
+//            custTaxPercentShared = sharedPreferenceUtil.getStringPreference(
+//                    sharedPreferenceUtil.KEY_CUSTOMER_TAXPERCENTAGE, "");
+//            custTaxCodeShared = sharedPreferenceUtil.getStringPreference(
+//                    sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, "");
+//            custHavetaxShared = sharedPreferenceUtil.getStringPreference(
+//                    sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  "");
+//
+//            if (custTaxTypeShared.equals("I")) {
+//                double sub_total = net_total - net_tax;
+//                double sub_total1 = sub_total + net_tax;
+//
+//                netSubtottalValue = Utils.twoDecimalPoint(sub_total1);
+//                netTaxvalue = Utils.twoDecimalPoint(net_tax);
+//                netTotalValue = Utils.twoDecimalPoint(sub_total1);
+//                itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
+//                totalValue = Utils.twoDecimalPoint(total_value);
+//
+//            } else {
+//                netSubtottalValue = Utils.twoDecimalPoint(net_sub_total);
+//                netTaxvalue = Utils.twoDecimalPoint(net_tax);
+//                netTotalValue = Utils.twoDecimalPoint(net_total);
+//                itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
+//                totalValue = Utils.twoDecimalPoint(total_value);
+//            }
+////        JSONArray detailsArray = customerResponse.optJSONArray("responseData");
+////        JSONObject object = detailsArray.optJSONObject(0);
+//
+//            try {
+//
+//
+//                // Sales Header Add values
+//                Log.w("custcode..cart ",""+custCodeShared);
+//                rootJsonObject.put("invoiceNumber", "");
+////                orderHeader.setInvoiceNumber("");
+////                orderHeader.setMode("I");
+////                orderHeader.setInvoiceDate(currentDate);
+////                orderHeader.setCustomerCode(custCodeShared);
+////                orderHeader.setCustomerName(custNameShared);
+////                orderHeader.setCurrentAddress(current_addr);
+////                orderHeader.setHaveTax(custHavetaxShared);
+////                orderHeader.setTaxType(custTaxTypeShared);
+////                orderHeader.setTaxPerc(custTaxPercentShared);
+////                orderHeader.setTaxCode(custTaxCodeShared);
+////                orderHeader.setCurrencyName("Singapore Dollar");
+////                orderHeader.setCurrencyRate("1");
+////                orderHeader.setTaxTotal(netTaxvalue);
+////                orderHeader.setSubTotal(subTotalValue);
+////                orderHeader.setTotal(totalValue);
+////                orderHeader.setNetTotal(netTotalValue);
+////                orderHeader.setNetTotal(itemDiscountAmount);
+////                orderHeader.setBillDiscount(billDiscountAmount);
+//
+//
+//            rootJsonObject.put("mode", "I");
+//            rootJsonObject.put("soNo", "");
+//            rootJsonObject.put("doNo", "");
+//            rootJsonObject.put("invoiceDate", currentDate);
+//            rootJsonObject.put("customerCode", orderHeader.getCustomerCode());
+//            rootJsonObject.put("customerName", orderHeader.getCustomerName());
+//            rootJsonObject.put("address", "");
+//            rootJsonObject.put("street", "");
+//            rootJsonObject.put("city", "");
+//            rootJsonObject.put("creditLimit", "");
+//            rootJsonObject.put("remark", "");
+//            rootJsonObject.put("delCustomerName", "");
+//            rootJsonObject.put("delAddress1", "");
+//            rootJsonObject.put("delAddress2 ", "");
+//            rootJsonObject.put("delAddress3 ", "");
+//            rootJsonObject.put("delPhoneNo", "");
+//            rootJsonObject.put("haveTax", orderHeader.getHaveTax());
+//            rootJsonObject.put("taxType", custTaxTypeShared);
+//            rootJsonObject.put("taxPerc", custTaxPercentShared);
+//            rootJsonObject.put("taxCode", custTaxCodeShared);
+//            rootJsonObject.put("currencyCode", "");
+//            rootJsonObject.put("currencyValue", "");
+//            rootJsonObject.put("currencyRate", "1");
+//            rootJsonObject.put("postalCode", "");
+//            rootJsonObject.put("currencyName", "Singapore Dollar");
+//            rootJsonObject.put("Remark", "");
+//            rootJsonObject.put("customerReferenceNo", "");
+//            rootJsonObject.put("taxTotal", netTaxvalue);
+//            rootJsonObject.put("subTotal", subTotalValue);
+//            rootJsonObject.put("total", totalValue);
+//            rootJsonObject.put("netTotal", netTotalValue);
+//            rootJsonObject.put("itemDiscount", itemDiscountAmount);
+//            rootJsonObject.put("billDiscount", billDiscountAmount);
+//                if (currentSaveDateTime == null || currentSaveDateTime.isEmpty()) {
+//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+//                    String currentDateandTime = sdf.format(new Date());
+//                    currentSaveDateTime = currentDateandTime;
+//                }
+//                rootJsonObject.put("currentDateTime", currentSaveDateTime);
+//                orderHeader.setCurrentDateTime(currentSaveDateTime);
+//                orderHeader.setTotalDiscount(currentSaveDateTime);
+//                orderHeader.setDeliveryCode(SettingUtils.getDeliveryAddressCode());
+//                orderHeader.setCurrencyRate("1");
+//                orderHeader.setInvoiceType("M");
+//                orderHeader.setCompanyCode( companyCode);
+//                orderHeader.setCompanyName(companyName);
+//                orderHeader.setCreateUser(userName);
+//                orderHeader.setModifyUser(userName);
+//                orderHeader.setStockUpdated("1");
+//                orderHeader.setLatitude(orderHeader.getLatitude());
+//                orderHeader.setLongitude(current_longitude);
+//
+////            rootJsonObject.put("totalDiscount", "0");
+//                rootJsonObject.put("billDiscountPercentage", billDiscountPercentage);
+////            rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode());
+////            rootJsonObject.put("delCustomerName", "");
+////            rootJsonObject.put("currencyValue", "");
+////            rootJsonObject.put("CurrencyRate", "1");
+//                rootJsonObject.put("status", "0");
+////            rootJsonObject.put("createUser", userName);
+////            rootJsonObject.put("modifyUser", userName);
+////            rootJsonObject.put("companyName", companyName);
+////            rootJsonObject.put("stockUpdated", "1");
+////            rootJsonObject.put("invoiceType", "M");
+////            rootJsonObject.put("companyCode", companyCode);
+////            rootJsonObject.put("locationCode", locationCode);
+////            rootJsonObject.put("latitude", current_latitude);
+////            rootJsonObject.put("longitude", current_longitude);
+////            rootJsonObject.put("CurrentAddress", current_addr);
+////            rootJsonObject.put("Paymode", "");
+////            rootJsonObject.put("ChequeDateString", "");
+////            rootJsonObject.put("BankCode", "");
+////            rootJsonObject.put("AccountNo", "");
+////            rootJsonObject.put("ChequeNo", "");
+////            rootJsonObject.put("image", imageString);
+////            rootJsonObject.put("signature", signatureString);
+//                orderHeader.setOrderId(currentTimestamp);
+//
+//                dbHelper.insertOrderHeader(orderHeader);
+//                // Sales Details Add to the Objects
+//                dbHelper.updateCartTemp2OrderId(currentTimestamp,selectCustomerId);
+////                localCart = dbHelper.getAllCartItems2();
+//                localCart = cartModel;
+//
+//
+//                int index = 1;
+//                for (CartModel model : localCart) {
+//                    invoiceObject = new JSONObject();
+//                    rootJsonObject.put("invoiceNumber", "");
+//                    invoiceObject.put("companyCode", model.getcom);
+//                    invoiceObject.put("invoiceDate", currentDateString);
+//                    invoiceObject.put("slNo", index);
+//                    invoiceObject.put("productCode", model.getCART_COLUMN_PID());
+//                    invoiceObject.put("productName", model.getCART_COLUMN_PNAME());
+//                    invoiceObject.put("cartonQty", model.getCART_COLUMN_CTN_QTY());
+//                    invoiceObject.put("unitQty", model.getCART_COLUMN_QTY());
+//                    double data = Double.parseDouble(model.getCART_PCS_PER_CARTON());
+//                    double cn_qty = Double.parseDouble(model.getCART_COLUMN_CTN_QTY());
+//                    double lqty = Double.parseDouble(model.getCART_COLUMN_QTY());
+//                    double net_qty = (cn_qty * data) + lqty;
+//                    invoiceObject.put("qty", String.valueOf(net_qty));
+//                    // convert into int
+//                    int value = (int) data;
+//                    invoiceObject.put("pcsPerCarton", String.valueOf(value));
+//                    //    double priceValue=Double.parseDouble(model.getCART_UNIT_PRICE()) / net_qty;
+////                if (object.optString("taxType").equals("I")){
+////                    invoiceObject.put("price",Utils.twoDecimalPoint(priceValue));
+////                }else {
+////                    invoiceObject.put("price",Utils.twoDecimalPoint(priceValue));
+////                }
+//                    invoiceObject.put("price", model.getCART_COLUMN_CTN_PRICE());
+//                    //  invoiceObject.put("cartonPrice",model.getCART_COLUMN_CTN_PRICE());
+//                    invoiceObject.put("total", model.getCART_TOTAL_VALUE());
+//                    if (model.getDiscount() != null && !model.getDiscount().isEmpty()) {
+//                        invoiceObject.put("itemDiscount", model.getDiscount());
+//                        //     invoiceObject.put("DiscountPercentage",model.getDiscount());
+//
+//                    } else {
+//                        invoiceObject.put("itemDiscount", "0.00");
+//                        //   invoiceObject.put("DiscountPercentage","0.00");
+//                    }
+//                    invoiceObject.put("totalTax", model.getCART_TAX_VALUE());
+//                    invoiceObject.put("subTotal", model.getSubTotal());
+//                    invoiceObject.put("netTotal", model.getCART_COLUMN_NET_PRICE());
+//                    invoiceObject.put("taxType", custTaxTypeShared);
+//                    invoiceObject.put("taxPerc", custTaxPercentShared);
+//                    invoiceObject.put("taxCode", custTaxCodeShared);
+//                    double return_subtotal = 0;
+//                    if (model.getReturn_qty() != null && !model.getReturn_qty().isEmpty() && !model.getReturn_qty().equals("null")) {
+//                        return_subtotal = Double.parseDouble(model.getReturn_qty()) * Double.parseDouble(model.getCART_UNIT_PRICE());
+//                    }
+//
+//                    assert model.getReturn_qty() != null;
+//                    if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
+//                        invoiceObject.put("returnLQty", model.getReturn_qty());
+//                        invoiceObject.put("returnQty", model.getReturn_qty());
+//                    } else {
+//                        invoiceObject.put("returnLQty", "0");
+//                        invoiceObject.put("returnQty", "0");
+//                    }
+//
+//                    if (!model.getFoc_qty().toString().isEmpty() && !model.getFoc_qty().equals("null")) {
+//                        invoiceObject.put("focQty", model.getFoc_qty());
+//                    } else {
+//                        invoiceObject.put("focQty", "0");
+//                    }
+//
+//                    if (!model.getExchange_qty().isEmpty() && !model.getExchange_qty().equals("null")) {
+//                        invoiceObject.put("exchangeQty", model.getExchange_qty());
+//                    } else {
+//                        invoiceObject.put("exchangeQty", "0");
+//
+//                    }
+//
+//                    invoiceObject.put("returnSubTotal", return_subtotal + "");
+//                    invoiceObject.put("returnNetTotal", return_subtotal + "");
+//                    invoiceObject.put("returnReason", "");
+//                    invoiceObject.put("uomCode", model.getUomCode());
+//                    invoiceObject.put("retailPrice", model.getCART_COLUMN_CTN_PRICE());
+//                    invoiceObject.put("itemRemarks", "");
+//                    invoiceObject.put("locationCode", locationCode);
+//                    invoiceObject.put("createUser", userName);
+//                    invoiceObject.put("modifyUser", userName);
+//
+//                    returnProductArray=new JSONArray();
+//                    JSONObject returnProductObject = new JSONObject();
+//
+//                    if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
+//                        returnProductObject=new JSONObject();
+//                        returnProductObject.put("ReturnReason","Saleable Return");
+//                        returnProductObject.put("ReturnQty",model.getReturn_qty());
+//                        returnProductArray.put(returnProductObject);
+//                    }
+//                    invoiceObject.put("ReturnDetails", returnProductArray);
+//
+//                    invoiceDetailsArray.put(invoiceObject);
+//                    index++;
+//                }
+//
+//                signatureObject.put("InvoiceNo", "");
+//                signatureObject.put("CompanyCode", companyCode);
+//                signatureObject.put("Latitude", currentLocationLatitude);
+//                signatureObject.put("Longitude", currentLocationLongitude);
+//                signatureObject.put("RefSignature", signatureString);
+//                signatureObject.put("ModifyUser", userName);
+//                signatureObject.put("Modifydate", "");
+//                signatureObject.put("TranType", "IN");
+//                signatureObject.put("Address1", "");
+//                signatureObject.put("Address2", "");
+//                signatureObject.put("SlNo", 0);
+//                signatureObject.put("RefSignaturestring", null);
+//
+//
+////            invoiceImageObject.put("InvoiceNo", "");
+////            invoiceImageObject.put("CompanyCode", companyCode);
+////            invoiceImageObject.put("SlNo", 0);
+////            invoiceImageObject.put("TranType", "IN");
+////            invoiceImageObject.put("CustomerCode", object.get("customerCode"));
+////            invoiceImageObject.put("CustomerName", object.get("customerName"));
+////            invoiceImageObject.put("DeliveryCode", SettingUtils.getDeliveryAddressCode());
+////            invoiceImageObject.put("CompanyName", user.get(SessionManager.KEY_COMPANY_NAME));
+////            invoiceImageObject.put("ModifyUser", userName);
+////            invoiceImageObject.put("RefPhotostring", null);
+//
+//
+//                // rootJsonObject.put("IsSaveSO",false);
+//                //  rootJsonObject.put("InvoiceHeader", invoiceHeader);
+//                //rootJsonObject.put("ReturnDetails", returnProductArray);
+//                rootJsonObject.put("PostingInvoiceDetails", invoiceDetailsArray);
+//                //  rootJsonObject.put("InvoiceSignature",signatureObject);
+//                // rootJsonObject.put("InvoicePhoto",invoiceImageObject);
+//
+//                Log.w("RootJsonForSave:", rootJsonObject.toString());
+//
+//
+//                Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
+////                redirectActivity();
+//            saveSalesOrder(rootJsonObject, "Invoice", 1);
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//                Log.w("Given_Error:", Objects.requireNonNull(e.getMessage()));
+//            }
+//        }
 
-    public void setCustomerDetails(String customerId){
-        SharedPreferences sharedPreferences = getSharedPreferences("customerPref",MODE_PRIVATE);
-        SharedPreferences.Editor customerPredEdit= sharedPreferences.edit();
+
+
+
+
+        public void saveSalesOrder(JSONObject jsonBody, String action, int copy) {
+        try {
+            SweetAlertDialog pDialog = new SweetAlertDialog(OrderHistoryListActivity.this, SweetAlertDialog.PROGRESS_TYPE);
+            pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+            if (action.equals("SalesOrder")) {
+                pDialog.setTitleText("Saving Sales Order...");
+            } else if (action.equals("DeliveryOrder")) {
+                pDialog.setTitleText("Saving Delivery Order...");
+            } else {
+                pDialog.setTitleText("Saving Invoice...");
+            }
+            pDialog.setCancelable(false);
+            pDialog.show();
+            RequestQueue requestQueue = Volley.newRequestQueue(OrderHistoryListActivity.this);
+            Log.w("GivenInvoiceReqCart:", jsonBody.toString());
+            String URL = "";
+            if (action.equals("SalesOrder")) {
+                URL = Utils.getBaseUrl(this) + "PostingSalesOrder";
+            } else if (action.equals("DeliveryOrder")) {
+                URL = Utils.getBaseUrl(this) + "PostingDeliveryOrder";
+            } else {
+                URL = Utils.getBaseUrl(this) + "PostingInvoice";
+            }
+            Log.w("Given_URL_InvApiCart:", URL);
+            //    {"statusCode":2,"statusMessage":"Failed","responseData":{"docNum":null,"error":"Invoice :One of the base documents has already been closed  [INV1.BaseEntry][line: 1]"}}
+            JsonObjectRequest salesOrderRequest = new JsonObjectRequest(Request.Method.POST, URL, jsonBody, response -> {
+                Log.w("Invoice_Res_cartSap:", response.toString());
+                Utils.clearCustomerSession(this);
+                // dbHelper.removeCustomer();
+                // {"statusCode":1,"statusMessage":"Invoice Created Successfully","responseData":{"docNum":"35","error":null}}
+                pDialog.dismiss();
+                String statusCode = response.optString("statusCode");
+                String message = response.optString("statusMessage");
+                JSONObject responseData = null;
+                try {
+                    responseData = response.getJSONObject("responseData");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+             //   Log.w("printenab_cart",""+isPrintEnable);
+                if (statusCode.equals("1")) {
+                    if (action.equals("SalesOrder") || action.equals("SalesEdit")) {
+                        if (isPrintEnable) {
+                            try {
+                                dbHelper.removeAllItemsTemp2();
+                                JSONObject object = response.optJSONObject("responseData");
+                                String doucmentNo = object.optString("docNum");
+                                //   String result=object.optString("Result");
+                                if (!doucmentNo.isEmpty()) {
+                                    // getSalesOrderDetails(doucmentNo, copy);
+//                                    Intent intent = new Intent(this, SalesOrderListActivity.class);
+                                    Intent intent = new Intent(this, CategoriesTemp2Activity.class);
+                                    intent.putExtra("printSoNumber", doucmentNo);
+                                    intent.putExtra("noOfCopy", String.valueOf(copy));
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Error in getting printing data", Toast.LENGTH_SHORT).show();
+                                  //  redirectActivity();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            dbHelper.removeAllItemsTemp2();
+                          //  redirectActivity();
+                        }
+                        isPrintEnable = false;
+                    } else {
+                        if (isPrintEnable) {
+                            try {
+                                //updateStockQty();
+                                dbHelper.removeAllItemsTemp2();
+                                JSONObject object = response.optJSONObject("responseData");
+                                String doucmentNo = object.optString("docNum");
+                                //   String result=object.optString("Result");
+                                if (!doucmentNo.isEmpty()) {
+                                    // getInvoicePrintDetails(doucmentNo, copy);
+//                                    Intent intent = new Intent(getApplicationContext(), NewInvoiceListActivity.class);
+                                    Intent intent = new Intent(this, CategoriesTemp2Activity.class);
+
+                                    intent.putExtra("printInvoiceNumber", doucmentNo);
+                                    intent.putExtra("noOfCopy", String.valueOf(copy));
+                                  //  intent.putExtra("DOPrint", isDeliveryPrint);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Error in getting printing data", Toast.LENGTH_SHORT).show();
+                                //    redirectActivity();
+                                }
+                                Log.w("cartSavEntr", "");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            Log.w("cartSavEntr1", "");
+
+                            //updateStockQty();
+                            dbHelper.removeAllItemsTemp2();
+                          //  redirectActivity();
+
+//                            if (message.equals("Invoice Created Successfully")){
+//                                try {
+//                                    redirectActivity();
+//                                } catch (Exception e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+                        }
+                        isPrintEnable = false;
+                    }
+                } else {
+                    //  Log.w("ErrorValues:", responseData.optString("error"));
+                    if (responseData != null) {
+                        Toast.makeText(getApplicationContext(), responseData.optString("error"), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Error in Saving Data...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, error -> {
+                Log.w("SalesOrder_Response:", error.toString());
+                pDialog.dismiss();
+            }) {
+                /* @Override
+                 public byte[] getBody() {
+                     return jsonBody.toString().getBytes();
+                 }*/
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
+                }
+
+                @Override
+                public Map<String, String> getHeaders() {
+                    HashMap<String, String> params = new HashMap<>();
+                    String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
+                    String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
+                    params.put("Authorization", auth);
+                    return params;
+                }
+            };
+            salesOrderRequest.setRetryPolicy(new RetryPolicy() {
+                @Override
+                public int getCurrentTimeout() {
+                    return 50000;
+                }
+
+                @Override
+                public int getCurrentRetryCount() {
+                    return 50000;
+                }
+
+                @Override
+                public void retry(VolleyError error) throws VolleyError {
+                }
+            });
+            requestQueue.add(salesOrderRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void setCustomerDetails(String customerId) {
+        SharedPreferences sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE);
+        SharedPreferences.Editor customerPredEdit = sharedPreferences.edit();
         customerPredEdit.putString("customerId", customerId);
         customerPredEdit.apply();
     }
@@ -875,44 +1265,44 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
     private void getAllUsers() throws JSONException {
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url= Utils.getBaseUrl(this) +"UserList";
+        String url = Utils.getBaseUrl(this) + "UserList";
         // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url_UserList:",url);
-        usersList =new ArrayList<>();
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("User",userName);
+        Log.w("Given_url_UserList:", url);
+        usersList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("User", userName);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
                 response -> {
-                    try{
-                        Log.w("UserListResponse:",response.toString());
-                        String statusCode=response.optString("statusCode");
-                        String message=response.optString("statusMessage");
-                        if (statusCode.equals("1")){
-                            JSONArray responseData=response.getJSONArray("responseData");
-                            for (int i=0;i<responseData.length();i++){
-                                JSONObject object=responseData.optJSONObject(i);
-                                UserListModel model=new UserListModel();
+                    try {
+                        Log.w("UserListResponse:", response.toString());
+                        String statusCode = response.optString("statusCode");
+                        String message = response.optString("statusMessage");
+                        if (statusCode.equals("1")) {
+                            JSONArray responseData = response.getJSONArray("responseData");
+                            for (int i = 0; i < responseData.length(); i++) {
+                                JSONObject object = responseData.optJSONObject(i);
+                                UserListModel model = new UserListModel();
                                 model.setUserName(object.optString("userName"));
                                 model.setGender(object.optString("sex"));
                                 model.setJobTitle(object.optString("jobTitle"));
                                 usersList.add(model);
                             }
-                        }else {
-                            Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
                         }
-                        if (usersList.size()>0){
+                        if (usersList.size() > 0) {
                             setUserListAdapter(usersList);
-                        }else {
-                            Toast.makeText(getApplicationContext(),"No User Found...",Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "No User Found...", Toast.LENGTH_SHORT).show();
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }, error -> {
             // Do something when error occurred
             pDialog.dismiss();
-            Log.w("Error_throwing:",error.toString());
-        }){
+            Log.w("Error_throwing:", error.toString());
+        }) {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> params = new HashMap<>();
@@ -927,10 +1317,12 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
             public int getCurrentTimeout() {
                 return 50000;
             }
+
             @Override
             public int getCurrentRetryCount() {
                 return 50000;
             }
+
             @Override
             public void retry(VolleyError error) throws VolleyError {
 
@@ -940,217 +1332,27 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         requestQueue.add(jsonObjectRequest);
     }
 
-    public void setUserListAdapter(ArrayList<UserListModel> usersList){
-        UserAdapter customAdapter=new UserAdapter(getApplicationContext(),usersList);
+    public void setUserListAdapter(ArrayList<UserListModel> usersList) {
+        UserAdapter customAdapter = new UserAdapter(getApplicationContext(), usersList);
         salesManSpinner.setAdapter(customAdapter);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        selectedUser=usersList.get(position).getUserName();
-        Log.w("UserSelected:",selectedUser);
+        selectedUser = usersList.get(position).getUserName();
+        Log.w("UserSelected:", selectedUser);
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-        selectedUser="";
+        selectedUser = "";
     }
 
-    private void getSalesOrderDetails(String soNumber,int copy) throws JSONException {
-        // Initialize a new RequestQueue instance
-        JSONObject jsonObject=new JSONObject();
-        //  jsonObject.put("CompanyCode",companyId);
-        jsonObject.put("SalesOrderNo", soNumber);
-        // jsonObject.put("LocationCode",locationCode);
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url= Utils.getBaseUrl(this) +"SalesOrderDetails";
-        // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:",url);
-     //   pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-     //   pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-      //  pDialog.setTitleText("Generating Print Preview...");
-      //  pDialog.setCancelable(false);
-      //  pDialog.show();
-        salesOrderHeaderDetails =new ArrayList<>();
-        salesPrintList =new ArrayList<>();
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
-                response -> {
-                    try{
-                        Log.w("Sales_Details_list:",response.toString()+jsonObject);
-                        String statusCode=response.optString("statusCode");
-                        if (statusCode.equals("1")){
-                            JSONArray responseData=response.getJSONArray("responseData");
-                            JSONObject object=responseData.optJSONObject(0);
 
-                            SalesOrderPrintPreviewModel model=new SalesOrderPrintPreviewModel();
-                            model.setSoNumber(object.optString("soNumber"));
-                            model.setSoDate(object.optString("soDate"));
-                            model.setCustomerCode(object.optString("customerCode"));
-                            model.setCustomerName(object.optString("customerName"));
-                            model.setAddress(object.optString("address1") + object.optString("address2") + object.optString("address3"));
-                            model.setAddress1(object.optString("address1"));
-                            model.setAddress2(object.optString("address2"));
-                            model.setAddress3(object.optString("address3"));
-                            model.setAddressstate(object.optString("block")+" "+object.optString("street")+" "
-                                    +object.optString("city"));
-                            model.setAddresssZipcode(object.optString("countryName")+" "+object.optString("state")+" "
-                                    +object.optString("zipcode"));
-
-                            // model.setDeliveryAddress(model.getAddress());
-                            model.setSubTotal(object.optString("subTotal"));
-                            model.setNetTax(object.optString("taxTotal"));
-                            model.setNetTotal(object.optString("netTotal"));
-                            model.setTaxType(object.optString("taxType"));
-                            model.setTaxValue(object.optString("taxPerc"));
-                            model.setOutStandingAmount(object.optString("outstandingAmount"));
-                            model.setBillDiscount(object.optString("billDiscount"));
-                            model.setItemDiscount(object.optString("totalDiscount"));
-                            Utils.setInvoiceMode("SalesOrder");
-                            String signFlag=object.optString("signFlag");
-                            Log.d("cg_signflag",""+signFlag);
-                            if (signFlag.equals("Y")){
-                                String signature=object.optString("signature");
-                                Utils.setSignature(signature);
-                                createSignature();
-                            }else {
-                                Utils.setSignature("");
-                            }
-
-                            JSONArray detailsArray=object.optJSONArray("salesOrderDetails");
-                            for (int i=0;i<detailsArray.length();i++){
-                                JSONObject detailObject=detailsArray.optJSONObject(i);
-
-                                SalesOrderPrintPreviewModel.SalesList salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                salesListModel.setProductCode(detailObject.optString("productCode"));
-                                salesListModel.setDescription(detailObject.optString("productName"));
-                                salesListModel.setLqty(detailObject.optString("unitQty"));
-                                salesListModel.setCqty(detailObject.optString("cartonQty"));
-                                salesListModel.setNetQty(detailObject.optString("quantity"));
-                                salesListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                salesListModel.setUnitPrice(detailObject.optString("price"));
-                                salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
-
-                                double qty1 = Double.parseDouble(detailObject.optString("quantity"));
-                                double price1 = 0.0 ;
-
-                                if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
-                                    if(object.optString("taxType").equalsIgnoreCase("E")){
-                                        price1 = Double.parseDouble(detailObject.optString("price"));
-                                        salesListModel.setPricevalue(String.valueOf(price1));
-                                    }else{
-                                        price1 = Double.parseDouble(detailObject.optString("grossPrice"));
-                                        salesListModel.setPricevalue(detailObject.optString("grossPrice"));
-                                    }
-                                }else{
-                                    price1 = Double.parseDouble(detailObject.optString("price"));
-                                    salesListModel.setPricevalue(String.valueOf(price1));
-                                }
-
-                                double nettotal1 = qty1 * price1;
-                                salesListModel.setTotal(String.valueOf(nettotal1));
-                                //salesListModel.setPricevalue(String.valueOf(price1));
-
-                                salesListModel.setUomCode(detailObject.optString("uomCode"));
-                                salesListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                salesListModel.setItemtax(detailObject.optString("totalTax"));
-                                salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                salesPrintList.add(salesListModel);
-
-
-                                if (!detailObject.optString("ReturnQty").isEmpty() && Double.parseDouble(detailObject.optString("ReturnQty")) > 0) {
-                                    salesListModel = new SalesOrderPrintPreviewModel.SalesList();
-                                    salesListModel.setProductCode(detailObject.optString("ProductCode"));
-                                    salesListModel.setDescription(detailObject.optString("ProductName"));
-                                    salesListModel.setLqty(detailObject.optString("LQty"));
-                                    salesListModel.setCqty(detailObject.optString("CQty"));
-                                    salesListModel.setNetQty("-"+detailObject.optString("ReturnQty"));
-                                    salesListModel.setGrossPrice(detailObject.optString("grossPrice"));
-
-                                    double qty12 = Double.parseDouble(detailObject.optString("ReturnQty"));
-                                //    double price12 = Double.parseDouble(detailObject.optString("Price"));
-                                    double price12 = 0.0 ;
-
-                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
-                                        if(object.optString("taxType").equalsIgnoreCase("E")){
-                                            price12 = Double.parseDouble(detailObject.optString("price"));
-                                            salesListModel.setPricevalue(String.valueOf(price12));
-                                        }else{
-                                            price12 = Double.parseDouble(detailObject.optString("grossPrice"));
-                                            salesListModel.setPricevalue(detailObject.optString("grossPrice"));
-                                        }
-                                    }else{
-                                        price12 = Double.parseDouble(detailObject.optString("price"));
-                                        salesListModel.setPricevalue(String.valueOf(price12));
-                                    }
-
-                                    double nettotal12 = qty12 * price12;
-                                    salesListModel.setTotal(String.valueOf(nettotal12));
-                                  //  salesListModel.setPricevalue(String.valueOf(price12));
-
-                                    salesListModel.setUomCode(detailObject.optString("UOMCode"));
-                                    salesListModel.setCartonPrice(detailObject.optString("CartonPrice"));
-                                    salesListModel.setUnitPrice(detailObject.optString("Price"));
-                                    salesListModel.setPcsperCarton(detailObject.optString("PcsPerCarton"));
-                                    salesListModel.setItemtax(detailObject.optString("Tax"));
-                                    salesListModel.setSubTotal(detailObject.optString("subTotal"));
-                                    salesPrintList.add(salesListModel);
-                                }
-
-                                model.setSalesList(salesPrintList);
-                                salesOrderHeaderDetails.add(model);
-                            }
-                            if (printerType.equals("iMin Printer V2")) {
-                                Toast.makeText(this, "SOimin " + orderHistoryList.size(), Toast.LENGTH_SHORT).show();
-
-                                Utils.setSignature("");
-                                IminPrinterV2 printLayer = new IminPrinterV2(OrderHistoryListActivity.this);
-                                printLayer.printSalesOrder(copy, salesOrderHeaderDetails, salesPrintList);
-                            }else {
-                                sentPrintDate(copy);
-                            }
-                           // pDialog.dismiss();
-                        }else {
-
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }, error -> {
-            // Do something when error occurred
-            pDialog.dismiss();
-            Log.w("Error_throwing:",error.toString());
-        }){
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                return params;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonObjectRequest);
-    }
-
-    private void createSignature(){
-        if (Utils.getSignature()!=null && !Utils.getSignature().isEmpty()){
+    private void createSignature() {
+        if (Utils.getSignature() != null && !Utils.getSignature().isEmpty()) {
             try {
-                ImageUtil.saveStamp(this,Utils.getSignature(),"Signature");
+                ImageUtil.saveStamp(this, Utils.getSignature(), "Signature");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1160,14 +1362,14 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     @Override
     protected void onResume() {
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE);
-        printerType=sharedPreferences.getString("printer_type","");
-        printerMacId=sharedPreferences.getString("mac_address","");
+        printerType = sharedPreferences.getString("printer_type", "");
+        printerMacId = sharedPreferences.getString("mac_address", "");
         super.onResume();
     }
 
 
     private void sentPrintDate(int copy) throws IOException {
-        if (Utils.validatePrinterConfiguration(this,printerType,printerMacId)) {
+        if (Utils.validatePrinterConfiguration(this, printerType, printerMacId)) {
 
             if (printerType.equals("TSC Printer")) {
                 TSCPrinter printer = new TSCPrinter(OrderHistoryListActivity.this, printerMacId, "SalesOrder");
@@ -1186,22 +1388,22 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
     public static void filterSearch(String customerName, String invoiceStatus, String fromdate, String todate) {
         try {
-            ArrayList<OrderHistoryCatalogCustModel> filterdNames = new ArrayList<>();
-            SimpleDateFormat sdf=new SimpleDateFormat("dd-MM-yyyy");
-            Date from_date=null;
-            Date to_date=null;
+            ArrayList<OrderHeader> filterdNames = new ArrayList<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            Date from_date = null;
+            Date to_date = null;
             try {
-                from_date=sdf.parse(fromdate);
-                to_date=sdf.parse(todate);
-            }  catch (ParseException e) {
+                from_date = sdf.parse(fromdate);
+                to_date = sdf.parse(todate);
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
-            for (OrderHistoryCatalogCustModel model: OrderHistoryCatalogAdapter.getSalesOrderList()){
-                Date compareDate=sdf.parse(model.getDate());
-                if (from_date.equals(to_date)){
-                    if (from_date.equals(compareDate)){
-                        if (!customerName.isEmpty()){
-                            if (model.getName().toLowerCase().contains(customerName.toLowerCase())) {
+            for (OrderHeader model : OrderHistoryCatalogAdapter.getSalesOrderList()) {
+                Date compareDate = sdf.parse(model.getInvoiceDate());
+                if (from_date.equals(to_date)) {
+                    if (from_date.equals(compareDate)) {
+                        if (!customerName.isEmpty()) {
+                            if (model.getCustomerName().toLowerCase().contains(customerName.toLowerCase())) {
                                 switch (invoiceStatus) {
                                     case "ALL":
                                         filterdNames.add(model);
@@ -1219,7 +1421,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                                 }
                                 orderHistoryCatalogAdapter.filterList(filterdNames);
                             }
-                        }else {
+                        } else {
                             switch (invoiceStatus) {
                                 case "ALL":
                                     filterdNames.add(model);
@@ -1238,10 +1440,10 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                             orderHistoryCatalogAdapter.filterList(filterdNames);
                         }
                     }
-                } else if(compareDate.compareTo(from_date) >= 0 && compareDate.compareTo(to_date) <= 0) {
+                } else if (compareDate.compareTo(from_date) >= 0 && compareDate.compareTo(to_date) <= 0) {
                     System.out.println("Compare date occurs after from date");
-                    if (!customerName.isEmpty()){
-                        if (model.getName().toLowerCase().contains(customerName.toLowerCase())) {
+                    if (!customerName.isEmpty()) {
+                        if (model.getCustomerName().toLowerCase().contains(customerName.toLowerCase())) {
                             switch (invoiceStatus) {
                                 case "ALL":
                                     filterdNames.add(model);
@@ -1259,7 +1461,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                             }
                             orderHistoryCatalogAdapter.filterList(filterdNames);
                         }
-                    }else {
+                    } else {
                         switch (invoiceStatus) {
                             case "ALL":
                                 filterdNames.add(model);
@@ -1281,800 +1483,141 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                 orderHistoryCatalogAdapter.filterList(filterdNames);
             }
 
-            Log.w("FilteredSize:",filterdNames.size()+"");
+            Log.w("FilteredSize:", filterdNames.size() + "");
 
-            if (filterdNames.size()>0){
+            if (filterdNames.size() > 0) {
                 orderHistoryView.setVisibility(View.VISIBLE);
                 outstandingLayout.setVisibility(View.VISIBLE);
                 emptyLayout.setVisibility(View.GONE);
-              //  setNettotal(filterdNames);
+                //  setNettotal(filterdNames);
                 // invoiceAdapter.filterList(filterdNames);
-            }else {
+            } else {
                 orderHistoryView.setVisibility(View.GONE);
                 outstandingLayout.setVisibility(View.GONE);
                 emptyLayout.setVisibility(View.VISIBLE);
             }
 
 
-       }catch (Exception ex){
+        } catch (Exception ex) {
             Log.e("Error_in_filter", Objects.requireNonNull(ex.getMessage()));
         }
     }
 
-
-//    public void setSalesOrderAdapter(Context context,ArrayList<SalesOrderModel> salesList,String invoiceStatus){
-//        ArrayList<SalesOrderModel> filterdNames = new ArrayList<>();
-//     /*   for (SalesOrderModel model: SalesOrderAdapterNew.getSalesOrderList()){
-//            switch (invoiceStatus) {
-//                case "ALL":
-//                    filterdNames.add(model);
-//                    break;
-//                case "OPEN":
-//                    if (model.getStatus().equals("0")) {
-//                        filterdNames.add(model);
-//                    }
-//                    break;
-//                case "CLOSED":
-//                    if (!model.getStatus().equals("0")) {
-//                        filterdNames.add(model);
-//                    }
-//                    break;
-//            }
-//        }*/
-//        salesOrdersView.setHasFixedSize(true);
-//        salesOrdersView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-//        orderHistoryCatalogAdapter=new SalesOrderAdapterNew(context, salesOrdersView, salesList, new SalesOrderAdapterNew.CallBack() {
-//            @Override
-//            public void calculateNetTotal(ArrayList<SalesOrderModel> salesList) {
-//                setNettotalFun(salesList);
-//            }
-//            @Override
-//            public void showMoreOption(String salesorderId,String customerName,String status){
-//                customerLayout.setVisibility(View.GONE);
-//                salesOrderOptionLayout.setVisibility(View.VISIBLE);
-//                soNumber.setText(salesorderId);
-//                soCustomerName.setText(customerName);
-//                salesOrderStatus =status;
-//                if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-//                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-//                }
-//                // viewCloseBottomSheet();
-//            }
-//        });
-//        salesOrdersView.setAdapter(orderHistoryCatalogAdapter);
-//        if (salesOrderList.size()>0){
-//            setNettotalFun(salesOrderList);
-//        }
-//
-//        selectedCustomerId="";
-//    }
-
-
-    public void setNettotalFun(ArrayList<OrderHistoryCatalogCustModel> salesOrderList){
-            double net_amount=0.0;
-            for (OrderHistoryCatalogCustModel model:salesOrderList){
-                if (model.getNetTotal()!=null && !model.getNetTotal().equals("null")){
-                    net_amount=net_amount+Double.parseDouble(model.getNetTotal());
-                }
+    public void setNettotalFun(ArrayList<OrderHeader> salesOrderList) {
+        double net_amount = 0.0;
+        for (OrderHeader model : salesOrderList) {
+            if (model.getNetTotal() != null && !model.getNetTotal().equals("null")) {
+                net_amount = net_amount + Double.parseDouble(model.getNetTotal());
             }
-            netTotalText.setText("$ "+Utils.twoDecimalPoint(net_amount));
-    }
-
-      public void showRemoveAlert(String salesOrderId){
-        new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
-                // .setTitleText("Are you sure?")
-                .setContentText("Are you sure want Delete SalesOrder ?")
-                .setConfirmText("YES")
-                .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                    @Override
-                    public void onClick(SweetAlertDialog sDialog) {
-                        try {
-                            sDialog.dismiss();
-                           // viewCloseBottomSheet();
-                            setDeleteSalesOrder(salesOrderId);
-                            if (behavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-                                behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).showCancelButton(true)
-                .setCancelText("No")
-                .setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                    @Override
-                    public void onClick(SweetAlertDialog sDialog) {
-                        sDialog.cancel();
-                    }}).show();
+        }
+        netTotalText.setText("$ " + Utils.twoDecimalPoint(net_amount));
     }
 
 
-
-    private void getSalesOrderDetails(String soNumber,String action) throws JSONException {
-        // Initialize a new RequestQueue instance
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("SalesOrderNo",soNumber);
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        //    EditSODetails
-        //    EditSODetailsWithFOC
-        String url= Utils.getBaseUrl(this) +"EditSODetailsWithFOC";
-        Log.w("JsonValue:",jsonObject.toString());
-        // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url_salesEdit:",url);
-        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Getting SalesOrder Details...");
-        pDialog.setCancelable(false);
-        pDialog.show();
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
-                response -> {
-                    try{
-                        Log.w("So_Details_edit:",response.toString());
-                        if (response.length()>0){
-                            String statusCode=response.optString("statusCode");
-                            if (statusCode.equals("1")){
-                                JSONArray salesArray=response.optJSONArray("responseData");
-                                JSONObject salesObject=salesArray.optJSONObject(0);
-                                String salesorder_no=salesObject.optString("soNumber");
-                                String salesorder_code = salesObject.optString("code");
-                                String order_no=salesObject.optString("customerReferenceNo");
-                                String company_code=salesObject.optString("CompanyCode");
-                                String customer_code=salesObject.optString("customerCode");
-                                String customer_name=salesObject.optString("customerName");
-                                String customerBill_Disc=salesObject.optString("customerDiscountPercentage");
-
-                                String total=salesObject.optString("total");
-                                String sub_total=salesObject.optString("subTotal");
-                                String bill_discount=salesObject.optString("billDiscount");
-                                String item_discount=salesObject.optString("ItemDiscount");
-                                String tax=salesObject.optString("taxTotal");
-                                String net_total=salesObject.optString("netTotal");
-                                String currency_rate=salesObject.optString("CurrencyRate");
-                                String currency_name=salesObject.optString("currencyName");
-                                String tax_type=salesObject.optString("taxType");
-                                String tax_perc=salesObject.optString("taxPerc");
-                                String tax_code=salesObject.optString("taxCode");
-                                String phone_no=salesObject.optString("DelPhoneNo");
-                                String so_date=salesObject.optString("soDate");
-                                String signFlag=salesObject.optString("signFlag");
-                                Utils.setInvoiceMode("SalesOrder");
-                                if (signFlag.equals("Y")){
-                                    String signature=salesObject.optString("signature");
-                                    Utils.setSignature(signature);
-                                }
-
-                                dbHelper.removeCustomer();
-                                dbHelper.insertCustomer(
-                                        customer_code,
-                                        customer_name,
-                                        phone_no,
-                                        salesObject.optString("address1"),
-                                        salesObject.optString("Address2"),
-                                        salesObject.optString("Address3"),
-                                        salesObject.optString("IsActive"),
-                                        salesObject.optString("HaveTax"),
-                                        salesObject.optString("taxType"),
-                                        salesObject.optString("taxPerc"),
-                                        salesObject.optString("taxCode"),
-                                        salesObject.optString("CreditLimit"),
-                                        "Singapore",
-                                        salesObject.optString("currencyCode"));
-                                customerDetails=dbHelper.getCustomer();
-                                dbHelper.removeAllItems();
-                                dbHelper.removeAllInvoiceItems();
-                                dbHelper.removeCustomerTaxes();
-                                CustomerDetails model=new CustomerDetails();
-                                model.setCustomerCode(customer_code);
-                                model.setCustomerName(customer_name);
-                                model.setCustomerAddress1(salesObject.optString("address1"));
-                                model.setTaxPerc( salesObject.optString("taxPerc"));
-                                model.setTaxType(salesObject.optString("taxType"));
-                                model.setTaxCode( salesObject.optString("taxCode"));
-                                ArrayList<CustomerDetails> taxList =new ArrayList<>();
-                                taxList.add(model);
-                                Log.w("TaxModelPrint::",model.toString());
-                                dbHelper.insertCustomerTaxValues(taxList);
-
-                                JSONArray products=salesObject.getJSONArray("salesOrderDetails");
-                                for (int i=0;i<products.length();i++){
-                                    JSONObject object=products.getJSONObject(i);
-                                    String lqty="0.0";
-                                    String cqty="0.0";
-                                    if (!object.optString("unitQty").equals("null")){
-                                        lqty=object.optString("unitQty");
-                                    }
-
-                                    if (!object.optString("quantity").equals("null")){
-                                        cqty=object.optString("quantity");
-                                    }
-                                    double priceValue=0.0;
-                                    String return_qty="0";
-                                    String price_value= "0";
-
-                                    double net_qty=Double.parseDouble(cqty) - Double.parseDouble(return_qty);
-                                    if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
-                                    if(tax_type.equalsIgnoreCase("E")){
-                                         price_value=object.optString("price");
-                                    }else{
-                                         price_value=object.optString("grossPrice");
-                                    }
-                                    }else{
-                                        price_value=object.optString("price");
-                                    }
-
-                                    //String price_value=object.optString("grossPrice");
-
-                                    double return_amt=(Double.parseDouble(return_qty)*Double.parseDouble(price_value));
-                                    double total1=(net_qty * Double.parseDouble(price_value));
-                                    double sub_total1=total1-return_amt;
-
-                                    long laterDate = System.currentTimeMillis();
-                                    int millisec = 18000;
-                                    Timestamp original = new Timestamp(laterDate);
-                                    Calendar cal = Calendar.getInstance();
-                                    cal.setTimeInMillis(original.getTime());
-                                    cal.add(Calendar.MILLISECOND, millisec);
-                                    Timestamp timeStamp = new Timestamp(cal.getTime().getTime());
-
-                                   dbHelper.insertCreateInvoiceCartEdit(
-                                            object.optString("productCode"),
-                                            object.optString("productName"),
-                                            object.optString("uomCode"),
-                                            cqty.toString(),
-                                            return_qty,
-                                            String.valueOf(net_qty),
-                                            object.optString("focQty"),
-                                            price_value,
-                                            object.optString("stockInHand"),
-                                            object.optString("total"),
-                                            object.optString("subTotal"),
-                                            object.optString("taxAmount"),
-                                            object.optString("netTotal"),
-                                           "",
-                                           "",
-                                           "",
-                                           "",
-                                           "0",
-                                           object.optString("minimumSellingPrice"),
-                                           object.optString("stockInHand") , String.valueOf(timeStamp),
-                                           object.optString("itemAllowFOC")
-                                    );
-                                    Log.w("ProductsLength:",products.length()+""+object.optString("itemAllowFOC"));
-                                    Log.w("ActualPrintProducts:",dbHelper.numberOfRowsInInvoice()+"");
-                                    if (products.length()==dbHelper.numberOfRowsInInvoice()){
-                                        redirectActivity(action,customer_code,customer_name,salesorder_code
-                                                ,order_no,customerBill_Disc);
-                                        break;
-                                    }
-                                }
-                            }else {
-                            }
-                        }
-                        pDialog.dismiss();
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }, error -> {
-            // Do something when error occurred
-            pDialog.dismiss();
-            Log.w("Error_throwing:",error.toString());
-        }){
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                return params;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonObjectRequest);
-    }
-
-    public void redirectActivity(String action,String customer_code,String customer_name,String salesorder_code,
-                                 String order_no,String customerBill_Disc){
+    public void redirectActivity(String action, String customer_code, String customer_name, String salesorder_code,
+                                 String order_no, String customerBill_Disc) {
         //  if (products.length()==dbHelper.numberOfRowsInInvoice()){
-        Log.w("acttionSO",""+action);
-        Utils.setCustomerSession(OrderHistoryListActivity.this,customer_code);
-        if (action.equals("Edit")){
-            Intent intent=new Intent(getApplicationContext(),CreateNewInvoiceActivity.class);
-            intent.putExtra("customerName",customer_name);
-            intent.putExtra("customerCode",customer_code);
-            intent.putExtra("editSoNumber",salesorder_code);
-            intent.putExtra("customerBillDisc",customerBill_Disc);
-            intent.putExtra("orderNo",order_no);
-            intent.putExtra("from","SalesEdit");
+        Log.w("acttionSO", "" + action);
+        Utils.setCustomerSession(OrderHistoryListActivity.this, customer_code);
+        if (action.equals("Edit")) {
+            Intent intent = new Intent(getApplicationContext(), CreateNewInvoiceActivity.class);
+            intent.putExtra("customerName", customer_name);
+            intent.putExtra("customerCode", customer_code);
+            intent.putExtra("editSoNumber", salesorder_code);
+            intent.putExtra("customerBillDisc", customerBill_Disc);
+            intent.putExtra("orderNo", order_no);
+            intent.putExtra("from", "SalesEdit");
             startActivity(intent);
             finish();
-        }else {
-            Intent intent=new Intent(getApplicationContext(),CreateNewInvoiceActivity.class);
-            intent.putExtra("customerName",customer_name);
-            intent.putExtra("customerCode",customer_code);
-            intent.putExtra("editSoNumber",salesorder_code);
-            intent.putExtra("orderNo",order_no);
-            intent.putExtra("customerBillDisc",customerBill_Disc);
-            Log.w("acttionSOdisc",""+customerBill_Disc);
-            intent.putExtra("from","ConvertInvoice");
+        } else {
+            Intent intent = new Intent(getApplicationContext(), CreateNewInvoiceActivity.class);
+            intent.putExtra("customerName", customer_name);
+            intent.putExtra("customerCode", customer_code);
+            intent.putExtra("editSoNumber", salesorder_code);
+            intent.putExtra("orderNo", order_no);
+            intent.putExtra("customerBillDisc", customerBill_Disc);
+            Log.w("acttionSOdisc", "" + customerBill_Disc);
+            intent.putExtra("from", "ConvertInvoice");
             startActivity(intent);
             finish();
         }
     }
 
 
-/*
-    public void redirectActivity(String action,String customer_code,String customer_name,String salesorder_code){
-      //  if (products.length()==dbHelper.numberOfRowsInInvoice()){
-            Utils.setCustomerSession(SalesOrderListActivity.this,customer_code);
-            if (action.equals("Edit")){
-                if (createInvoiceSetting.equals("true")){
-                    Intent intent=new Intent(getApplicationContext(),CreateNewInvoiceActivity.class);
-                    intent.putExtra("customerName",customer_name);
-                    intent.putExtra("customerCode",customer_code);
-                    intent.putExtra("editSoNumber",salesorder_code);
-                    intent.putExtra("from","SalesEdit");
-                    startActivity(intent);
-                    finish();
-                }else {
-                    Intent intent=new Intent(SalesOrderListActivity.this,AddInvoiceActivity.class);
-                    intent.putExtra("billDiscount",bill_discount);
-                    intent.putExtra("itemDiscount",item_discount);
-                    intent.putExtra("subTotal",sub_total);
-                    intent.putExtra("customerId",customer_code);
-                    intent.putExtra("soNumber",salesorder_code);
-                    intent.putExtra("activityFrom","SalesEdit");
-                    startActivity(intent);
-                    finish();
-                }
-            }else {
 
-                if (createInvoiceSetting.equals("true")){
-                    Intent intent=new Intent(getApplicationContext(),CreateNewInvoiceActivity.class);
-                    intent.putExtra("customerName",customer_name);
-                    intent.putExtra("customerCode",customer_code);
-                    intent.putExtra("editSoNumber",salesorder_code);
-                    intent.putExtra("from","ConvertInvoice");
-                    startActivity(intent);
-                    finish();
-                }else {
-                    Intent intent=new Intent(SalesOrderListActivity.this,AddInvoiceActivity.class);
-                    intent.putExtra("billDiscount",bill_discount);
-                    intent.putExtra("itemDiscount",item_discount);
-                    intent.putExtra("subTotal",sub_total);
-                    intent.putExtra("customerId",customer_code);
-                    intent.putExtra("soNumber",salesorder_code);
-                    intent.putExtra("soDate",so_date);
-                    intent.putExtra("activityFrom","ConvertInvoice");
-                    startActivity(intent);
-                    finish();
-                }
-
-            }
-       // }
-    }
-*/
-
-
-
-    private void setDeleteSalesOrder(String soNumber) throws JSONException {
-        // Initialize a new RequestQueue instance
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("SoNo",soNumber);
-        jsonObject.put("SoStatus","O");
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url= Utils.getBaseUrl(this) +"CancellationDocument";
-        // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:",url);
-        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Deleting SalesOrder...");
-        pDialog.setCancelable(false);
-        pDialog.show();
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonObject,
-                response -> {
-                    try{
-                        Log.w("SaleOrder_Response_is:",response.toString());
-                       // {
-                        //    "statusCode": 1,
-                            //    "statusMessage": "Invoice Cancelled Successfully",
-                             //   "responseData": {
-                            //"docNum": "",
-                              //      "error": null
-                       // }
-                        if (response.length()>0){
-                            String statusCode=response.optString("statusCode");
-                            String message=response.optString("statusMessage");
-                          //  boolean isDeleted=response.optBoolean("IsDeleted");
-                            if (statusCode.equals("1")){
-                                Toast.makeText(getApplicationContext(),"Sales Order deleted Success...!",Toast.LENGTH_LONG).show();
-                                finish();
-                                startActivity(getIntent());
-                            }else {
-                                Toast.makeText(getApplicationContext(),"Error in Deleting SalesOrder",Toast.LENGTH_LONG).show();
-                            }
-                        }
-                        pDialog.dismiss();
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }, error -> {
-            // Do something when error occurred
-            pDialog.dismiss();
-            Log.w("Error_throwing:",error.toString());
-        }){
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                return params;
-            }
-        };
-        jsonObjectRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonObjectRequest);
-    }
-
-//    public void setFilterSearch(Context context,String userName, String companyId, String customerCode, String status, String fromdate, String todate) throws JSONException {
-//        // Initialize a new RequestQueue instance
-//        RequestQueue requestQueue = Volley.newRequestQueue(this);
-//       // {"CustomerCode":"","ReceiptNo":"","StartDate":"","EndDate":,"CompanyCode":"1"}
-//        JSONObject jsonObject=new JSONObject();
-////        if (selectedUser!=null && !selectedUser.isEmpty()){
-////            jsonObject.put("User",selectedUser);
-////        }else {
-////            jsonObject.put("User",userName);
-////        }
-//        jsonObject.put("User",userName);
-//        jsonObject.put("CustomerCode",customerCode);
-//        jsonObject.put("FromDate",fromdate);
-//        jsonObject.put("ToDate", todate);
-//        jsonObject.put("DocStatus",status);
-//        // Initialize a new JsonArrayRequest instance
-//        String url = Utils.getBaseUrl(this) + "SalesOrderList";
-//        Log.w("Given_url_FilterSearch:",url+"-"+jsonObject.toString());
-//        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-//        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-//        pDialog.setTitleText("Getting SalesOrders...");
-//        pDialog.setCancelable(false);
-//        pDialog.show();
-//
-//        salesOrderList=new ArrayList<>();
-//        JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(
-//                Request.Method.POST,
-//                url,
-//                jsonObject,
-//                response -> {
-//                    try{
-//                        Log.w("Response_Filter:",response.toString());
-//                        pDialog.dismiss();
-//                        String statusCode=response.optString("statusCode");
-//                        if (statusCode.equals("1")){
-//                            JSONArray salesOrderArray=response.optJSONArray("responseData");
-//                            for (int i=0;i<salesOrderArray.length();i++){
-//                                JSONObject object=salesOrderArray.optJSONObject(i);
-//                                OrderHistoryCatalogCustModel model=new OrderHistoryCatalogCustModel();
-//                                model.setName(object.optString("customerName"));
-//                                model.setDate(object.optString("soDate"));
-//                                model.setBalance(object.optString("balance"));
-//                                model.setSaleOrderNumber(object.optString("soNumber"));
-//                                model.setAddress(object.optString("Address1"));
-//                                model.setNetTotal(object.optString("netTotal"));
-//                                model.setStatus(object.optString("soStatus"));
-//                                model.setSalesOrderCode(object.optString("code"));
-//                                //  isFound=invoiceObject.optString("ErrorMessage");
-//
-//                               // netTotalApi +=Double.parseDouble(object.optString("netTotal"));
-//                               // netTotalText.setText("$ "+Utils.twoDecimalPoint(netTotalApi));
-//
-//                                ArrayList<SalesOrderPrintPreviewModel.SalesList> salesLists=new ArrayList<>();
-//                                model.setSalesList(salesLists);
-//                                salesOrderList.add(model);
-//
-//                            }
-//                           // salesOrderAdapter.notifyDataSetChanged();
-//                          //  salesOrderAdapter.setLoaded();
-//                            setShowHide();
-//                        }else {
-//                            setShowHide();
-//                            //Toast.makeText(getApplicationContext(),"Error in getting SalesOrder Data",Toast.LENGTH_LONG).show();
-//                        }
-//                        setSalesOrderAdapter(context,salesOrderList, status);
-//                    }catch (Exception e){
-//                        e.printStackTrace();
-//                    }
-//                }, error -> {
-//            pDialog.dismiss();
-//            // Do something when error occurred
-//            Log.w("Error_throwing:",error.toString());
-//            Toast.makeText(getApplicationContext(),"Server Error,Please try again..",Toast.LENGTH_LONG).show();
-//        }){
-//            @Override
-//            public Map<String, String> getHeaders() {
-//                HashMap<String, String> params = new HashMap<>();
-//                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-//                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-//                params.put("Authorization", auth);
-//                return params;
-//            }
-//        };
-//        jsonArrayRequest.setRetryPolicy(new RetryPolicy() {
-//            @Override
-//            public int getCurrentTimeout() {
-//                return 50000;
-//            }
-//            @Override
-//            public int getCurrentRetryCount() {
-//                return 50000;
-//            }
-//            @Override
-//            public void retry(VolleyError error) throws VolleyError {
-//
-//            }
-//        });
-//        // Add JsonArrayRequest to the RequestQueue
-//        requestQueue.add(jsonArrayRequest);
-//    }
-
-
-    public void getSalesOrderList(String companyCode,String pageNo,String fromdate,String todate) throws JSONException {
-        // Initialize a new RequestQueue instance
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        // Initialize a new JsonArrayRequest instance
-        JSONObject jsonObject=new JSONObject();
-        if (selectedUser!=null && !selectedUser.isEmpty()){
-            jsonObject.put("User",selectedUser);
-        }else {
-            jsonObject.put("User",userName);
-        }
-        jsonObject.put("CustomerCode","");
-        jsonObject.put("FromDate",fromdate);
-        jsonObject.put("ToDate", todate);
-        jsonObject.put("DocStatus","");
-        String url = Utils.getBaseUrl(this) + "SalesOrderList";
-        Log.w("Given_url:",url+"-"+jsonObject.toString());
-        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Getting Salesorder...");
-        pDialog.setCancelable(false);
-        if (pageNo.equals("1")){
-            pDialog.show();
-        }
-        JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
-                response -> {
-                    try{
-                       // {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"WinApp","customerName":"WinApp","soNumber":"5","soStatus":"O",
-                        // "soDate":"06\/08\/2021","netTotal":"26.750000","balance":"26.750000","totalDiscount":"0.000000","paidAmount":"0.000000",
-                        // "contactPersonCode":"","createDate":"07\/08\/2021","updateDate":"07\/08\/2021","remark":"Add sales order through mobile"},
-                        // {"customerCode":"WinApp","customerName":"WinApp","soNumber":"4","soStatus":"O","soDate":"06\/08\/2021","netTotal":"26.750000",
-                        // "balance":"26.750000","totalDiscount":"0.000000","paidAmount":"0.000000","contactPersonCode":"","createDate":"07\/08\/2021",
-                        // "updateDate":"07\/08\/2021","remark":""},{"customerCode":"WinApp","customerName":"WinApp","soNumber":"3","soStatus":"O",
-                        // "soDate":"06\/08\/2021","netTotal":"26.750000","balance":"26.750000","totalDiscount":"0.000000","paidAmount":"0.000000",
-                        // "contactPersonCode":"","createDate":"07\/08\/2021","updateDate":"07\/08\/2021","remark":""},
-                        // {"customerCode":"EC001","customerName":"Exclusive customer2","soNumber":"2","soStatus":"O","soDate":"07\/08\/2021",
-                        // "netTotal":"45762284.350000","balance":"45762284.350000","totalDiscount":"432004.950000","paidAmount":"0.000000",
-                        // "contactPersonCode":"0","createDate":"07\/08\/2021","updateDate":"07\/08\/2021","remark":""},
-                        // {"customerCode":"CUS\/686","customerName":"VH FACTORY","soNumber":"1","soStatus":"O","soDate":"07\/08\/2021","netTotal":"524.300000",
-                        // "balance":"524.300000","totalDiscount":"0.000000","paidAmount":"0.000000","contactPersonCode":"0","createDate":"07\/08\/2021",
-                        // "updateDate":"07\/08\/2021","remark":""}]}
-                        Log.w("API_For_SalesOrder:",response.toString());
-                        pDialog.dismiss();
-                        String statusCode=response.optString("statusCode");
-                        if (statusCode.equals("1")){
-                            JSONArray salesOrderArray=response.optJSONArray("responseData");
-                            for (int i=0;i<salesOrderArray.length();i++){
-                                JSONObject object=salesOrderArray.optJSONObject(i);
-                                OrderHistoryCatalogCustModel model=new OrderHistoryCatalogCustModel();
-                                model.setName(object.optString("customerName"));
-                                model.setDate(object.optString("soDate"));
-                                model.setBalance(object.optString("balance"));
-                                model.setSaleOrderNumber(object.optString("soNumber"));
-                                model.setAddress(object.optString("Address1"));
-                                model.setNetTotal(object.optString("netTotal"));
-                                model.setStatus(object.optString("soStatus"));
-                                model.setSalesOrderCode(object.optString("code"));
-                              //  isFound=invoiceObject.optString("ErrorMessage");
-                                ArrayList<OrderHistoryCatalogProductModel.SalesList> salesLists=new ArrayList<>();
-                                model.setSalesList(salesLists);
-                                orderHistoryList.add(model);
-
-                            }
-                            orderHistoryCatalogAdapter.setLoaded();
-                            orderHistoryCatalogAdapter.notifyDataSetChanged();
-                            setShowHide();
-                        }else {
-                            setShowHide();
-                            //Toast.makeText(getApplicationContext(),"Error in getting SalesOrder Data",Toast.LENGTH_LONG).show();
-                        }
-                      /*  if (response.length()>0) {
-                            for (int i = 0; i < response.length(); i++) {
-                                // Get current json object
-                                JSONObject invoiceObject = response.getJSONObject(i);
-                                OrderHistoryCatalogCustModel model=new OrderHistoryCatalogCustModel();
-                                model.setName(invoiceObject.optString("CustomerName"));
-                                model.setDate(invoiceObject.optString("SoDateString"));
-                                model.setBalance(invoiceObject.optString("BalanceAmount"));
-                                model.setSaleOrderNumber(invoiceObject.optString("SoNo"));
-                                model.setAddress(invoiceObject.optString("Address1"));
-                                model.setNetTotal(invoiceObject.optString("NetTotal"));
-                                model.setStatus(invoiceObject.optString("Status"));
-                                isFound=invoiceObject.optString("ErrorMessage");
-                                ArrayList<SalesOrderPrintPreviewModel.SalesList> salesLists=new ArrayList<>();
-                                model.setSalesList(salesLists);
-                                salesOrderList.add(model);
-                            }
-
-                          *//*  if (salesOrderList.size()>0){
-                                salesOrdersView.setVisibility(View.VISIBLE);
-                                emptyLayout.setVisibility(View.GONE);
-                                outstandingLayout.setVisibility(View.VISIBLE);
-                            }else {
-                                salesOrdersView.setVisibility(View.GONE);
-                                emptyLayout.setVisibility(View.VISIBLE);
-                                outstandingLayout.setVisibility(View.GONE);
-                            }*//*
-
-                            salesOrderAdapter.notifyDataSetChanged();
-                            salesOrderAdapter.setLoaded();
-                        }*/
-
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }, error -> {
-            pDialog.dismiss();
-            // Do something when error occurred
-            Log.w("Error_throwing:",error.toString());
-            Toast.makeText(getApplicationContext(),"Server Error,Please try again..",Toast.LENGTH_LONG).show();
-        }){
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                return params;
-            }
-        };
-        jsonArrayRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonArrayRequest);
-    }
-
-    public void setShowHide(){
-        if (orderHistoryList.size()>0){
+    public void setShowHide() {
+        if (orderHistoryList.size() > 0) {
             orderHistoryView.setVisibility(View.VISIBLE);
             outstandingLayout.setVisibility(View.VISIBLE);
             emptyLayout.setVisibility(View.GONE);
-        }else {
+        } else {
             orderHistoryView.setVisibility(View.GONE);
             emptyLayout.setVisibility(View.VISIBLE);
             outstandingLayout.setVisibility(View.GONE);
         }
 
-        if (getIntent() !=null){
-            printSoNumber=getIntent().getStringExtra("printSoNumber");
-            noOfCopy=getIntent().getStringExtra("noOfCopy");
-            if (printSoNumber!=null && !printSoNumber.isEmpty()){
-                try {
-                    getSalesOrderDetails(printSoNumber,Integer.parseInt(noOfCopy));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        if (getIntent() != null) {
+            printSoNumber = getIntent().getStringExtra("printSoNumber");
+            noOfCopy = getIntent().getStringExtra("noOfCopy");
+            if (printSoNumber != null && !printSoNumber.isEmpty()) {
+//                try {
+//                    getSalesOrderDetails(printSoNumber, Integer.parseInt(noOfCopy));
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
             }
         }
     }
 
 
-
-    public void setFilterAdapeter(){
+    public void setFilterAdapeter() {
         orderHistoryView.setVisibility(View.VISIBLE);
         emptyLayout.setVisibility(View.GONE);
         outstandingLayout.setVisibility(View.VISIBLE);
         orderHistoryView.setHasFixedSize(true);
         orderHistoryView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        orderHistoryCatalogAdapter=new OrderHistoryCatalogAdapter(this, orderHistoryView, orderHistoryList,
+        orderHistoryCatalogAdapter = new OrderHistoryCatalogAdapter(this, orderHistoryView, orderHistoryList,
                 new OrderHistoryCatalogAdapter.CallBack() {
-            @Override
-            public void calculateNetTotal(ArrayList<OrderHistoryCatalogCustModel> salesList) {
-                setNettotalFun(salesList);
-            }
-            @Override
-            public void showMoreOption(String salesorderId,String customerName,String status){
-                customerLayout.setVisibility(View.GONE);
-                salesOrderOptionLayout.setVisibility(View.VISIBLE);
-                soNumber.setText(salesorderId);
-                soCustomerName.setText(customerName);
-                salesOrderStatus =status;
-                //viewCloseBottomSheet();
-                if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
-            }
+                    @Override
+                    public void calculateNetTotal(ArrayList<OrderHeader> salesList) {
+                        setNettotalFun(salesList);
+                    }
 
-        });
+                    @Override
+                    public void showMoreOption(String salesorderId, String customerName, String status) {
+                        customerLayout.setVisibility(View.GONE);
+                        salesOrderOptionLayout.setVisibility(View.VISIBLE);
+                        soNumber.setText(salesorderId);
+                        soCustomerName.setText(customerName);
+                        salesOrderStatus = status;
+                        //viewCloseBottomSheet();
+                        if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        }
+                    }
+
+                    @Override
+                    public void syncNowCall(OrderHeader orderHeader, ArrayList<CartModel> cartModel) {
+
+                    }
+
+//
+
+                });
         orderHistoryView.setAdapter(orderHistoryCatalogAdapter);
-        if (orderHistoryList.size()>0){
+        if (orderHistoryList.size() > 0) {
             setNettotalFun(orderHistoryList);
         }
-       /* salesOrderAdapter.setOnLoadMoreListener(new SalesOrderAdapterNew.OnLoadMoreListener() {
-            @Override
-            public void onLoadMore() {
-                Log.e("haint", "Load More");
-                salesOrderList.add(null);
-                salesOrderAdapter.notifyItemInserted(salesOrderList.size() - 1);
-                //Load more data for reyclerview
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e("haint", "Load More 2");
-
-                        //Remove loading item
-                        salesOrderList.remove(salesOrderList.size() - 1);
-                        salesOrderAdapter.notifyItemRemoved(salesOrderList.size());
-                        //Load data
-                        int index = salesOrderList.size();
-                        int end = index + 20;
-                        pageNo=pageNo+1;
-                      //  getSalesOrderList(companyId, String.valueOf(pageNo));
-                    }
-                }, 5000);
-            }
-        });*/
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-     //   getMenuInflater().inflate(R.menu.sorting_menu, menu);
+        //   getMenuInflater().inflate(R.menu.sorting_menu, menu);
 
-      //  MenuItem action_save = menu.findItem(R.id.action_filter);
-       // action_save.setVisible(false);
+        //  MenuItem action_save = menu.findItem(R.id.action_filter);
+        // action_save.setVisible(false);
         return true;
     }
 
@@ -2087,11 +1630,11 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
          /*   case R.id.action_remove:
                 showRemoveAlert();
                 break;*/
-        }else if (item.getItemId()==R.id.action_customer_name){
-            Collections.sort(orderHistoryList, new Comparator<OrderHistoryCatalogCustModel>(){
-                public int compare(OrderHistoryCatalogCustModel obj1, OrderHistoryCatalogCustModel obj2) {
+        } else if (item.getItemId() == R.id.action_customer_name) {
+            Collections.sort(orderHistoryList, new Comparator<OrderHeader>() {
+                public int compare(OrderHeader obj1, OrderHeader obj2) {
                     // ## Ascending order
-                    return obj1.getName().compareToIgnoreCase(obj2.getName()); // To compare string values
+                    return obj1.getCustomerName().compareToIgnoreCase(obj2.getCustomerName()); // To compare string values
                     // return Integer.valueOf(obj1.empId).compareTo(Integer.valueOf(obj2.empId)); // To compare integer values
 
                     // ## Descending order
@@ -2100,9 +1643,9 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                 }
             });
             orderHistoryCatalogAdapter.notifyDataSetChanged();
-        }else if (item.getItemId()==R.id.action_amount){
-            Collections.sort(orderHistoryList, new Comparator<OrderHistoryCatalogCustModel>(){
-                public int compare(OrderHistoryCatalogCustModel obj1, OrderHistoryCatalogCustModel obj2) {
+        } else if (item.getItemId() == R.id.action_amount) {
+            Collections.sort(orderHistoryList, new Comparator<OrderHeader>() {
+                public int compare(OrderHeader obj1, OrderHeader obj2) {
                     // ## Ascending order
                     //  return obj1.getNetTotal().compareToIgnoreCase(obj2.getNetTotal()); // To compare string values
                     return Double.valueOf(obj1.getNetTotal()).compareTo(Double.valueOf(obj2.getNetTotal())); // To compare integer values
@@ -2113,18 +1656,18 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                 }
             });
             orderHistoryCatalogAdapter.notifyDataSetChanged();
-        }else if (item.getItemId()==R.id.action_date){
+        } else if (item.getItemId() == R.id.action_date) {
 
             try {
-                Collections.sort(orderHistoryList, new Comparator<OrderHistoryCatalogCustModel>(){
-                    public int compare(OrderHistoryCatalogCustModel obj1, OrderHistoryCatalogCustModel obj2) {
+                Collections.sort(orderHistoryList, new Comparator<OrderHeader>() {
+                    public int compare(OrderHeader obj1, OrderHeader obj2) {
                         SimpleDateFormat sdfo = new SimpleDateFormat("yyyy-MM-dd");
                         // Get the two dates to be compared
                         Date d1 = null;
-                        Date d2=null;
+                        Date d2 = null;
                         try {
-                            d1 = sdfo.parse(obj1.getDate());
-                            d2 = sdfo.parse(obj2.getDate());
+                            d1 = sdfo.parse(obj1.getInvoiceDate());
+                            d2 = sdfo.parse(obj2.getInvoiceDate());
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
@@ -2139,58 +1682,31 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                 });
                 orderHistoryCatalogAdapter.notifyDataSetChanged();
 
-            }catch (Exception ex){
-                Log.w("Error:",ex.getMessage());
+            } catch (Exception ex) {
+                Log.w("Error:", ex.getMessage());
             }
-        }else if (item.getItemId()==R.id.action_add){
+        } else if (item.getItemId() == R.id.action_add) {
 
-            Intent intent=new Intent(getApplicationContext(),CustomerListActivity.class);
-            intent.putExtra("from","so");
-            startActivityForResult(intent,customerSelectCode);
-
-          /*  isSearchCustomerNameClicked=false;
-            addnewCustomer=true;
-            SharedPreferences sharedPreferences = getSharedPreferences("customerPref",MODE_PRIVATE);
-                String selectCustomerId = sharedPreferences.getString("customerId", "");
-                if (selectCustomerId!=null && !selectCustomerId.isEmpty()) {
-                    customerDetails = dbHelper.getCustomer(selectCustomerId);
-                    if (customerDetails.size()>0){
-                        showCustomerDialog(this,customerDetails.get(0).getCustomerName(),customerDetails.get(0).getCustomerCode(),customerDetails.get(0).getCustomerAddress1());
-                    }else {
-                        customerLayout.setVisibility(View.VISIBLE);
-                        searchFilterView.setVisibility(View.GONE);
-                        salesOrderOptionLayout.setVisibility(View.GONE);
-                        //viewCloseBottomSheet();
-                        if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                        }
-                    }
-                }else {
-                    customerLayout.setVisibility(View.VISIBLE);
-                    searchFilterView.setVisibility(View.GONE);
-                    salesOrderOptionLayout.setVisibility(View.GONE);
-                    //viewCloseBottomSheet();
-                    if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    }
-                }*/
+            Intent intent = new Intent(getApplicationContext(), CustomerListActivity.class);
+            intent.putExtra("from", "so");
+            startActivityForResult(intent, customerSelectCode);
 
 
         } else if (item.getItemId() == R.id.action_barcode) {
-            Intent intent=new Intent(getApplicationContext(), BarCodeScanner.class);
+            Intent intent = new Intent(getApplicationContext(), BarCodeScanner.class);
             startActivity(intent);
-        }else if (item.getItemId()==R.id.action_filter){
-            if (searchFilterView.getVisibility()==View.VISIBLE){
+        } else if (item.getItemId() == R.id.action_filter) {
+            if (searchFilterView.getVisibility() == View.VISIBLE) {
                 searchFilterView.setVisibility(View.GONE);
                 customerNameText.setText("");
-                isSearchCustomerNameClicked=false;
+                isSearchCustomerNameClicked = false;
                 if (behavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
                 //slideUp(searchFilterView);
-            }else {
+            } else {
                 customerNameText.setText("");
-                isSearchCustomerNameClicked=false;
+                isSearchCustomerNameClicked = false;
                 searchFilterView.setVisibility(View.VISIBLE);
                 if (behavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                     behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -2205,26 +1721,26 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == customerSelectCode) {
-            if(resultCode == Activity.RESULT_OK){
-                String result=data.getStringExtra("customerCode");
-                Utils.setCustomerSession(this,result);
-                Intent intent=new Intent(OrderHistoryListActivity.this, AddInvoiceActivityOld.class);
-                intent.putExtra("customerId",result);
-                intent.putExtra("activityFrom","SalesOrder");
+            if (resultCode == Activity.RESULT_OK) {
+                String result = data.getStringExtra("customerCode");
+                Utils.setCustomerSession(this, result);
+                Intent intent = new Intent(OrderHistoryListActivity.this, AddInvoiceActivityOld.class);
+                intent.putExtra("customerId", result);
+                intent.putExtra("activityFrom", "SalesOrder");
                 startActivity(intent);
-               // finish();
+                // finish();
             }
             if (resultCode == Activity.RESULT_CANCELED) {
                 // Write your code if there's no result
             }
-        }else if (requestCode == FILTER_CUSTOMER_CODE && resultCode==Activity.RESULT_OK){
-            selectedCustomerId=data.getStringExtra("customerCode");
-            String selectCustomerName=data.getStringExtra("customerName");
+        } else if (requestCode == FILTER_CUSTOMER_CODE && resultCode == Activity.RESULT_OK) {
+            selectedCustomerId = data.getStringExtra("customerCode");
+            String selectCustomerName = data.getStringExtra("customerName");
             customerNameText.setText(selectCustomerName);
         }
     } //onActivityResult
 
-    private void showCustomerDialog(Activity activity,String customer_name,String customer_code,String desc) {
+    private void showCustomerDialog(Activity activity, String customer_name, String customer_code, String desc) {
         //before inflating the custom alert dialog layout, we will get the current activity viewgroup
         ViewGroup viewGroup = findViewById(android.R.id.content);
 
@@ -2237,14 +1753,14 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         //setting the view of the builder to our custom view that we already inflated
         builder.setView(dialogView);
 
-        TextView customerName=dialogView.findViewById(R.id.customer_name_value);
-        TextView description=dialogView.findViewById(R.id.description);
+        TextView customerName = dialogView.findViewById(R.id.customer_name_value);
+        TextView description = dialogView.findViewById(R.id.description);
 
-        customerName.setText(customer_name+" - "+customer_code);
+        customerName.setText(customer_name + " - " + customer_code);
         description.setText("Do you want to continue this customer ?");
 
-        Button yesButton=dialogView.findViewById(R.id.buttonYes);
-        Button noButton=dialogView.findViewById(R.id.buttonNo);
+        Button yesButton = dialogView.findViewById(R.id.buttonYes);
+        Button noButton = dialogView.findViewById(R.id.buttonNo);
 
         //finally creating the alert dialog and displaying it
         AlertDialog alertDialog = builder.create();
@@ -2257,13 +1773,13 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                 alertDialog.dismiss();
                 dbHelper.removeCustomer();
                 dbHelper.removeAllItems();
-                AddInvoiceActivityOld.customerId=customer_code;
+                AddInvoiceActivityOld.customerId = customer_code;
                 setCustomerDetails(customer_code);
-                selectedCustomerId=customer_code;
-                redirectInvoice=false;
-                Intent intent=new Intent(OrderHistoryListActivity.this, AddInvoiceActivityOld.class);
-                intent.putExtra("customerId",customer_code);
-                intent.putExtra("activityFrom","SalesOrder");
+                selectedCustomerId = customer_code;
+                redirectInvoice = false;
+                Intent intent = new Intent(OrderHistoryListActivity.this, AddInvoiceActivityOld.class);
+                intent.putExtra("customerId", customer_code);
+                intent.putExtra("activityFrom", "SalesOrder");
                 startActivity(intent);
                 finish();
             }
@@ -2276,7 +1792,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                 customerLayout.setVisibility(View.VISIBLE);
                 salesOrderOptionLayout.setVisibility(View.GONE);
                 searchFilterView.setVisibility(View.GONE);
-              //  viewCloseBottomSheet();
+                //  viewCloseBottomSheet();
                 if (behavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 } else {
@@ -2287,229 +1803,35 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     }
 
 
-
-    private class GetCustomersTask extends AsyncTask<Void, Integer, String> {
-        String TAG = getClass().getSimpleName();
-
-        protected void onPreExecute() {
-            super.onPreExecute();
-            customerList=new ArrayList<>();
-        }
-
-        protected String doInBackground(Void...arg0) {
-            Log.d(TAG + "DoINBackGround", "On doInBackground...");
-            // Initialize a new RequestQueue instance
-            RequestQueue requestQueue = Volley.newRequestQueue(OrderHistoryListActivity.this);
-            String url= Utils.getBaseUrl(OrderHistoryListActivity.this) +"MasterApi/GetCustomer_All?Requestdata={CompanyCode:"+companyId+"}";
-            Log.w("Given_url:",url);
-            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-                    Request.Method.GET,
-                    url,
-                    null,
-                    response -> {
-                        try {
-                            Log.w("Response_is:", response.toString());
-                            // Loop through the array elements
-                            for (int i = 0; i < response.length(); i++) {
-                                // Get current json object
-                                JSONObject customerObject = response.getJSONObject(i);
-                                CustomerModel model=new CustomerModel();
-                                model.setCustomerCode(customerObject.optString("CustomerCode"));
-                                model.setCustomerName(customerObject.optString("CustomerName"));
-                                model.setCustomerAddress(customerObject.optString("Address1"));
-                                model.setHaveTax(customerObject.optString("HaveTax"));
-                                model.setTaxType(customerObject.optString("TaxType"));
-                                model.setTaxPerc(customerObject.optString("TaxPerc"));
-                                model.setTaxCode(customerObject.optString("TaxCode"));
-                                if (customerObject.optString("BalanceAmount").equals("null") || customerObject.optString("BalanceAmount").isEmpty()){
-                                    model.setOutstandingAmount("0.00");
-                                }else {
-                                    model.setOutstandingAmount(customerObject.optString("BalanceAmount"));
-                                }
-                                customerList.add(model);
-                            }
-
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }, error -> {
-                pDialog.dismiss();
-                // Do something when error occurred
-                Log.w("Error_throwing:",error.toString());
-            }){
-                @Override
-                public Map<String, String> getHeaders() {
-                    HashMap<String, String> params = new HashMap<>();
-                    String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                    String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                    params.put("Authorization", auth);
-                    return params;
-                }
-            };
-            jsonArrayRequest.setRetryPolicy(new RetryPolicy() {
-                @Override
-                public int getCurrentTimeout() {
-                    return 50000;
-                }
-                @Override
-                public int getCurrentRetryCount() {
-                    return 50000;
-                }
-                @Override
-                public void retry(VolleyError error) throws VolleyError {
-                }
-            });
-            // Add JsonArrayRequest to the RequestQueue
-            requestQueue.add(jsonArrayRequest);
-
-            return "You are at PostExecute";
-        }
-
-
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            progressLayout.setVisibility(View.GONE);
-            setAdapter(customerList);
-            if (customerList.size()>0){
-                dbHelper.insertCustomerList(customerList);
-            }
-        }
-    }
-
-    public void getCustomers(){
-        // Initialize a new RequestQueue instance
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url=Utils.getBaseUrl(this) +"CustomerList";
-        customerList=new ArrayList<>();
-        //emptyTextView.setText("Customers List loading please wait...");
-        Log.w("Given_url:",url);
-        JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.GET,
-                url, null,
-                response -> {
-                    try {
-                        // pDialog.dismiss();
-                        // Loop through the array elements
-                        Log.w("Customer_Response:",response.toString());
-                        String statusCode=response.optString("statusCode");
-                        if (statusCode.equals("1")){
-                            JSONArray customerDetailArray=response.optJSONArray("responseData");
-                            for (int i=0;i<customerDetailArray.length();i++){
-                                JSONObject object=customerDetailArray.optJSONObject(i);
-                                //  if (customerObject.optBoolean("IsActive")) {
-                                CustomerModel model = new CustomerModel();
-                                model.setCustomerCode(object.optString("customerCode"));
-                                model.setCustomerName(object.optString("customerName"));
-                                model.setAddress1(object.optString("address"));
-                                model.setAddress2(object.optString("street"));
-                                model.setAddress3(object.optString("city"));
-                                model.setCustomerAddress(object.optString("address"));
-                                model.setHaveTax(object.optString("HaveTax"));
-                                model.setTaxType(object.optString("taxType"));
-                                model.setTaxPerc(object.optString("taxPercentage"));
-                                model.setTaxCode(object.optString("taxCode"));
-                                model.setBillDiscPercentage(object.optString("discountPercentage"));
-                                //  model.setCustomerBarcode(object.optString("BarCode"));
-                                // model.setCustomerBarcode(String.valueOf(i));
-                                if (object.optString("outstandingAmount").equals("null") || object.optString("outstandingAmount").isEmpty()) {
-                                    model.setOutstandingAmount("0.00");
-                                } else {
-                                    model.setOutstandingAmount(object.optString("outstandingAmount"));
-                                }
-                                customerList.add(model);
-                                // }
-                            }
-                        }else {
-                            Toast.makeText(getApplicationContext(),"Error,in getting Customer list",Toast.LENGTH_LONG).show();
-                        }
-
-                        if (customerList.size()>0){
-                            customerView.setVisibility(View.VISIBLE);
-                            new InsertCustomerTask().execute();
-                            setAdapter(customerList);
-                        }else {
-                            customerView.setVisibility(View.GONE);
-                            progressLayout.setVisibility(View.GONE);
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }, error -> {
-
-            // Do something when error occurred
-            Log.w("Error_throwing:",error.toString());
-        }){
-            @Override
-            public Map<String, String> getHeaders() {
-                HashMap<String, String> params = new HashMap<>();
-                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
-                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
-                params.put("Authorization", auth);
-                return params;
-            }
-        };
-        jsonArrayRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonArrayRequest);
-    }
-
-   private class InsertCustomerTask extends AsyncTask<Void, Integer, String> {
-        String TAG = getClass().getSimpleName();
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-        protected String doInBackground(Void...arg0) {
-            Log.d(TAG + " DoINBackGround", "On doInBackground...");
-            dbHelper.removeAllCustomers();
-            dbHelper.insertCustomerList(customerList);
-            return "You are at PostExecute";
-        }
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-        }
-    }
-
     private void setAdapter(ArrayList<CustomerModel> customerNames) {
         customerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         customerNameAdapter = new SelectCustomerAdapter(this, customerNames, new SelectCustomerAdapter.CallBack() {
             @Override
-            public void searchCustomer(String customer,String customername, int pos) {
+            public void searchCustomer(String customer, String customername, int pos) {
                 customerLayout.setVisibility(View.VISIBLE);
-                if (isSearchCustomerNameClicked){
+                if (isSearchCustomerNameClicked) {
                     viewCloseBottomSheet();
                     //searchFilterView.setVisibility(View.GONE);
                     setCustomerDetails(customer);
                     customerNameText.setText(customername);
-                    selectedCustomerId=customer;
-                    redirectInvoice=false;
-                }else if (addnewCustomer){
+                    selectedCustomerId = customer;
+                    redirectInvoice = false;
+                } else if (addnewCustomer) {
                     int count = dbHelper.numberOfRows();
                     if (count > 0) {
                         showProductDeleteAlert(customer);
                     } else {
                         viewCloseBottomSheet();
                         dbHelper.removeAllItems();
-                        addnewCustomer=false;
+                        addnewCustomer = false;
                         setCustomerDetails(customer);
-                        selectedCustomerId=customer;
-                        redirectInvoice=false;
+                        selectedCustomerId = customer;
+                        redirectInvoice = false;
                         //Intent intent = new Intent(SalesOrderListActivity.this, AddInvoiceActivity.class);
-                      //  intent.putExtra("customerId", customer);
-                      //  intent.putExtra("activityFrom", "SalesOrder");
-                      //  startActivity(intent);
-                     //   finish();
+                        //  intent.putExtra("customerId", customer);
+                        //  intent.putExtra("activityFrom", "SalesOrder");
+                        //  startActivity(intent);
+                        //   finish();
                     }
                 }
                 Log.w("Customer_id:", customer);
@@ -2518,14 +1840,14 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         customerView.setAdapter(customerNameAdapter);
     }
 
-    public void closeView(){
+    public void closeView() {
         if (behavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
             behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
 
     }
 
-    public void showProductDeleteAlert(String customerId){
+    public void showProductDeleteAlert(String customerId) {
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setTitle("Warning !");
         builder1.setMessage("Products in Cart will be removed..");
@@ -2535,16 +1857,16 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
                         dbHelper.removeAllItems();
-                        addnewCustomer=false;
+                        addnewCustomer = false;
                         setCustomerDetails(customerId);
                         viewCloseBottomSheet();
-                        selectedCustomerId=customerId;
-                        redirectInvoice=false;
-                       // Intent intent=new Intent(SalesOrderListActivity.this,AddInvoiceActivity.class);
-                       // intent.putExtra("customerId",customerId);
-                       // intent.putExtra("activityFrom","SalesOrder");
-                       // startActivity(intent);
-                       // finish();
+                        selectedCustomerId = customerId;
+                        redirectInvoice = false;
+                        // Intent intent=new Intent(SalesOrderListActivity.this,AddInvoiceActivity.class);
+                        // intent.putExtra("customerId",customerId);
+                        // intent.putExtra("activityFrom","SalesOrder");
+                        // startActivity(intent);
+                        // finish();
                     }
                 });
         builder1.setNegativeButton(
@@ -2574,21 +1896,19 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
             //calling a method of the adapter class and passing the filtered list
             customerNameAdapter.filterList(filterdNames);
 
-        }catch (Exception ex){
+        } catch (Exception ex) {
             Log.e("Error_in_filter", Objects.requireNonNull(ex.getMessage()));
         }
     }
 
 
-
-
-    public void viewCloseBottomSheet(){
+    public void viewCloseBottomSheet() {
         hideKeyboard();
-        if (isSearchCustomerNameClicked || addnewCustomer){
+        if (isSearchCustomerNameClicked || addnewCustomer) {
             customerLayout.setVisibility(View.VISIBLE);
             salesOrderOptionLayout.setVisibility(View.GONE);
-            redirectInvoice=false;
-        }else {
+            redirectInvoice = false;
+        } else {
             customerLayout.setVisibility(View.GONE);
             salesOrderOptionLayout.setVisibility(View.VISIBLE);
         }
@@ -2597,21 +1917,21 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         } else {
             behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
-        customerList=dbHelper.getAllCustomers();
+        customerList = dbHelper.getAllCustomers();
         setAdapter(customerList);
         // get the Customer name from the local db
     }
 
-    public void hideKeyboard(){
+    public void hideKeyboard() {
         try {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
         } catch (Exception e) {
             // TODO: handle exception
         }
     }
 
-    public void getDate(EditText dateEditext){
+    public void getDate(EditText dateEditext) {
         // Get Current Date
         final Calendar c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
@@ -2631,8 +1951,8 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     @Override
     public void onBackPressed() {
         //Execute your code here
-       // Intent intent=new Intent(getApplicationContext(),MainActivity.class);
-       // startActivity(intent);
+        // Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+        // startActivity(intent);
         finish();
 
     }

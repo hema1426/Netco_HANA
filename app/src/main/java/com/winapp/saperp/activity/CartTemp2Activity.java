@@ -314,6 +314,7 @@ public class CartTemp2Activity extends AppCompatActivity {
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
             //  customerDetails=dbHelper.getCustomer(selectCustomerId);
             try {
+                //todo
                 getCustomerDetails(selectCustomerId, false);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -622,11 +623,11 @@ public class CartTemp2Activity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 noofCopyPrint = Integer.parseInt(copyText.getText().toString());
-                if (saveAction.equals("SalesOrder") || saveAction.equals("SalesEdit")) {
-                    createAndValidateJsonObject(noofCopyPrint);
-                } else {
+//                if (saveAction.equals("SalesOrder") || saveAction.equals("SalesEdit")) {
+//                    createAndValidateJsonObject(noofCopyPrint);
+//                } else {
                     createInvoiceJson(noofCopyPrint);
-                }
+          //      }
                 closeSheet();
             }
         });
@@ -1452,11 +1453,11 @@ public class CartTemp2Activity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();
-                if (action.equals("Invoice")) {
+            //    if (action.equals("Invoice")) {
                     createInvoiceJson(Integer.parseInt(noofCopy.getText().toString()));
-                } else {
-                    createAndValidateJsonObject(Integer.parseInt(noofCopy.getText().toString()));
-                }
+//                } else {
+//                    createAndValidateJsonObject(Integer.parseInt(noofCopy.getText().toString()));
+//                }
             }
         });
         builder.setView(dialoglayout);
@@ -1972,11 +1973,6 @@ public class CartTemp2Activity extends AppCompatActivity {
             orderHeader.setLatitude(current_latitude);
             orderHeader.setLongitude(current_longitude);
 
-
-
-
-
-
 //            rootJsonObject.put("totalDiscount", "0");
             rootJsonObject.put("billDiscountPercentage", billDiscountPercentage);
 //            rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode());
@@ -2138,6 +2134,8 @@ public class CartTemp2Activity extends AppCompatActivity {
             Log.w("RootJsonForSave:", rootJsonObject.toString());
 
 
+            Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
+            redirectActivity();
 //            saveSalesOrder(rootJsonObject, "Invoice", copy);
 
         } catch (JSONException e) {
@@ -2369,7 +2367,7 @@ public class CartTemp2Activity extends AppCompatActivity {
             rootJsonObject.put("PostingSalesOrderDetails", saleDetailsArray);
             Log.w("RootSaveJson:", rootJsonObject.toString());
 
-            saveSalesOrder(rootJsonObject, "SalesOrder", copy);
+          //  saveSalesOrder(rootJsonObject, "SalesOrder", copy);
 
         } catch (JSONException e) {
             e.printStackTrace();

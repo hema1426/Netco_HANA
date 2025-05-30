@@ -129,7 +129,7 @@
                     android:gravity="center"
                     android:padding="1dp"
                     android:layout_height="wrap_content"
-                    android:text="InProgress Invoice"
+                    android:text="Sync Now"
                     android:textColor="@color/white"
                     android:textSize="8sp"
                     android:textStyle="bold" />

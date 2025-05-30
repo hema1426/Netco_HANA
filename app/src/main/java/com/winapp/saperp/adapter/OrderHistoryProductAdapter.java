@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.winapp.saperp.R;
 import com.winapp.saperp.activity.SalesOrderListActivity;
+import com.winapp.saperp.model.CartModel;
 import com.winapp.saperp.model.OrderHistoryCatalogProductModel;
 import com.winapp.saperp.utils.Utils;
 
@@ -22,12 +23,12 @@ import java.util.ArrayList;
 
 public class OrderHistoryProductAdapter extends RecyclerView.Adapter<OrderHistoryProductAdapter.ViewHolder> {
 
-    private ArrayList<OrderHistoryCatalogProductModel.SalesList> salesList;
+    private ArrayList<CartModel> OrderPdtList;
     private Context context;
     View view;
-    public OrderHistoryProductAdapter(Context context, ArrayList<OrderHistoryCatalogProductModel.SalesList> sales) {
+    public OrderHistoryProductAdapter(Context context, ArrayList<CartModel> sales) {
         this.context=context;
-        this.salesList = sales;
+        this.OrderPdtList = sales;
     }
     @NonNull
     @Override
@@ -43,47 +44,31 @@ public class OrderHistoryProductAdapter extends RecyclerView.Adapter<OrderHistor
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        OrderHistoryCatalogProductModel.SalesList salesList = this.salesList.get(position);
-        viewHolder.slNo.setText(String.valueOf(position+1));
-        viewHolder.code.setText(salesList.getProductCode());
-        if (salesList.getUomCode()!=null && !salesList.getUomCode().equals("null") && !salesList.getUomCode().isEmpty()){
-            viewHolder.description.setText(salesList.getDescription()+"("+salesList.getUomCode()+")");
-        }else {
-            viewHolder.description.setText(salesList.getDescription());
-        }
-        if (Double.parseDouble(salesList.getTotal()) < 0.00){
-            viewHolder.qtyValue.setText((int)Double.parseDouble(salesList.getNetQty())+" (as Return)");
-        }else if (Double.parseDouble(salesList.getTotal())==0.00){
-            viewHolder.qtyValue.setText((int)Double.parseDouble(salesList.getNetQty())+" ( as FOC)");
-        }else {
-            viewHolder.qtyValue.setText((int)Double.parseDouble(salesList.getNetQty())+"");
-        }
-        //  viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
+        CartModel products = this.OrderPdtList.get(position);
 
-        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
-            viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
-            viewHolder.total.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getTotal())));
-            Log.w("so_price",""+salesList.getPricevalue()+shortCodeStr);
-        }else{
-            if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
-                if (context instanceof SalesOrderListActivity){
-                    viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getGrossPrice())));
-                    viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getTotal())));
-                }else{
-                    viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble(salesList.getPricevalue())));
-                    viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getTotal())));
-                }
-            }
-            else{
-                viewHolder.price.setText(salesList.getPricevalue());
-                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(salesList.getTotal())));
-            }
+        viewHolder.slNo.setText(String.valueOf(position + 1));
+        viewHolder.code.setText(products.getCART_COLUMN_PID());
+        if (products.getUomCode() != null && !products.getUomCode().equals("null") && !products.getUomCode().isEmpty()) {
+            viewHolder.description.setText(products.getCART_COLUMN_PNAME() + "(" + products.getUomCode() + ")");
+        } else {
+            viewHolder.description.setText(products.getCART_COLUMN_PNAME());
         }
+        if (Double.parseDouble(products.CART_COLUMN_QTY) < 0.00) {
+            viewHolder.qtyValue.setText((int) Double.parseDouble(products.CART_COLUMN_QTY) + " (as Return)");
+        } else if (Double.parseDouble(products.CART_COLUMN_QTY) == 0.00) {
+            viewHolder.qtyValue.setText((int) Double.parseDouble(products.CART_COLUMN_QTY) + " ( as FOC)");
+        } else {
+            viewHolder.qtyValue.setText((int) Double.parseDouble(products.CART_COLUMN_QTY) + "");
+        }
+        //  viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(products.getPricevalue())));
+
+        viewHolder.price.setText(products.getCART_COLUMN_PRICE());
+        viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(products.getCART_COLUMN_NET_PRICE())));
     }
 
     @Override
     public int getItemCount() {
-        return salesList.size();
+        return OrderPdtList.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{

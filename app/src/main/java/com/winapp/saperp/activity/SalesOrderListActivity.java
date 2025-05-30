@@ -1862,7 +1862,7 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
         Log.w("Given_url:",url+"-"+jsonObject.toString());
         pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Getting Salesorder...");
+        pDialog.setTitleText("Getting SalesOrder...");
         pDialog.setCancelable(false);
         if (pageNo.equals("1")){
             pDialog.show();

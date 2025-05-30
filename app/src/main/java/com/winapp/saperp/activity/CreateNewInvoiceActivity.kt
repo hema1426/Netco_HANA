@@ -828,7 +828,8 @@ class CreateNewInvoiceActivity : AppCompatActivity(), OnClickListener {
                     } else if (model.settingName == "haveEditPrice") {
                         Log.w("SettingName_edPrice:", model.settingName)
                         Log.w("SettingValue_edPrice:", model.settingValue)
-                        if (model.settingValue.equals("True", ignoreCase = true)) {
+                        if( (model.settingValue.equals("True", ignoreCase = true)
+                            || model.settingValue.equals("Yes", ignoreCase = true))) {
                             isEditPrice = true
                         } else {
                             isEditPrice = false

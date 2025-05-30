@@ -502,7 +502,64 @@ public class DBHelper extends SQLiteOpenHelper {
         return salesRetrunList;
     }
 
+    public ArrayList<OrderHeader> getCatelogOrderHistory() {
+        ArrayList<OrderHeader> orderList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ORDER_HEADER, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            OrderHeader model = new OrderHeader();
+
+            model.setOrderId(cursor.getString(cursor.getColumnIndex("orderid")));
+            model.setInvoiceNumber(cursor.getString(cursor.getColumnIndex("invoiceNumber")));
+            model.setMode(cursor.getString(cursor.getColumnIndex("mode")));
+            model.setInvoiceDate(cursor.getString(cursor.getColumnIndex("invoiceDate")));
+            model.setCustomerCode(cursor.getString(cursor.getColumnIndex("customerCode")));
+            model.setCustomerName(cursor.getString(cursor.getColumnIndex("customerName")));
+            model.setHaveTax(cursor.getString(cursor.getColumnIndex("haveTax")));
+            model.setTaxType(cursor.getString(cursor.getColumnIndex("taxType")));
+            model.setTaxPerc(cursor.getString(cursor.getColumnIndex("taxPerc")));
+            model.setTaxCode(cursor.getString(cursor.getColumnIndex("orderid")));
+            model.setCurrencyRate(cursor.getString(cursor.getColumnIndex("currencyRate")));
+            model.setCurrencyName(cursor.getString(cursor.getColumnIndex("currencyName")));
+            model.setCustomerReferenceNo(cursor.getString(cursor.getColumnIndex("customerReferenceNo")));
+            model.setTaxTotal(cursor.getString(cursor.getColumnIndex("taxTotal")));
+            model.setSubTotal(cursor.getString(cursor.getColumnIndex("subTotal")));
+            model.setTotal(cursor.getString(cursor.getColumnIndex("total")));
+            model.setNetTotal(cursor.getString(cursor.getColumnIndex("netTotal")));
+            model.setItemDiscount(cursor.getString(cursor.getColumnIndex("itemDiscount")));
+            model.setBillDiscount(cursor.getString(cursor.getColumnIndex("billDiscount")));
+            model.setCurrentDateTime(cursor.getString(cursor.getColumnIndex("currentDateTime")));
+            model.setTotalDiscount(cursor.getString(cursor.getColumnIndex("totalDiscount")));
+            model.setDeliveryCode(cursor.getString(cursor.getColumnIndex("deliveryCode")));
+
+            model.setStatus(cursor.getString(cursor.getColumnIndex("status")));
+            model.setCreateUser(cursor.getString(cursor.getColumnIndex("createUser")));
+            model.setModifyUser(cursor.getString(cursor.getColumnIndex("modifyUser")));
+            model.setCompanyName(cursor.getString(cursor.getColumnIndex("companyName")));
+            model.setStockUpdated(cursor.getString(cursor.getColumnIndex("stockUpdated")));
+            model.setInvoiceType(cursor.getString(cursor.getColumnIndex("invoiceType")));
+            model.setCompanyCode(cursor.getString(cursor.getColumnIndex("companyCode")));
+            model.setLocationCode(cursor.getString(cursor.getColumnIndex("locationCode")));
+            model.setLatitude(cursor.getString(cursor.getColumnIndex("latitude")));
+            model.setLongitude(cursor.getString(cursor.getColumnIndex("longitude")));
+            model.setCurrentAddress(cursor.getString(cursor.getColumnIndex("CurrentAddress")));
+            model.setSignature(cursor.getString(cursor.getColumnIndex("signature")));
+
+            orderList.add(model);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return orderList;
+    }
+
     public Integer deleteSalesReturn(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_SALES_RETURN, "salesreturnno = ?", new String[]{id});
+    }
+
+
+    public Integer deleteSyncedOrder(String id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_SALES_RETURN, "salesreturnno = ?", new String[]{id});
     }
@@ -742,6 +799,7 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             CashCollectionInvoiceModel model = new CashCollectionInvoiceModel();
+
             model.setCustomerCode(cursor.getString(cursor.getColumnIndex("customercode")));
             model.setInvoiceNumber(cursor.getString(cursor.getColumnIndex("invoiceno")));
             model.setInvoiceDate(cursor.getString(cursor.getColumnIndex("date")));
@@ -1230,7 +1288,7 @@ public class DBHelper extends SQLiteOpenHelper {
             customer.setTaxCode(cursor.getString(cursor.getColumnIndex("taxcode")));
 
 
-            //            customer.setCustomerAddress1(cursor.getString(cursor.getColumnIndex("address1")));
+            //  customer.setCustomerAddress1(cursor.getString(cursor.getColumnIndex("address1")));
             // customer.setCurrencyCode(cursor.getString(cursor.getColumnIndex("currencycode")));
             //customer.setCreditLimit(cursor.getString(cursor.getColumnIndex("creditlimit")));
             customerDetails.add(customer);
@@ -1820,11 +1878,15 @@ public class DBHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
-    public ArrayList<CartModel> getAllCartItem_Temp2() {
+    public ArrayList<CartModel> getAllCartItem_Temp2(String orderId) {
         ArrayList<CartModel> array_list = new ArrayList<CartModel>();
         SQLiteDatabase db = this.getReadableDatabase();
-        @SuppressLint("Recycle")
-        Cursor cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2, null);
+        Cursor cursor;
+        if(!orderId.equalsIgnoreCase("")) {
+              cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2 + " where orderid = ?", new String[]{orderId}, null);
+        }else{
+            cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2  , null);
+        }
         cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {
@@ -1869,8 +1931,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public ArrayList<CartModel> getAllCartItems2() {
         ArrayList<CartModel> array_list = new ArrayList<CartModel>();
         SQLiteDatabase db = this.getReadableDatabase();
-        @SuppressLint("Recycle")
-        Cursor cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2, null);
+        Cursor cursor;
+        cursor = db.rawQuery("select * from " + TABLE_CART_TEMP2  , null);
         cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {

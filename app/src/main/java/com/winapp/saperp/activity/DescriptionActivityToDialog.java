@@ -1132,7 +1132,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
     public boolean isProductExist(String productId) {
         boolean isExist = false;
         try {
-            ArrayList<CartModel> localCart = dbHelper.getAllCartItem_Temp2();
+            ArrayList<CartModel> localCart = dbHelper.getAllCartItem_Temp2("");
             if (localCart.size() > 0) {
                 for (CartModel cart : localCart) {
                     if (cart.getCART_COLUMN_PID() != null) {

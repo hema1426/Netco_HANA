@@ -51,6 +51,9 @@ public class Constants {
     // Client Live URL
     public static String SAP_LIVE_URL="http://223.25.81.205:8352/api/";
 
+   // Imperial Hana june 25
+
+    public static String IMPERIAL_URL="http://136.243.133.107:93/api/";
 
     public static String WINAPP_DEMO_URL="http://43.228.126.51:83/api/";
 

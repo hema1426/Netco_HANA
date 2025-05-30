@@ -26,7 +26,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.winapp.saperp.R;
-import com.winapp.saperp.model.OrderHistoryCatalogCustModel;
+import com.winapp.saperp.db.DBHelper;
+import com.winapp.saperp.model.CartModel;
+import com.winapp.saperp.model.OrderHeader;
+import com.winapp.saperp.model.OrderHeader;
 import com.winapp.saperp.model.OrderHistoryCatalogProductModel;
 import com.winapp.saperp.model.SalesOrderPrintPreviewModel;
 import com.winapp.saperp.utils.Constants;
@@ -40,6 +43,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -53,9 +57,10 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
     private int lastVisibleItem, totalItemCount;
     private String company_code;
 
-    public static ArrayList<OrderHistoryCatalogCustModel> salesOrderList;
-    public static ArrayList<OrderHistoryCatalogCustModel> salesOrderFilterList;
-    Context mContext;
+    public static ArrayList<OrderHeader> orderList;
+    public static ArrayList<OrderHeader> salesOrderFilterList;
+    public  Context mContext;
+    public DBHelper dbHelper;
     CallBack callBack;
 
     private String companyId;
@@ -64,13 +69,14 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
     private ArrayList<SalesOrderPrintPreviewModel.SalesList> salesOrdernewList;
     private String locationCode;
 
-    public OrderHistoryCatalogAdapter(Context context, RecyclerView mRecyclerView, ArrayList<OrderHistoryCatalogCustModel> salesOrderList, CallBack callBack) {
+    public OrderHistoryCatalogAdapter(Context context, RecyclerView mRecyclerView,
+                                      ArrayList<OrderHeader> orderList, CallBack callBack) {
 
-        this.salesOrderList = salesOrderList;
-        this.salesOrderFilterList=salesOrderList;
-        this.mContext=context;
-        this.callBack=callBack;
-
+        this.orderList = orderList;
+        this.salesOrderFilterList = orderList;
+        this.mContext = context;
+        this.callBack = callBack;
+        dbHelper = new DBHelper(mContext);
         final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -96,14 +102,14 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
 
     @Override
     public int getItemViewType(int position) {
-        return salesOrderList.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+        return orderList.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_ITEM) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.sales_order_list_items, parent, false);
+            View view = LayoutInflater.from(mContext).inflate(R.layout.order_history_list_items, parent, false);
             return new SalesOrderViewHolder(view);
         } else if (viewType == VIEW_TYPE_LOADING) {
             View view = LayoutInflater.from(mContext).inflate(R.layout.layout_loading_item, parent, false);
@@ -114,90 +120,78 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder  viewHolder, @SuppressLint("RecyclerView") int position) {
-        if ( viewHolder instanceof SalesOrderViewHolder) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, @SuppressLint("RecyclerView") int position) {
+        if (viewHolder instanceof SalesOrderViewHolder) {
             session = new SessionManager(mContext);
             user = session.getUserDetails();
             companyId = user.get(SessionManager.KEY_COMPANY_CODE);
-            locationCode=user.get(SessionManager.KEY_LOCATION_CODE);
+            locationCode = user.get(SessionManager.KEY_LOCATION_CODE);
             company_code = user.get(SessionManager.KEY_COMPANY_CODE);
 
-            OrderHistoryCatalogCustModel salesOrderModel = salesOrderList.get(position);
-            ((SalesOrderViewHolder) viewHolder).name.setText(salesOrderModel.getName());
-            ((SalesOrderViewHolder) viewHolder).date.setText(salesOrderModel.getDate());
-            if (salesOrderModel.getAddress().equals("null") || salesOrderModel.getAddress().isEmpty()){
-                ((SalesOrderViewHolder) viewHolder).address.setText("Address not found");
-            }else {
-                ((SalesOrderViewHolder) viewHolder).address.setText(salesOrderModel.getAddress());
-            }
-            ((SalesOrderViewHolder) viewHolder).soNumber.setText(salesOrderModel.getSaleOrderNumber());
+            OrderHeader salesOrderModel = orderList.get(position);
+            ((SalesOrderViewHolder) viewHolder).name.setText(salesOrderModel.getCustomerName());
+            ((SalesOrderViewHolder) viewHolder).date.setText(salesOrderModel.getInvoiceDate());
+//            if (salesOrderModel.getAddress().equals("null") || salesOrderModel.getAddress().isEmpty()) {
+//                ((SalesOrderViewHolder) viewHolder).address.setText("Address not found");
+//            } else {
+//                ((SalesOrderViewHolder) viewHolder).address.setText(salesOrderModel.getAddress());
+//            }
+            ((SalesOrderViewHolder) viewHolder).soNumber.setText(salesOrderModel.getOrderId());
 //            ((SalesOrderViewHolder) viewHolder).balance.setText("$ "+salesOrderModel.getBalance());
-            if (salesOrderModel.getNetTotal()!=null && !salesOrderModel.getNetTotal().equals("null")){
-                ((SalesOrderViewHolder) viewHolder).netTotal.setText("$ "+Utils.twoDecimalPoint(Double.parseDouble(salesOrderModel.getNetTotal())));
-            }else {
-                ((SalesOrderViewHolder) viewHolder).netTotal.setText("$ "+"0.00");
+            if (salesOrderModel.getNetTotal() != null && !salesOrderModel.getNetTotal().equals("null")) {
+                ((SalesOrderViewHolder) viewHolder).netTotal.setText("$ " + Utils.twoDecimalPoint(Double.parseDouble(salesOrderModel.getNetTotal())));
+            } else {
+                ((SalesOrderViewHolder) viewHolder).netTotal.setText("$ " + "0.00");
             }
-
-           /* if (position % 2 ==1){
-                ((SalesOrderViewHolder) viewHolder).mainCard.setBackgroundColor(Color.parseColor("#f3f3f3"));
-            }else {
-                ((SalesOrderViewHolder) viewHolder).mainCard.setBackgroundColor(Color.parseColor("#ffffff"));
-            }*/
-            switch (salesOrderModel.getStatus()) {
-                case "C":
-                    ((SalesOrderViewHolder) viewHolder).status.setText("Closed");
-                    ((SalesOrderViewHolder) viewHolder).statusLayout.setBackgroundResource(R.drawable.invoice_closed);
-                    ((SalesOrderViewHolder) viewHolder).indicator.setBackgroundResource(R.drawable.invoice_closed);
-                    break;
-                case "O":
-                    ((SalesOrderViewHolder) viewHolder).status.setText("Open");
-                    ((SalesOrderViewHolder) viewHolder).statusLayout.setBackgroundResource(R.drawable.invoice_status_paid);
-                    ((SalesOrderViewHolder) viewHolder).indicator.setBackgroundResource(R.drawable.invoice_status_paid);
-                    break;
-                default:
-                    ((SalesOrderViewHolder) viewHolder).status.setText("Open");
-                    ((SalesOrderViewHolder) viewHolder).statusLayout.setBackgroundResource(R.drawable.invoice_status_paid);
-                    ((SalesOrderViewHolder) viewHolder).indicator.setBackgroundResource(R.drawable.invoice_status_paid);
-                    break;
-            }
+            ArrayList<CartModel> model =  dbHelper.getAllCartItem_Temp2(salesOrderModel.getOrderId());
 
             ((SalesOrderViewHolder) viewHolder).moreOption.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    callBack.showMoreOption(salesOrderModel.getSalesOrderCode(),
-                            salesOrderModel.getName(),((SalesOrderViewHolder) viewHolder).status.getText().toString());
+                    // callBack.showMoreOption(salesOrderModel.getSalesOrderCode(),
+                    //      salesOrderModel.getName(),((SalesOrderViewHolder) viewHolder).status.getText().toString());
                 }
             });
 
-            ((SalesOrderViewHolder)viewHolder).itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            ((SalesOrderViewHolder) viewHolder).syncnow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                     callBack.syncNowCall(salesOrderModel , model);
+                }
+            });
+
+            ((SalesOrderViewHolder) viewHolder).itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    callBack.showMoreOption(salesOrderModel.getSalesOrderCode(),
-                            salesOrderModel.getName(),((SalesOrderViewHolder) viewHolder).status.getText().toString());
+//                    callBack.showMoreOption(salesOrderModel.getSalesOrderCode(),
+//                            salesOrderModel.getName(),((SalesOrderViewHolder) viewHolder).status.getText().toString());
                     return false;
                 }
             });
 
+
             ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (((SalesOrderViewHolder) viewHolder).showHideBottomLayout.getTag().equals("hide")){
+
+                    if (((SalesOrderViewHolder) viewHolder).showHideBottomLayout.getTag().equals("hide")) {
                         ((SalesOrderViewHolder) viewHolder).bottomLayout.setVisibility(View.VISIBLE);
                         ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("show");
                         ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_up_24));
-                    //    try {
-                            if (salesOrderModel.getSalesList() != null && salesOrderModel.getSalesList().size()>0){
-                                setSalesAdapter(viewHolder,position,salesOrderModel.getSalesList());
-                                ((SalesOrderViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
-                                ((SalesOrderViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
-                            }else {
+                        //    try {
+                        if (model != null && model.size() > 0) {
+
+                            setOrderHistoryPdtAdapter(viewHolder, position, model);
+                            ((SalesOrderViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
+                            ((SalesOrderViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
+                        } else {
                             //    getSalesOrderDetails(salesOrderModel.getSalesOrderCode(),viewHolder,position,salesOrderModel);
-                                salesOrderModel.setShow(true);
+                            salesOrderModel.setShow(true);
 //                            }
 //                        } catch (JSONException e) {
 //                            e.printStackTrace();
-                      }
-                    }else {
+                        }
+                    } else {
                         salesOrderModel.setShow(false);
                         ((SalesOrderViewHolder) viewHolder).bottomLayout.setVisibility(View.GONE);
                         ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("hide");
@@ -206,37 +200,37 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
                 }
             });
 
-            if (salesOrderModel.isShow()){
+            if (salesOrderModel.isShow()) {
                 ((SalesOrderViewHolder) viewHolder).bottomLayout.setVisibility(View.VISIBLE);
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("show");
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_up_24));
                 try {
-                    setSalesAdapter(viewHolder,position,salesOrderModel.getSalesList());
+                    setOrderHistoryPdtAdapter(viewHolder, position, model);
                     ((SalesOrderViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
                     ((SalesOrderViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }else {
+            } else {
                 ((SalesOrderViewHolder) viewHolder).bottomLayout.setVisibility(View.GONE);
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setTag("hide");
                 ((SalesOrderViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_down_24));
             }
 
-        } else if ( viewHolder instanceof LoadingViewHolder) {
-            LoadingViewHolder loadingViewHolder = (LoadingViewHolder)  viewHolder;
+        } else if (viewHolder instanceof LoadingViewHolder) {
+            LoadingViewHolder loadingViewHolder = (LoadingViewHolder) viewHolder;
             loadingViewHolder.progressBar.setIndeterminate(true);
         }
     }
 
     @Override
     public int getItemCount() {
-        return salesOrderList == null ? 0 : salesOrderList.size();
+        return orderList == null ? 0 : orderList.size();
     }
 
     public void setLoaded() {
         isLoading = false;
-        callBack.calculateNetTotal(salesOrderList);
+        callBack.calculateNetTotal(orderList);
     }
 
     static class SalesOrderViewHolder extends RecyclerView.ViewHolder {
@@ -247,7 +241,7 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
         private TextView netTotal;
         private TextView address;
         private CardView mainCard;
-        private TextView status;
+        private TextView syncnow;
         private ImageView moreOption;
         private LinearLayout statusLayout;
         private View indicator;
@@ -258,30 +252,33 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
         private LinearLayout progressLayout;
         private LinearLayout bottomLayout;
 
+
         public SalesOrderViewHolder(View view) {
             super(view);
-            name=view.findViewById(R.id.name);
-            date=view.findViewById(R.id.date);
-            soNumber=view.findViewById(R.id.so_no);
-            balance=view.findViewById(R.id.balance);
-            address=view.findViewById(R.id.address);
-            netTotal=view.findViewById(R.id.net_total);
-            mainCard=view.findViewById(R.id.cardlist_item);
-            status=view.findViewById(R.id.status);
-            moreOption=view.findViewById(R.id.more);
-            statusLayout=view.findViewById(R.id.status_layout);
-            indicator=view.findViewById(R.id.indicator);
+            name = view.findViewById(R.id.name);
+            date = view.findViewById(R.id.date);
+            soNumber = view.findViewById(R.id.so_no);
+            balance = view.findViewById(R.id.balance);
+            address = view.findViewById(R.id.address);
+            netTotal = view.findViewById(R.id.net_total);
+            mainCard = view.findViewById(R.id.cardlist_item);
+            syncnow = view.findViewById(R.id.syncNow);
+            moreOption = view.findViewById(R.id.more);
+            statusLayout = view.findViewById(R.id.status_layout);
+            indicator = view.findViewById(R.id.indicator);
 
-            productListView=view.findViewById(R.id.invoiceList);
-            showHideBottomLayout=view.findViewById(R.id.show_hide);
-            mainLayout=view.findViewById(R.id.main_layout);
-            progressLayout=view.findViewById(R.id.progress_layout);
-            bottomLayout=view.findViewById(R.id.bottom_layout);
+            productListView = view.findViewById(R.id.invoiceList);
+            showHideBottomLayout = view.findViewById(R.id.show_hide);
+            mainLayout = view.findViewById(R.id.main_layout);
+            progressLayout = view.findViewById(R.id.progress_layout);
+            bottomLayout = view.findViewById(R.id.bottom_layout);
+
         }
     }
 
     static class LoadingViewHolder extends RecyclerView.ViewHolder {
         public ProgressBar progressBar;
+
         public LoadingViewHolder(View itemView) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.progressBar1);
@@ -296,25 +293,29 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
         Calendar cal = Calendar.getInstance(Locale.ENGLISH);
         cal.setTimeInMillis(time * 1000);
         String date = DateFormat.format("dd-MM-yyyy", cal).toString();
-        Log.w("Given_date_printed:",date);
+        Log.w("Given_date_printed:", date);
         return date;
     }
 
     public interface CallBack {
-        void calculateNetTotal(ArrayList<OrderHistoryCatalogCustModel> salesList);
-        void showMoreOption(String salesorderId,String customerName,String status);
+        void calculateNetTotal(ArrayList<OrderHeader> salesList);
+
+        void showMoreOption(String salesorderId, String customerName, String status);
+
+
+        void syncNowCall(OrderHeader orderHeader, ArrayList<CartModel> cartModel);
     }
 
-    public void filterList(ArrayList<OrderHistoryCatalogCustModel> filterdNames) {
-        salesOrderList = filterdNames;
+    public void filterList(ArrayList<OrderHeader> filterdNames) {
+        orderList = filterdNames;
         notifyDataSetChanged();
     }
 
-    public static ArrayList<OrderHistoryCatalogCustModel> getNotalInvoiceList(){
-        return salesOrderList;
+    public static ArrayList<OrderHeader> getNotalInvoiceList() {
+        return orderList;
     }
 
-    public static ArrayList<OrderHistoryCatalogCustModel> getSalesOrderList(){
+    public static ArrayList<OrderHeader> getSalesOrderList() {
         return salesOrderFilterList;
     }
 
@@ -549,10 +550,11 @@ public class OrderHistoryCatalogAdapter extends RecyclerView.Adapter<RecyclerVie
 //        requestQueue.add(jsonObjectRequest);
 //    }
 
-    public void setSalesAdapter(@NonNull RecyclerView.ViewHolder  viewHolder, int position, ArrayList<OrderHistoryCatalogProductModel.SalesList> salesList){
+    public void setOrderHistoryPdtAdapter(@NonNull RecyclerView.ViewHolder viewHolder, int position,
+                                          ArrayList<CartModel> salesList) {
         ((SalesOrderViewHolder) viewHolder).productListView.setHasFixedSize(true);
         ((SalesOrderViewHolder) viewHolder).productListView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-        OrderHistoryProductAdapter adapter=new OrderHistoryProductAdapter(mContext, salesList);
+        OrderHistoryProductAdapter adapter = new OrderHistoryProductAdapter(mContext, salesList);
         ((SalesOrderViewHolder) viewHolder).productListView.setAdapter(adapter);
         // notifyDataSetChanged();
     }

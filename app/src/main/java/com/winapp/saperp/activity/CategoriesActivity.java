@@ -587,7 +587,6 @@ public class CategoriesActivity extends AppCompatActivity {
             model.setTaxCode(customerObject.optString("taxCode"));
             model.setAllowFOC(customerObject.optString("allowFOC"));
             String allowFOCL = customerObject.optString("allowFOC");
-            sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_ALLOW_FOC, allowFOCL);
 
             ArrayList<CustomerDetails> taxList = new ArrayList<>();
             taxList.add(model);

@@ -666,7 +666,6 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             model.setTaxCode(customerObject.optString("taxCode"));
             model.setAllowFOC(customerObject.optString("allowFOC"));
             String allowFOCL = customerObject.optString("allowFOC");
-            sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_ALLOW_FOC, allowFOCL);
 
             ArrayList<CustomerDetails> taxList = new ArrayList<>();
             taxList.add(model);
@@ -713,6 +712,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
 //                showProductDeleteAlert(customerId);
 //            } else {
             selectCustomer.setText(customerName);
+            //todo customer detail
             setCustomerDetails(customerId);
 //            }
 
@@ -775,7 +775,13 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     public void setCustomerDetails(String customerId) {
         Utils.setCustomerSession(this, customerId);
         //todo
-        getCustomerDetails(customerId, true, "");
+        ArrayList<CustomerDetails> custDetails = dbHelper.getCustomer(customerId) ;
+
+//        if(custDetails.size() > 0) {
+//
+//        }else{
+            getCustomerDetails(customerId, true, "");
+       // }
     }
 
 
@@ -800,7 +806,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         pDialog.setTitleText("Categories Loading...");
         pDialog.setCancelable(false);
-        pDialog.show();
+        //pDialog.show();
         Log.w("Given_url_catal:", url);
 
         JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -1005,7 +1011,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem myItem = menu.findItem(R.id.action_total);
         //  myItem.setTitle("Total: 100");
-        ArrayList<CartModel> localCart = helper.getAllCartItem_Temp2();
+        ArrayList<CartModel> localCart = helper.getAllCartItem_Temp2("");
         double price = 0;
         for (int j = 0; j < localCart.size(); j++) {
             if (localCart.get(j).getCART_COLUMN_NET_PRICE() != null && !localCart.get(j).getCART_COLUMN_NET_PRICE().equals("null")) {

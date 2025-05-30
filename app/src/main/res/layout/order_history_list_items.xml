@@ -124,7 +124,7 @@
                 android:layout_height="25dp">
 
                 <TextView
-                    android:id="@+id/status"
+                    android:id="@+id/syncNow"
                     android:layout_width="wrap_content"
                     android:layout_gravity="center"
                     android:gravity="center"

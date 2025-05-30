@@ -36,7 +36,14 @@ public class OrderHeader {
     public String longitude;
     public String CurrentAddress;
     public String signature;
+    private boolean isShow=false;
+    public boolean isShow() {
+        return isShow;
+    }
 
+    public void setShow(boolean show) {
+        isShow = show;
+    }
     public String getOrderId() {
         return orderId;
     }
