@@ -131,7 +131,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            tools:listitem="@layout/new_cart_items"
+            tools:listitem="@layout/new_cart_temp2_items"
             android:id="@+id/cartView"
             android:layout_height="match_parent" />
 

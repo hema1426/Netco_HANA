@@ -57,6 +57,7 @@ import com.winapp.saperp.printpreview.SalesOrderPrintPreview;
 import com.winapp.saperp.utils.BarCodeScanner;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.ImageUtil;
+import com.winapp.saperp.utils.LocationTrack;
 import com.winapp.saperp.utils.SessionManager;
 import com.winapp.saperp.utils.SettingUtils;
 import com.winapp.saperp.utils.SharedPreferenceUtil;
@@ -93,7 +94,10 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     private SweetAlertDialog pDialog;
     private SessionManager session;
     private HashMap<String, String> user;
-    private String companyId;
+    private String companyId,companyName;
+    double currentLocationLatitude = 0.0;
+    double currentLocationLongitude = 0.0;
+    public static String signatureString = "";
     int pageNo = 1;
     private BottomSheetBehavior behavior;
     private ArrayList<CustomerModel> customerList;
@@ -107,6 +111,20 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     public TextView netTotalText;
     public boolean isPrintEnable = false;
     double netTotalApi = 0.00;
+    public static String netSubtottalValue;
+    public static String netTotalValue;
+    public static String totalValue;
+    private String subTotalValue;
+    public static String itemDiscountAmount = "0.00";
+    public static String netTaxvalue;
+    public static String billDiscountAmount = "0.00";
+
+    private String currentSaveDateTime = "";
+    public TextView subTotalTextValue;
+    public TextView itemDiscountText;
+    public EditText billDiscAmount;
+    public EditText billDiscPercentage;
+
     private ArrayList<CustomerDetails> customerDetails;
     public LinearLayout transLayout;
     public View customerLayout;
@@ -121,6 +139,12 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     public FloatingActionButton convertToInvoice;
     public FloatingActionButton printPreview;
     public String locationCode;
+    public static String current_latitude = "0.00";
+    public static String current_longitude = "0.00";
+    public static String billDiscountPercentage;
+    public static String current_addr = "";
+    TextView locationText;
+
     public String salesOrderStatus;
     public LinearLayout editLayout;
     public LinearLayout deleteLayout;
@@ -156,11 +180,14 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
     public String editSo = "false";
     private int FILTER_CUSTOMER_CODE = 134;
     String currentDate;
+    LocationTrack locationTrack;
+
     private ArrayList<UserListModel> usersList;
     private Spinner salesManSpinner;
     private String selectedUser = "";
     public static String shortCodeStr = "";
     public String userPermission = "";
+    public String currentDateString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,6 +207,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         companyId = user.get(SessionManager.KEY_COMPANY_CODE);
         userName = user.get(SessionManager.KEY_USER_NAME);
         locationCode = user.get((SessionManager.KEY_LOCATION_CODE));
+        companyName = user.get(SessionManager.KEY_COMPANY_NAME);
 
         customerView = findViewById(R.id.customerList);
         netTotalText = findViewById(R.id.net_total_List);
@@ -232,6 +260,8 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
         Log.w("Printer_Mac_Id:", printerMacId);
         Log.w("Printer_Type:", printerType);
 
+        SimpleDateFormat df1 = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        currentDateString = df1.format(c);
 
         ArrayList<SettingsModel> settings = dbHelper.getSettings();
         if (settings != null) {
@@ -274,8 +304,8 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
         Date c1 = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c1);
-        SimpleDateFormat df1 = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
-        currentDate = df1.format(c1);
+        SimpleDateFormat dfa = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        currentDate = dfa.format(c1);
 
         orderHistoryView.setHasFixedSize(true);
         orderHistoryView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -305,7 +335,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
             @Override
             public void syncNowCall(OrderHeader order, ArrayList<CartModel> cartModel) {
-              //  syncNow(order,cartModel);
+               syncNow(order,cartModel);
             }
         });
         orderHistoryView.setAdapter(orderHistoryCatalogAdapter);
@@ -570,46 +600,46 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
             }
         });
     }
-//    public void syncNow(  OrderHeader orderHeader, ArrayList<CartModel> cartModel) {
-//
-//            JSONObject rootJsonObject = new JSONObject();
-//            JSONObject invoiceHeader = new JSONObject();
-//            JSONObject signatureObject = new JSONObject();
-//            JSONObject invoiceImageObject = new JSONObject();
-//            JSONArray invoiceDetailsArray = new JSONArray();
-//            JSONObject invoiceObject = new JSONObject();
-//            JSONArray returnProductArray = new JSONArray();
-//
-//            // Sales Header Add values
-//            ArrayList<CartModel> localCart = dbHelper.getAllCartItem_Temp2(orderHeader.getOrderId());
-//            double net_sub_total = 0.0;
-//            double net_tax = 0.0;
-//            double net_total = 0.0;
-//            double net_discount = 0;
-//            double total_value = 0;
-//            if (localCart.size() > 0) {
-//                for (CartModel model : localCart) {
-//                    if (model.getSubTotal() != null && !model.getSubTotal().isEmpty()) {
-//                        net_sub_total += Double.parseDouble(model.getSubTotal());
-//                    }
-//                    if (model.getCART_TAX_VALUE() != null && !model.getCART_TAX_VALUE().isEmpty()) {
-//                        net_tax += Double.parseDouble(model.getCART_TAX_VALUE());
-//                    }
-//                    if (model.getCART_COLUMN_NET_PRICE() != null && !model.getCART_COLUMN_NET_PRICE().isEmpty()) {
-//                        net_total += Double.parseDouble(model.getCART_COLUMN_NET_PRICE());
-//                    }
-//                    if (model.getDiscount() != null && !model.getDiscount().equals("null") && !model.getDiscount().isEmpty()) {
-//                        net_discount += Double.parseDouble(model.getDiscount());
-//                    }
-//                    if (model.getCART_TOTAL_VALUE() != null && !model.getCART_TOTAL_VALUE().equals("null")) {
-//                        total_value += Double.parseDouble(model.getCART_TOTAL_VALUE());
-//                    }
-//                }
-//            }
-//
-//
-//            String currentTimestamp = String.valueOf(System.currentTimeMillis());
-//
+    public void syncNow(OrderHeader orderHeader, ArrayList<CartModel> cartModel) {
+
+            JSONObject rootJsonObject = new JSONObject();
+            JSONObject invoiceHeader = new JSONObject();
+            JSONObject signatureObject = new JSONObject();
+            JSONObject invoiceImageObject = new JSONObject();
+            JSONArray invoiceDetailsArray = new JSONArray();
+            JSONObject invoiceObject = new JSONObject();
+            JSONArray returnProductArray = new JSONArray();
+
+            // Sales Header Add values
+            ArrayList<CartModel> localCart = dbHelper.getAllCartItem_Temp2(orderHeader.getOrderId());
+            double net_sub_total = 0.0;
+            double net_tax = 0.0;
+            double net_total = 0.0;
+            double net_discount = 0;
+            double total_value = 0;
+            if (localCart.size() > 0) {
+                for (CartModel model : localCart) {
+                    if (model.getSubTotal() != null && !model.getSubTotal().isEmpty()) {
+                        net_sub_total += Double.parseDouble(model.getSubTotal());
+                    }
+                    if (model.getCART_TAX_VALUE() != null && !model.getCART_TAX_VALUE().isEmpty()) {
+                        net_tax += Double.parseDouble(model.getCART_TAX_VALUE());
+                    }
+                    if (model.getCART_COLUMN_NET_PRICE() != null && !model.getCART_COLUMN_NET_PRICE().isEmpty()) {
+                        net_total += Double.parseDouble(model.getCART_COLUMN_NET_PRICE());
+                    }
+                    if (model.getDiscount() != null && !model.getDiscount().equals("null") && !model.getDiscount().isEmpty()) {
+                        net_discount += Double.parseDouble(model.getDiscount());
+                    }
+                    if (model.getCART_TOTAL_VALUE() != null && !model.getCART_TOTAL_VALUE().equals("null")) {
+                        total_value += Double.parseDouble(model.getCART_TOTAL_VALUE());
+                    }
+                }
+            }
+
+
+            String currentTimestamp = String.valueOf(System.currentTimeMillis());
+
 //            custNameShared = sharedPreferenceUtil.getStringPreference(
 //                    sharedPreferenceUtil.KEY_CUSTOMER_NAME, "");
 //            custCodeShared = sharedPreferenceUtil.getStringPreference(
@@ -622,277 +652,282 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 //                    sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, "");
 //            custHavetaxShared = sharedPreferenceUtil.getStringPreference(
 //                    sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  "");
-//
-//            if (custTaxTypeShared.equals("I")) {
-//                double sub_total = net_total - net_tax;
-//                double sub_total1 = sub_total + net_tax;
-//
-//                netSubtottalValue = Utils.twoDecimalPoint(sub_total1);
-//                netTaxvalue = Utils.twoDecimalPoint(net_tax);
-//                netTotalValue = Utils.twoDecimalPoint(sub_total1);
-//                itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
-//                totalValue = Utils.twoDecimalPoint(total_value);
-//
-//            } else {
-//                netSubtottalValue = Utils.twoDecimalPoint(net_sub_total);
-//                netTaxvalue = Utils.twoDecimalPoint(net_tax);
-//                netTotalValue = Utils.twoDecimalPoint(net_total);
-//                itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
-//                totalValue = Utils.twoDecimalPoint(total_value);
-//            }
-////        JSONArray detailsArray = customerResponse.optJSONArray("responseData");
-////        JSONObject object = detailsArray.optJSONObject(0);
-//
-//            try {
-//
-//
-//                // Sales Header Add values
-//                Log.w("custcode..cart ",""+custCodeShared);
-//                rootJsonObject.put("invoiceNumber", "");
-////                orderHeader.setInvoiceNumber("");
-////                orderHeader.setMode("I");
-////                orderHeader.setInvoiceDate(currentDate);
-////                orderHeader.setCustomerCode(custCodeShared);
-////                orderHeader.setCustomerName(custNameShared);
-////                orderHeader.setCurrentAddress(current_addr);
-////                orderHeader.setHaveTax(custHavetaxShared);
-////                orderHeader.setTaxType(custTaxTypeShared);
-////                orderHeader.setTaxPerc(custTaxPercentShared);
-////                orderHeader.setTaxCode(custTaxCodeShared);
-////                orderHeader.setCurrencyName("Singapore Dollar");
-////                orderHeader.setCurrencyRate("1");
-////                orderHeader.setTaxTotal(netTaxvalue);
-////                orderHeader.setSubTotal(subTotalValue);
-////                orderHeader.setTotal(totalValue);
-////                orderHeader.setNetTotal(netTotalValue);
-////                orderHeader.setNetTotal(itemDiscountAmount);
-////                orderHeader.setBillDiscount(billDiscountAmount);
-//
-//
-//            rootJsonObject.put("mode", "I");
-//            rootJsonObject.put("soNo", "");
-//            rootJsonObject.put("doNo", "");
-//            rootJsonObject.put("invoiceDate", currentDate);
-//            rootJsonObject.put("customerCode", orderHeader.getCustomerCode());
-//            rootJsonObject.put("customerName", orderHeader.getCustomerName());
-//            rootJsonObject.put("address", "");
-//            rootJsonObject.put("street", "");
-//            rootJsonObject.put("city", "");
-//            rootJsonObject.put("creditLimit", "");
-//            rootJsonObject.put("remark", "");
-//            rootJsonObject.put("delCustomerName", "");
-//            rootJsonObject.put("delAddress1", "");
-//            rootJsonObject.put("delAddress2 ", "");
-//            rootJsonObject.put("delAddress3 ", "");
-//            rootJsonObject.put("delPhoneNo", "");
-//            rootJsonObject.put("haveTax", orderHeader.getHaveTax());
-//            rootJsonObject.put("taxType", custTaxTypeShared);
-//            rootJsonObject.put("taxPerc", custTaxPercentShared);
-//            rootJsonObject.put("taxCode", custTaxCodeShared);
-//            rootJsonObject.put("currencyCode", "");
-//            rootJsonObject.put("currencyValue", "");
-//            rootJsonObject.put("currencyRate", "1");
-//            rootJsonObject.put("postalCode", "");
-//            rootJsonObject.put("currencyName", "Singapore Dollar");
-//            rootJsonObject.put("Remark", "");
-//            rootJsonObject.put("customerReferenceNo", "");
-//            rootJsonObject.put("taxTotal", netTaxvalue);
-//            rootJsonObject.put("subTotal", subTotalValue);
-//            rootJsonObject.put("total", totalValue);
-//            rootJsonObject.put("netTotal", netTotalValue);
-//            rootJsonObject.put("itemDiscount", itemDiscountAmount);
-//            rootJsonObject.put("billDiscount", billDiscountAmount);
-//                if (currentSaveDateTime == null || currentSaveDateTime.isEmpty()) {
-//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-//                    String currentDateandTime = sdf.format(new Date());
-//                    currentSaveDateTime = currentDateandTime;
-//                }
-//                rootJsonObject.put("currentDateTime", currentSaveDateTime);
-//                orderHeader.setCurrentDateTime(currentSaveDateTime);
-//                orderHeader.setTotalDiscount(currentSaveDateTime);
-//                orderHeader.setDeliveryCode(SettingUtils.getDeliveryAddressCode());
+
+            if (orderHeader.taxType.equals("I")) {
+                double sub_total = net_total - net_tax;
+                double sub_total1 = sub_total + net_tax;
+
+                netSubtottalValue = Utils.twoDecimalPoint(sub_total1);
+                netTaxvalue = Utils.twoDecimalPoint(net_tax);
+                netTotalValue = Utils.twoDecimalPoint(sub_total1);
+                itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
+                totalValue = Utils.twoDecimalPoint(total_value);
+
+            } else {
+                netSubtottalValue = Utils.twoDecimalPoint(net_sub_total);
+                netTaxvalue = Utils.twoDecimalPoint(net_tax);
+                netTotalValue = Utils.twoDecimalPoint(net_total);
+                itemDiscountAmount = Utils.twoDecimalPoint(net_discount);
+                totalValue = Utils.twoDecimalPoint(total_value);
+            }
+//        JSONArray detailsArray = customerResponse.optJSONArray("responseData");
+//        JSONObject object = detailsArray.optJSONObject(0);
+
+            try {
+
+
+                // Sales Header Add values
+              //  Log.w("custcode..cart ",""+custCodeShared);
+
+//                orderHeader.setInvoiceNumber("");
+//                orderHeader.setMode("I");
+//                orderHeader.setInvoiceDate(currentDate);
+//                orderHeader.setCustomerCode(custCodeShared);
+//                orderHeader.setCustomerName(custNameShared);
+//                orderHeader.setCurrentAddress(current_addr);
+//                orderHeader.setHaveTax(custHavetaxShared);
+//                orderHeader.setTaxType(custTaxTypeShared);
+//                orderHeader.setTaxPerc(custTaxPercentShared);
+//                orderHeader.setTaxCode(custTaxCodeShared);
+//                orderHeader.setCurrencyName("Singapore Dollar");
 //                orderHeader.setCurrencyRate("1");
-//                orderHeader.setInvoiceType("M");
-//                orderHeader.setCompanyCode( companyCode);
-//                orderHeader.setCompanyName(companyName);
-//                orderHeader.setCreateUser(userName);
-//                orderHeader.setModifyUser(userName);
-//                orderHeader.setStockUpdated("1");
-//                orderHeader.setLatitude(orderHeader.getLatitude());
-//                orderHeader.setLongitude(current_longitude);
-//
-////            rootJsonObject.put("totalDiscount", "0");
-//                rootJsonObject.put("billDiscountPercentage", billDiscountPercentage);
-////            rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode());
-////            rootJsonObject.put("delCustomerName", "");
-////            rootJsonObject.put("currencyValue", "");
-////            rootJsonObject.put("CurrencyRate", "1");
-//                rootJsonObject.put("status", "0");
-////            rootJsonObject.put("createUser", userName);
-////            rootJsonObject.put("modifyUser", userName);
-////            rootJsonObject.put("companyName", companyName);
-////            rootJsonObject.put("stockUpdated", "1");
-////            rootJsonObject.put("invoiceType", "M");
-////            rootJsonObject.put("companyCode", companyCode);
-////            rootJsonObject.put("locationCode", locationCode);
-////            rootJsonObject.put("latitude", current_latitude);
-////            rootJsonObject.put("longitude", current_longitude);
-////            rootJsonObject.put("CurrentAddress", current_addr);
-////            rootJsonObject.put("Paymode", "");
-////            rootJsonObject.put("ChequeDateString", "");
-////            rootJsonObject.put("BankCode", "");
-////            rootJsonObject.put("AccountNo", "");
-////            rootJsonObject.put("ChequeNo", "");
-////            rootJsonObject.put("image", imageString);
-////            rootJsonObject.put("signature", signatureString);
-//                orderHeader.setOrderId(currentTimestamp);
-//
-//                dbHelper.insertOrderHeader(orderHeader);
-//                // Sales Details Add to the Objects
+//                orderHeader.setTaxTotal(netTaxvalue);
+//                orderHeader.setSubTotal(subTotalValue);
+//                orderHeader.setTotal(totalValue);
+//                orderHeader.setNetTotal(netTotalValue);
+//                orderHeader.setNetTotal(itemDiscountAmount);
+//                orderHeader.setBillDiscount(billDiscountAmount);
+                rootJsonObject.put("CurrentAddress", current_addr);
+                rootJsonObject.put("invoiceNumber", "");
+            rootJsonObject.put("companyCode", companyId);
+            rootJsonObject.put("companyName", companyName);
+            rootJsonObject.put("createUser", userName);
+            rootJsonObject.put("signature", "");
+            rootJsonObject.put("subTotal", orderHeader.subTotal);
+            rootJsonObject.put("creditLimit", "");
+            rootJsonObject.put("CurrencyRate", "");
+            rootJsonObject.put("invoiceType", orderHeader.invoiceType);
+            rootJsonObject.put("stockUpdated", orderHeader.getStockUpdated());
+            rootJsonObject.put("latitude", "0.00");
+            rootJsonObject.put("modifyUser", userName);
+            rootJsonObject.put("locationCode", locationCode);
+            rootJsonObject.put("Paymode", "");
+            rootJsonObject.put("totalDiscount", "");
+            rootJsonObject.put("signature", orderHeader.signature);
+            rootJsonObject.put("mode", "I");
+            rootJsonObject.put("soNo", "");
+            rootJsonObject.put("doNo", "");
+            rootJsonObject.put("invoiceDate", currentDate);
+            rootJsonObject.put("customerCode", orderHeader.getCustomerCode());
+            rootJsonObject.put("customerName", orderHeader.getCustomerName());
+            rootJsonObject.put("address", "");
+            rootJsonObject.put("street", "");
+            rootJsonObject.put("city", "");
+            rootJsonObject.put("creditLimit", "");
+            rootJsonObject.put("remark", "");
+            rootJsonObject.put("delCustomerName", "");
+            rootJsonObject.put("delAddress1", "");
+            rootJsonObject.put("delAddress2 ", "");
+            rootJsonObject.put("delAddress3 ", "");
+            rootJsonObject.put("delPhoneNo", "");
+            rootJsonObject.put("haveTax", orderHeader.getHaveTax());
+            rootJsonObject.put("taxType", orderHeader.taxType);
+            rootJsonObject.put("taxPerc", orderHeader.taxPerc);
+            rootJsonObject.put("taxCode", orderHeader.taxCode);
+            rootJsonObject.put("currencyCode", "");
+            rootJsonObject.put("currencyValue", "");
+            rootJsonObject.put("currencyRate", "1");
+            rootJsonObject.put("postalCode", "");
+            rootJsonObject.put("currencyName", "Singapore Dollar");
+            rootJsonObject.put("Remark", "");
+            rootJsonObject.put("customerReferenceNo", "");
+            rootJsonObject.put("taxTotal", netTaxvalue);
+            rootJsonObject.put("subTotal", subTotalValue);
+            rootJsonObject.put("total", totalValue);
+            rootJsonObject.put("netTotal", netTotalValue);
+            rootJsonObject.put("itemDiscount", itemDiscountAmount);
+            rootJsonObject.put("billDiscount", billDiscountAmount);
+                if (currentSaveDateTime == null || currentSaveDateTime.isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+                    String currentDateandTime = sdf.format(new Date());
+                    currentSaveDateTime = currentDateandTime;
+                }
+                rootJsonObject.put("currentDateTime", currentSaveDateTime);
+                rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode());
+
+
+//            rootJsonObject.put("totalDiscount", "0");
+                rootJsonObject.put("billDiscountPercentage", billDiscountPercentage);
+//            rootJsonObject.put("deliveryCode", SettingUtils.getDeliveryAddressCode());
+//            rootJsonObject.put("delCustomerName", "");
+//            rootJsonObject.put("currencyValue", "");
+//            rootJsonObject.put("CurrencyRate", "1");
+                rootJsonObject.put("status", "0");
+//            rootJsonObject.put("createUser", userName);
+//            rootJsonObject.put("modifyUser", userName);
+//            rootJsonObject.put("companyName", companyName);
+//            rootJsonObject.put("stockUpdated", "1");
+//            rootJsonObject.put("invoiceType", "M");
+//            rootJsonObject.put("companyCode", companyCode);
+//            rootJsonObject.put("locationCode", locationCode);
+//            rootJsonObject.put("latitude", current_latitude);
+//            rootJsonObject.put("longitude", current_longitude);
+//            rootJsonObject.put("CurrentAddress", current_addr);
+//            rootJsonObject.put("Paymode", "");
+//            rootJsonObject.put("ChequeDateString", "");
+//            rootJsonObject.put("BankCode", "");
+//            rootJsonObject.put("AccountNo", "");
+//            rootJsonObject.put("ChequeNo", "");
+//            rootJsonObject.put("image", imageString);
+//            rootJsonObject.put("signature", signatureString);
+             //   orderHeader.setOrderId(currentTimestamp);
+
+             //   dbHelper.insertOrderHeader(orderHeader);
+                // Sales Details Add to the Objects
 //                dbHelper.updateCartTemp2OrderId(currentTimestamp,selectCustomerId);
-////                localCart = dbHelper.getAllCartItems2();
-//                localCart = cartModel;
-//
-//
-//                int index = 1;
-//                for (CartModel model : localCart) {
-//                    invoiceObject = new JSONObject();
-//                    rootJsonObject.put("invoiceNumber", "");
-//                    invoiceObject.put("companyCode", model.getcom);
-//                    invoiceObject.put("invoiceDate", currentDateString);
-//                    invoiceObject.put("slNo", index);
-//                    invoiceObject.put("productCode", model.getCART_COLUMN_PID());
-//                    invoiceObject.put("productName", model.getCART_COLUMN_PNAME());
-//                    invoiceObject.put("cartonQty", model.getCART_COLUMN_CTN_QTY());
-//                    invoiceObject.put("unitQty", model.getCART_COLUMN_QTY());
-//                    double data = Double.parseDouble(model.getCART_PCS_PER_CARTON());
-//                    double cn_qty = Double.parseDouble(model.getCART_COLUMN_CTN_QTY());
-//                    double lqty = Double.parseDouble(model.getCART_COLUMN_QTY());
-//                    double net_qty = (cn_qty * data) + lqty;
-//                    invoiceObject.put("qty", String.valueOf(net_qty));
-//                    // convert into int
-//                    int value = (int) data;
-//                    invoiceObject.put("pcsPerCarton", String.valueOf(value));
-//                    //    double priceValue=Double.parseDouble(model.getCART_UNIT_PRICE()) / net_qty;
-////                if (object.optString("taxType").equals("I")){
-////                    invoiceObject.put("price",Utils.twoDecimalPoint(priceValue));
-////                }else {
-////                    invoiceObject.put("price",Utils.twoDecimalPoint(priceValue));
-////                }
-//                    invoiceObject.put("price", model.getCART_COLUMN_CTN_PRICE());
-//                    //  invoiceObject.put("cartonPrice",model.getCART_COLUMN_CTN_PRICE());
-//                    invoiceObject.put("total", model.getCART_TOTAL_VALUE());
-//                    if (model.getDiscount() != null && !model.getDiscount().isEmpty()) {
-//                        invoiceObject.put("itemDiscount", model.getDiscount());
-//                        //     invoiceObject.put("DiscountPercentage",model.getDiscount());
-//
-//                    } else {
-//                        invoiceObject.put("itemDiscount", "0.00");
-//                        //   invoiceObject.put("DiscountPercentage","0.00");
-//                    }
-//                    invoiceObject.put("totalTax", model.getCART_TAX_VALUE());
-//                    invoiceObject.put("subTotal", model.getSubTotal());
-//                    invoiceObject.put("netTotal", model.getCART_COLUMN_NET_PRICE());
-//                    invoiceObject.put("taxType", custTaxTypeShared);
-//                    invoiceObject.put("taxPerc", custTaxPercentShared);
-//                    invoiceObject.put("taxCode", custTaxCodeShared);
-//                    double return_subtotal = 0;
-//                    if (model.getReturn_qty() != null && !model.getReturn_qty().isEmpty() && !model.getReturn_qty().equals("null")) {
-//                        return_subtotal = Double.parseDouble(model.getReturn_qty()) * Double.parseDouble(model.getCART_UNIT_PRICE());
-//                    }
-//
-//                    assert model.getReturn_qty() != null;
-//                    if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
-//                        invoiceObject.put("returnLQty", model.getReturn_qty());
-//                        invoiceObject.put("returnQty", model.getReturn_qty());
-//                    } else {
-//                        invoiceObject.put("returnLQty", "0");
-//                        invoiceObject.put("returnQty", "0");
-//                    }
-//
-//                    if (!model.getFoc_qty().toString().isEmpty() && !model.getFoc_qty().equals("null")) {
-//                        invoiceObject.put("focQty", model.getFoc_qty());
-//                    } else {
-//                        invoiceObject.put("focQty", "0");
-//                    }
-//
-//                    if (!model.getExchange_qty().isEmpty() && !model.getExchange_qty().equals("null")) {
-//                        invoiceObject.put("exchangeQty", model.getExchange_qty());
-//                    } else {
-//                        invoiceObject.put("exchangeQty", "0");
-//
-//                    }
-//
-//                    invoiceObject.put("returnSubTotal", return_subtotal + "");
-//                    invoiceObject.put("returnNetTotal", return_subtotal + "");
-//                    invoiceObject.put("returnReason", "");
-//                    invoiceObject.put("uomCode", model.getUomCode());
-//                    invoiceObject.put("retailPrice", model.getCART_COLUMN_CTN_PRICE());
-//                    invoiceObject.put("itemRemarks", "");
-//                    invoiceObject.put("locationCode", locationCode);
-//                    invoiceObject.put("createUser", userName);
-//                    invoiceObject.put("modifyUser", userName);
-//
-//                    returnProductArray=new JSONArray();
-//                    JSONObject returnProductObject = new JSONObject();
-//
-//                    if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
-//                        returnProductObject=new JSONObject();
-//                        returnProductObject.put("ReturnReason","Saleable Return");
-//                        returnProductObject.put("ReturnQty",model.getReturn_qty());
-//                        returnProductArray.put(returnProductObject);
-//                    }
-//                    invoiceObject.put("ReturnDetails", returnProductArray);
-//
-//                    invoiceDetailsArray.put(invoiceObject);
-//                    index++;
+//                localCart = dbHelper.getAllCartItems2();
+                localCart = cartModel;
+
+
+                int index = 1;
+                for (CartModel model : localCart) {
+                    invoiceObject = new JSONObject();
+                    rootJsonObject.put("invoiceNumber", "");
+                    invoiceObject.put("companyCode", companyId);
+                    invoiceObject.put("invoiceDate", currentDateString);
+                    invoiceObject.put("slNo", index);
+                    invoiceObject.put("productCode", model.getCART_COLUMN_PID());
+                    invoiceObject.put("productName", model.getCART_COLUMN_PNAME());
+                    invoiceObject.put("cartonQty", model.getCART_COLUMN_CTN_QTY());
+                    invoiceObject.put("unitQty", model.getCART_COLUMN_QTY());
+                    double data = Double.parseDouble(model.getCART_PCS_PER_CARTON());
+                    double cn_qty = Double.parseDouble(model.getCART_COLUMN_CTN_QTY());
+                    double lqty = Double.parseDouble(model.getCART_COLUMN_QTY());
+                    double net_qty = (cn_qty * data) + lqty;
+                    invoiceObject.put("qty", String.valueOf(net_qty));
+                    // convert into int
+                    int value = (int) data;
+                    invoiceObject.put("pcsPerCarton", String.valueOf(value));
+                    //    double priceValue=Double.parseDouble(model.getCART_UNIT_PRICE()) / net_qty;
+//                if (object.optString("taxType").equals("I")){
+//                    invoiceObject.put("price",Utils.twoDecimalPoint(priceValue));
+//                }else {
+//                    invoiceObject.put("price",Utils.twoDecimalPoint(priceValue));
 //                }
-//
-//                signatureObject.put("InvoiceNo", "");
-//                signatureObject.put("CompanyCode", companyCode);
-//                signatureObject.put("Latitude", currentLocationLatitude);
-//                signatureObject.put("Longitude", currentLocationLongitude);
-//                signatureObject.put("RefSignature", signatureString);
-//                signatureObject.put("ModifyUser", userName);
-//                signatureObject.put("Modifydate", "");
-//                signatureObject.put("TranType", "IN");
-//                signatureObject.put("Address1", "");
-//                signatureObject.put("Address2", "");
-//                signatureObject.put("SlNo", 0);
-//                signatureObject.put("RefSignaturestring", null);
-//
-//
-////            invoiceImageObject.put("InvoiceNo", "");
-////            invoiceImageObject.put("CompanyCode", companyCode);
-////            invoiceImageObject.put("SlNo", 0);
-////            invoiceImageObject.put("TranType", "IN");
-////            invoiceImageObject.put("CustomerCode", object.get("customerCode"));
-////            invoiceImageObject.put("CustomerName", object.get("customerName"));
-////            invoiceImageObject.put("DeliveryCode", SettingUtils.getDeliveryAddressCode());
-////            invoiceImageObject.put("CompanyName", user.get(SessionManager.KEY_COMPANY_NAME));
-////            invoiceImageObject.put("ModifyUser", userName);
-////            invoiceImageObject.put("RefPhotostring", null);
-//
-//
-//                // rootJsonObject.put("IsSaveSO",false);
-//                //  rootJsonObject.put("InvoiceHeader", invoiceHeader);
-//                //rootJsonObject.put("ReturnDetails", returnProductArray);
-//                rootJsonObject.put("PostingInvoiceDetails", invoiceDetailsArray);
-//                //  rootJsonObject.put("InvoiceSignature",signatureObject);
-//                // rootJsonObject.put("InvoicePhoto",invoiceImageObject);
-//
-//                Log.w("RootJsonForSave:", rootJsonObject.toString());
-//
-//
-//                Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
-////                redirectActivity();
-//            saveSalesOrder(rootJsonObject, "Invoice", 1);
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//                Log.w("Given_Error:", Objects.requireNonNull(e.getMessage()));
-//            }
-//        }
+                    invoiceObject.put("price", model.getCART_COLUMN_CTN_PRICE());
+                    //  invoiceObject.put("cartonPrice",model.getCART_COLUMN_CTN_PRICE());
+                    invoiceObject.put("total", model.getCART_TOTAL_VALUE());
+                    if (model.getDiscount() != null && !model.getDiscount().isEmpty()) {
+                        invoiceObject.put("itemDiscount", model.getDiscount());
+                        //     invoiceObject.put("DiscountPercentage",model.getDiscount());
+
+                    } else {
+                        invoiceObject.put("itemDiscount", "0.00");
+                        //   invoiceObject.put("DiscountPercentage","0.00");
+                    }
+                    invoiceObject.put("totalTax", model.getCART_TAX_VALUE());
+                    invoiceObject.put("subTotal", model.getSubTotal());
+                    invoiceObject.put("netTotal", model.getCART_COLUMN_NET_PRICE());
+                    invoiceObject.put("taxType", orderHeader.taxType);
+                    invoiceObject.put("taxPerc", orderHeader.taxPerc);
+                    invoiceObject.put("taxCode", orderHeader.taxCode);
+                    double return_subtotal = 0;
+                    if (model.getReturn_qty() != null && !model.getReturn_qty().isEmpty() && !model.getReturn_qty().equals("null")) {
+                        return_subtotal = Double.parseDouble(model.getReturn_qty()) * Double.parseDouble(model.getCART_UNIT_PRICE());
+                    }
+
+                    assert model.getReturn_qty() != null;
+                    if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
+                        invoiceObject.put("returnLQty", model.getReturn_qty());
+                        invoiceObject.put("returnQty", model.getReturn_qty());
+                    } else {
+                        invoiceObject.put("returnLQty", "0");
+                        invoiceObject.put("returnQty", "0");
+                    }
+
+                    if (!model.getFoc_qty().toString().isEmpty() && !model.getFoc_qty().equals("null")) {
+                        invoiceObject.put("focQty", model.getFoc_qty());
+                    } else {
+                        invoiceObject.put("focQty", "0");
+                    }
+
+                    if (!model.getExchange_qty().isEmpty() && !model.getExchange_qty().equals("null")) {
+                        invoiceObject.put("exchangeQty", model.getExchange_qty());
+                    } else {
+                        invoiceObject.put("exchangeQty", "0");
+
+                    }
+
+                    invoiceObject.put("returnSubTotal", return_subtotal + "");
+                    invoiceObject.put("returnNetTotal", return_subtotal + "");
+                    invoiceObject.put("returnReason", "");
+                    invoiceObject.put("uomCode", model.getUomCode());
+                    invoiceObject.put("retailPrice", model.getCART_COLUMN_CTN_PRICE());
+                    invoiceObject.put("itemRemarks", "");
+                    invoiceObject.put("locationCode", locationCode);
+                    invoiceObject.put("createUser", userName);
+                    invoiceObject.put("modifyUser", userName);
+
+                    returnProductArray=new JSONArray();
+                    JSONObject returnProductObject = new JSONObject();
+
+                    if (!model.getReturn_qty().isEmpty() && !model.getReturn_qty().toString().equals("null")) {
+                        returnProductObject=new JSONObject();
+                        returnProductObject.put("ReturnReason","Saleable Return");
+                        returnProductObject.put("ReturnQty",model.getReturn_qty());
+                        returnProductArray.put(returnProductObject);
+                    }
+                    invoiceObject.put("ReturnDetails", returnProductArray);
+
+                    invoiceDetailsArray.put(invoiceObject);
+                    index++;
+                }
+
+                signatureObject.put("InvoiceNo", "");
+                signatureObject.put("CompanyCode", companyId);
+                signatureObject.put("Latitude", currentLocationLatitude);
+                signatureObject.put("Longitude", currentLocationLongitude);
+                signatureObject.put("RefSignature", signatureString);
+                signatureObject.put("ModifyUser", userName);
+                signatureObject.put("Modifydate", "");
+                signatureObject.put("TranType", "IN");
+                signatureObject.put("Address1", "");
+                signatureObject.put("Address2", "");
+                signatureObject.put("SlNo", 0);
+                signatureObject.put("RefSignaturestring", null);
+
+
+//            invoiceImageObject.put("InvoiceNo", "");
+//            invoiceImageObject.put("CompanyCode", companyCode);
+//            invoiceImageObject.put("SlNo", 0);
+//            invoiceImageObject.put("TranType", "IN");
+//            invoiceImageObject.put("CustomerCode", object.get("customerCode"));
+//            invoiceImageObject.put("CustomerName", object.get("customerName"));
+//            invoiceImageObject.put("DeliveryCode", SettingUtils.getDeliveryAddressCode());
+//            invoiceImageObject.put("CompanyName", user.get(SessionManager.KEY_COMPANY_NAME));
+//            invoiceImageObject.put("ModifyUser", userName);
+//            invoiceImageObject.put("RefPhotostring", null);
+
+
+                // rootJsonObject.put("IsSaveSO",false);
+                //  rootJsonObject.put("InvoiceHeader", invoiceHeader);
+                //rootJsonObject.put("ReturnDetails", returnProductArray);
+                rootJsonObject.put("PostingInvoiceDetails", invoiceDetailsArray);
+                //  rootJsonObject.put("InvoiceSignature",signatureObject);
+                // rootJsonObject.put("InvoicePhoto",invoiceImageObject);
+
+                Log.w("RootJsonForSave:", rootJsonObject.toString());
+
+
+               // Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
+//                redirectActivity();
+            saveSalesOrder(rootJsonObject, "Invoice", 1);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.w("Given_Error:", Objects.requireNonNull(e.getMessage()));
+            }
+        }
 
 
 
@@ -1598,7 +1633,7 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
 
                     @Override
                     public void syncNowCall(OrderHeader orderHeader, ArrayList<CartModel> cartModel) {
-
+                        syncNow(orderHeader,cartModel);
                     }
 
 //
@@ -1838,6 +1873,22 @@ public class OrderHistoryListActivity extends NavigationActivity implements Adap
             }
         });
         customerView.setAdapter(customerNameAdapter);
+    }
+    public void getCurrentLocation() {
+        locationTrack = new LocationTrack(OrderHistoryListActivity.this);
+        if (locationTrack.canGetLocation()) {
+            double longitude = locationTrack.getLongitude();
+            double latitude = locationTrack.getLatitude();
+            current_latitude = String.valueOf(latitude);
+            current_longitude = String.valueOf(longitude);
+            String currentAddress = Utils.getCompleteAddress(OrderHistoryListActivity.this, latitude, longitude);
+            if (currentAddress != null && !currentAddress.isEmpty()) {
+                locationText.setText(currentAddress);
+                current_addr = currentAddress ;
+            }
+        } else {
+            // locationTrack.showSettingsAlert();
+        }
     }
 
     public void closeView() {

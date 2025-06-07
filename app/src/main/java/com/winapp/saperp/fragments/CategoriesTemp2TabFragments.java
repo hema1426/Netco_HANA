@@ -74,10 +74,12 @@ import com.winapp.saperp.adapter.SortAdapter;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.model.CustomerDetails;
 import com.winapp.saperp.model.ProductsModel;
+import com.winapp.saperp.model.UomModel;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.CustomRecyclerView;
 import com.winapp.saperp.utils.GridSpacingItemDecoration;
 import com.winapp.saperp.utils.SessionManager;
+import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
 
 import org.json.JSONArray;
@@ -92,7 +94,8 @@ import java.util.Objects;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.OnMenuItemClickListener, ProductAdapterLoadMore.Callbacks {
+public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.OnMenuItemClickListener,
+        ProductAdapterLoadMore.Callbacks {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
     private String catagoriesId;
@@ -114,6 +117,7 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
     HashMap<String, String> user;
     SessionManager session;
     String companyCode;
+    public static SharedPreferenceUtil sharedPreferenceUtil;
     int pageNo = 1;
     GridLayoutManager mLayoutManager;
     String sortLetter;
@@ -145,6 +149,8 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
     double loose_amount = 0.0;
     int cnQty = 0;
     int lqty = 0;
+    public ArrayList<UomModel> uomList;
+
     double pcspercarton = 0;
     // Customer details arraylist
     ArrayList<CustomerDetails> customerDetails;
@@ -196,6 +202,9 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
         companyCode = user.get(SessionManager.KEY_COMPANY_CODE);
         userName = user.get(SessionManager.KEY_USER_NAME);
         locationCode = user.get(SessionManager.KEY_LOCATION_CODE);
+
+        sharedPreferenceUtil = new SharedPreferenceUtil(getActivity());
+
         progressBarLayout = view.findViewById(R.id.progress_layout);
         productsView = view.findViewById(R.id.categoriesView);
         progressBarLayout.setVisibility(View.GONE);
@@ -577,6 +586,8 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                 SharedPreferences sharedPreferences = getContext().getSharedPreferences("customerPref", MODE_PRIVATE);
                 SharedPreferences.Editor customerPredEdit = sharedPreferences.edit();
                 String selectCustomerId = sharedPreferences.getString("customerId", "");
+                selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
                 if (!selectCustomerId.isEmpty()) {
                     if (isQtyEntered) {
                         boolean status = dbHelper.insertCartTemp2(
@@ -684,56 +695,26 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // define the sorting letters
-        lettersRecyclerview.setHasFixedSize(true);
-        // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        lettersRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
-        SortAdapter adapter = new SortAdapter(Utils.getSorting(), new SortAdapter.CallBack() {
-            @Override
-            public void sortProduct(String letter) {
-                if (letter.equals("All")) {
-                    JSONObject jsonObject = new JSONObject();
-                    try {
-                        jsonObject.put("CompanyCode", companyCode);
-                        jsonObject.put("LocationCode", locationCode);
-                        jsonObject.put("CategoryCode", catagoriesId);
-                        jsonObject.put("PageSize", 50);
-                        jsonObject.put("PageNo", pageNo);
-                        getAllProducts(jsonObject);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    filter(letter);
-                }
-            }
-        });
-        lettersRecyclerview.setAdapter(adapter);
-
-
         ArrayList<ProductsModel> productList = dbHelper.getAllCatalogProducts(catagoriesId);
-        Log.d("cg_catelog_local:", "" + dbHelper.getAllCatalogProducts(catagoriesId).size());
+        Log.w("cg_catelog_local:", "" + dbHelper.getAllCatalogProducts(catagoriesId).size());
 
         if (productList.size() > 0) {
             newProductList = new ArrayList<>();
             productListFilter = new ArrayList<>();
             productListFilter.addAll(productList);
             emptyLayout.setVisibility(View.GONE);
-
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             populateCategoriesData(productList);
-
+                            letterlist(productList);
                         }
                     });
                 }
             }, 10);
-
         } else {
             JSONObject jsonObject = new JSONObject();
             try {
@@ -744,6 +725,41 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                 e.printStackTrace();
             }
         }
+        // define the sorting letters
+    }
+//todo letter list
+    public void letterlist(ArrayList<ProductsModel> productListFilter1){
+        sortLayout.setVisibility(View.VISIBLE);
+        lettersRecyclerview.setHasFixedSize(true);
+        // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        lettersRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL,
+                false));
+        SortAdapter adapter = new SortAdapter(Utils.getSorting(), new SortAdapter.CallBack() {
+            @Override
+            public void sortProduct(String letter) {
+                if(productListFilter1.size() > 0) {
+                    if (letter.equals("All")) {
+                        populateCategoriesData(productListFilter1);
+                    }else{
+                        filter(letter);
+                    }
+                }else{
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("CompanyCode", companyCode);
+                        jsonObject.put("LocationCode", locationCode);
+                        jsonObject.put("CategoryCode", catagoriesId);
+                        jsonObject.put("PageSize", 50);
+                        jsonObject.put("PageNo", pageNo);
+
+                        getAllProducts(jsonObject);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        lettersRecyclerview.setAdapter(adapter);
 
     }
 
@@ -754,9 +770,11 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
             SharedPreferences sharedPreferences = getContext().getSharedPreferences("customerPref", MODE_PRIVATE);
             SharedPreferences.Editor customerPredEdit = sharedPreferences.edit();
             String selectCustomerId = sharedPreferences.getString("customerId", "");
+            selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
             customerDetails = new ArrayList<>();
             if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
-                customerDetails = dbHelper.getCustomer(selectCustomerId);
+                customerDetails = dbHelper.getCustomerCart(selectCustomerId);
                 getProductPrice(model.getProductCode());
             }
         } catch (JSONException e) {
@@ -1528,6 +1546,12 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                                 product.setStockQty(productObject.optString("stockInHand"));
                                 // newProductList.add(product);
                                 product.setCatagoryCode(catagoriesId);
+                                // todo check uom
+                                if(dbHelper.getCatalogUomDetail(productObject.optString("productCode")).size() > 0) {
+                                }else{
+                                    getUOM(productObject.optString("productCode"));
+                                }
+                             //   getUOM(productObject.optString("productCode"));
                                 productList.add(product);
                                 Log.w("pdtsizeCatgry", "" + productList.size());
                                 // }
@@ -1537,10 +1561,18 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                             emptyLayout.setVisibility(View.GONE);
                             //  pDialog.dismiss();
                             populateCategoriesData(productList);
-
+                            letterlist(productList);
                             //insert product by categoryid
-
                             dbHelper.insertCatalogProducts(productList);
+                            //todo
+//                            for(int i = 0 ; i < productList.size() ; i++) {
+//                                if(dbHelper.getCatalogUomDetail(productList.get(i).getProductCode()).size() > 0) {
+//
+//                                }else{
+//                                    getUOM(productList.get(i).getProductCode());
+//                                }
+//                            }
+
                         } else {
 
                         }
@@ -1554,6 +1586,94 @@ public class CategoriesTemp2TabFragments extends Fragment implements PopupMenu.O
                     // pDialog.dismiss();
                     Log.w("Error_throwing:", error.toString());
                 }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> params = new HashMap<>();
+                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
+                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
+                params.put("Authorization", auth);
+                return params;
+            }
+        };
+        jsonObjectRequest.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+        // Add JsonArrayRequest to the RequestQueue
+        requestQueue.add(jsonObjectRequest);
+    }
+    public void getUOM(String productCode) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("CustomerCode", selectCustomerId);
+            jsonObject.put("ItemCode", productCode);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        // Initialize a new RequestQueue instance
+        RequestQueue requestQueue = Volley.newRequestQueue(requireActivity());
+        String url = Utils.getBaseUrl(requireActivity()) + "ItemUOMDetails";
+        // Initialize a new JsonArrayRequest instance
+        Log.w("Given_UOM_URL:", url + jsonObject.toString());
+
+        SweetAlertDialog pDialog = new SweetAlertDialog(requireActivity(), SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Loading UOM...");
+        pDialog.setCancelable(false);
+      //  pDialog.show();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject, response -> {
+            try {
+                uomList = new ArrayList<>();
+
+                Log.w("Res_UOM:", response.toString());
+                // Loop through the array elements
+                JSONArray uomArray = response.optJSONArray("responseData");
+                if (uomArray != null && uomArray.length() > 0) {
+                    for (int j = 0; j < uomArray.length(); j++) {
+                        JSONObject uomObject = uomArray.getJSONObject(j);
+                        UomModel uomModel = new UomModel();
+                        uomModel.setUomCode(uomObject.optString("uomCode"));
+                        uomModel.setUomName(uomObject.optString("uomName"));
+                        uomModel.setUomEntry(uomObject.optString("uomEntry"));
+                        uomModel.setAltQty(uomObject.optString("altQty"));
+                        uomModel.setBaseQty(uomObject.optString("baseQty"));
+                        uomModel.setPrice(uomObject.optString("price"));
+                       // uomModel.setProductCode(uomObject.optString("productCode"));
+
+                        uomList.add(uomModel);
+                    }
+                }
+
+                Log.w("UOM_TEXT:", uomArray.toString());
+                pDialog.dismiss();
+                if (uomList.size() > 0) {
+                    requireActivity().runOnUiThread(() -> {
+//                        setUomList(uomList, model);
+                        Log.w("insertuommm",""+uomList.get(0).getPrice());
+                        dbHelper.insertCatalogUom(uomList,productCode);
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, error -> {
+            // Do something when error occurred
+            pDialog.dismiss();
+            Log.w("Error_throwing:", error.toString());
+        }) {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> params = new HashMap<>();

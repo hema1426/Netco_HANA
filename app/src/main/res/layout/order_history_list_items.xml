@@ -99,8 +99,19 @@
             android:layout_gravity="center"
             android:layout_marginTop="5dp"
             android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:orientation="horizontal"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textColor="@color/black"
+                    android:text="Order ID : "
+                    android:layout_height="wrap_content"/>
 
-            <TextView
+                <TextView
                 android:layout_width="wrap_content"
                 android:textStyle="bold"
                 android:textSize="13sp"
@@ -108,6 +119,7 @@
                 android:textColor="#3655D2"
                 android:text="INV #1234"
                 android:layout_height="wrap_content"/>
+            </LinearLayout>
 
             <Space
                 android:layout_width="0dp"
@@ -116,12 +128,13 @@
 
 
             <LinearLayout
-                android:layout_width="50dp"
+                android:layout_width="wrap_content"
                 android:gravity="center"
+                android:padding="3dp"
                 android:id="@+id/status_layout"
                 android:background="@drawable/salesorder_status"
                 android:layout_gravity="center"
-                android:layout_height="25dp">
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/syncNow"
@@ -130,14 +143,12 @@
                     android:gravity="center"
                     android:padding="1dp"
                     android:layout_height="wrap_content"
-                    android:text="InProgress Invoice"
+                    android:text="Sync Now"
                     android:textColor="@color/white"
-                    android:textSize="8sp"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
-
-
         </LinearLayout>
 
         <LinearLayout
@@ -182,6 +193,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:orientation="horizontal"
+                android:visibility="gone"
                 android:layout_height="wrap_content">
 
                 <TextView
@@ -206,14 +218,21 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="0dp"/>
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:padding="6dp"
+    >
 
-            <ImageView
-                android:id="@+id/show_hide"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
-                android:tag="hide" />
+    <ImageView
+        android:id="@+id/show_hide"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_keyboard_arrow_down_accent_24dp"
+        android:tag="hide" />
+
+</LinearLayout>
 
         </LinearLayout>
 

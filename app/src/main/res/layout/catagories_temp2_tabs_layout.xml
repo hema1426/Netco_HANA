@@ -55,6 +55,7 @@
                 android:orientation="horizontal"
                 android:id="@+id/sort_layout"
                 android:layout_gravity="center"
+                android:visibility="gone"
                 android:gravity="center"
                 android:layout_height="wrap_content">
 

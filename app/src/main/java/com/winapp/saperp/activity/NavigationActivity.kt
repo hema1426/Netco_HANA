@@ -41,6 +41,7 @@ open class NavigationActivity : AppCompatActivity() {
     var isCheckedSalesReturn1 = false
     var isAPIInvoice = false
     var locationCode: String? = null
+    var isNetwork: Boolean? = false
 
     @JvmField
     var user: HashMap<String, String>? = null
@@ -56,7 +57,7 @@ open class NavigationActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         Log.w("activity_cg", javaClass.simpleName.toString())
 
-        networkChangeReceiver = NetworkChangeReceiver()
+//         networkChangeReceiver = NetworkChangeReceiver()
         drawerLayout = findViewById(R.id.drawer_layout)
         // Set the Preference value in edittext for Remembering the values
         loginPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE)
@@ -269,6 +270,7 @@ open class NavigationActivity : AppCompatActivity() {
                 drawerLayout!!.closeDrawers()
                 return@OnNavigationItemSelectedListener true
             } else if (itemId == R.id.navigation_item_salesorder) {
+
                 if (isCheckedSO1 && (locationCode != null && !locationCode!!.isEmpty())) {
                     val intent: Intent
                     intent = Intent(this@NavigationActivity, SalesOrderListActivity::class.java)
@@ -488,18 +490,21 @@ open class NavigationActivity : AppCompatActivity() {
             android.os.Process.killProcess(android.os.Process.myPid());*/
         }
     }
-
-    override fun onStart() {
-        super.onStart()
-        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        registerReceiver(networkChangeReceiver, filter)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(networkChangeReceiver)
-    }
-
+    //todo network hide
+//    override fun onStart() {
+//        super.onStart()
+//        if(networkChangeReceiver!= null) {
+//            val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+//            registerReceiver(networkChangeReceiver, filter)
+//       }
+//    }
+//
+//    override fun onStop() {
+//        if(networkChangeReceiver!= null) {
+//            super.onStop()
+//            unregisterReceiver(networkChangeReceiver)
+//       }
+   // }
     fun showCloseAlert() {
         val builder = AlertDialog.Builder(this@NavigationActivity)
         builder.setCancelable(false)

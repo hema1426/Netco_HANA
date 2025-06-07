@@ -17,6 +17,10 @@
     <color name="pink_clr">#724357</color>
     <color name="pink_clr1">#72436F</color>
     <color name="lit_color">#662e9b</color>
+    <color name="thin_blue">#063970</color>
+    <color name="thin_orange">#e28743</color>
+    <color name="thin_red">#EC407A</color>
+
 
     <!-- App Main Palette -->
     <color name="primary">@color/primaryDark</color>

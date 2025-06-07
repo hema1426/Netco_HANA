@@ -3,6 +3,7 @@ package com.winapp.saperp.activity;
 import static android.content.Context.MODE_PRIVATE;
 import static com.winapp.saperp.activity.CategoriesTemp2Activity.setupBadge;
 
+import static com.winapp.saperp.fragments.CategoriesTemp2TabFragments.sharedPreferenceUtil;
 import static com.winapp.saperp.utils.Utils.fourDecimalPoint;
 import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
 
@@ -74,7 +75,6 @@ import com.winapp.saperp.model.SettingsModel;
 import com.winapp.saperp.model.UomModel;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.SessionManager;
-import com.winapp.saperp.utils.SharedPreferenceUtil;
 import com.winapp.saperp.utils.Utils;
 
 import org.json.JSONArray;
@@ -97,7 +97,6 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
     private TextView availability;
     private TextView netPrice;
     private TextView ctnQty;
-    private SharedPreferenceUtil sharedPreferenceUtil;
     double percentApi = 0.0;
     private TextView pcsQty;
     private EditText ctnQtyValue;
@@ -117,6 +116,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
     private EditText unitPrice;
 
     private Spinner uomSpinnerCart;
+    private ImageView dial_closel;
     private ProductsModel productsModel;
 
     public boolean isUomSetting = false;
@@ -149,7 +149,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
     LinearLayout pcsQtyLayout;
     TextView qtyTextView;
     LinearLayout unitPriceLayout;
-    private ArrayList<UomModel> uomList;
+    public static ArrayList<UomModel> uomList;
     TextWatcher cartonQtyWatcher;
     TextWatcher qtyWatcher;
     LinearLayout focLayout;
@@ -211,11 +211,11 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 
 //        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
-        selectCustomerId = sharedPreferences.getString("customerId", "");
+      //  selectCustomerId = sharedPreferences.getString("customerId", "");
+        selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
 
         session = new SessionManager(requireActivity());
         dbHelper = new DBHelper(requireActivity());
-        sharedPreferenceUtil = new SharedPreferenceUtil(requireActivity());
 
         allowFOCStr = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_ALLOW_FOC, "");
 
@@ -258,6 +258,8 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
         focLayout = view.findViewById(R.id.foc_layout);
         uomCodeText = view.findViewById(R.id.uom_code);
         uomSpinnerCart = view.findViewById(R.id.uomSpinner_cart);
+        dial_closel = view.findViewById(R.id.dial_close);
+
         user = session.getUserDetails();
         companyCode = user.get(SessionManager.KEY_COMPANY_CODE);
         locationCode = user.get(SessionManager.KEY_LOCATION_CODE);
@@ -268,6 +270,13 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 
         sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CART_ITEM_DISC, "0.0");
 
+        dial_closel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.w("closell","");
+                dismiss();
+            }
+        });
       /*  ArrayList<SettingsModel> settings1=dbHelper.getSettings();
         if (settings1!=null) {
             if (settings1.size() > 0) {
@@ -624,9 +633,10 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
         Log.w("modelpdtCart", "" + model.getProductName());
         SharedPreferences sharedPreferences1 = getActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
         selectCustomerId = sharedPreferences1.getString("customerId", "");
+
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
             try {
-                customerDetails = dbHelper.getCustomer(selectCustomerId);
+                customerDetails = dbHelper.getCustomerCart(selectCustomerId);
                 Log.w("allowfoc11", "" + allowFOCStr);
 
                 if (allowFOCStr.equalsIgnoreCase("Yes")) {
@@ -667,7 +677,14 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
             uomCodeText.setText(model.getUomCode());
             productsModel = model;
 
-            Log.w("uomcoddss", "" + isUomSetting);
+        ArrayList<UomModel> uomModelArrayList = dbHelper.getCatalogUomDetail(model.getProductCode());
+        Log.w("uomliPdtcode", "" + model.getProductCode());
+
+        if(uomModelArrayList.size() > 0) {
+            Log.w("uomlisttDB", "" + uomModelArrayList);
+            setUomList(uomModelArrayList, model);
+        }else{
+            Log.w("uomlisttDB1", "" + uomModelArrayList);
             if (isUomSetting) {
                 JSONObject jsonObject = new JSONObject();
                 try {
@@ -679,6 +696,9 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
                 }
                 uomSpinnerLay_cart.setVisibility(View.VISIBLE);
             }
+        }
+            Log.w("uomcoddss", "" + isUomSetting);
+
 
 //        }
 
@@ -702,7 +722,9 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
                 double discout = 0.0;
 
                 SharedPreferences sharedPreferences = getActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
-                selectCustomerId = sharedPreferences.getString("customerId", "");
+                //selectCustomerId = sharedPreferences.getString("customerId", "");
+                selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
                 if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
                     if (!discountEditext.getText().toString().isEmpty()) {
                         discout = Double.parseDouble(discountEditext.getText().toString());
@@ -808,6 +830,33 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
                                         uomCode, "0.00",
                                         availability.getText().toString());
 
+                                boolean status1 = dbHelper.insertCartHistoryTemp2(
+                                        model.getProductCode(),
+                                        model.getProductName(),
+                                        ctnQtyValue.getText().toString(),
+                                        pcsQtyValue.getText().toString(),
+                                        totalTextView.getText().toString(),
+                                        model.getProductImage(),
+                                        netTotalTextView.getText().toString(),
+                                        "weight",
+                                        ctnPrice.getText().toString(),
+                                        unitPrice.getText().toString(),
+                                        ctnQty.getText().toString(),
+                                        taxTextView.getText().toString(),
+                                        String.valueOf(sub_total),
+                                        customerDetails.get(0).getTaxType(),
+                                        focEditText.getText().toString(),
+                                        focType,
+                                        exchangeEditext.getText().toString(),
+                                        exchangeType,
+                                        discountEditext.getText().toString(),
+                                        //  String.valueOf(Utils.twoDecimalPoint(percentApi)),
+                                        returnEditext.getText().toString(),
+                                        returnType, "",
+                                        String.valueOf(total),
+                                        availability.getText().toString(),
+                                        uomCode, "0.00",
+                                        availability.getText().toString());
 
                     /*boolean status= dbHelper.insertCart(
                             model.getProductCode(),
@@ -1199,8 +1248,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 //                }).into(imageView);
 //        builder.show();
 //    }
-
-    public void getUOM(JSONObject jsonObject, ProductsModel model) {
+public void getUOM(JSONObject jsonObject, ProductsModel model) {
         // Initialize a new RequestQueue instance
         RequestQueue requestQueue = Volley.newRequestQueue(requireActivity());
         String url = Utils.getBaseUrl(requireActivity()) + "ItemUOMDetails";
@@ -1230,6 +1278,8 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
                         uomModel.setAltQty(uomObject.optString("altQty"));
                         uomModel.setBaseQty(uomObject.optString("baseQty"));
                         uomModel.setPrice(uomObject.optString("price"));
+//                        uomModel.setProductCode(uomObject.optString("productCode"));
+
                         uomList.add(uomModel);
                     }
                 }
@@ -1325,7 +1375,7 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
 
                 }
 
-                Log.w("UOMQtyValueCart:", uomList.get(position).getUomEntry());
+               // Log.w("UOMQtyValueCart:", uomList.get(position).getUomEntry());
                 Log.w("SelectedUOMCart:", uomName + "");
 
             }
@@ -1626,10 +1676,12 @@ public class DescriptionActivityToDialog extends BottomSheetDialogFragment {
     public void taxCalculation(double subTotal) {
 
         SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("customerPref", MODE_PRIVATE);
-        String selectCustomerId = sharedPreferences.getString("customerId", "");
+     //   String selectCustomerId = sharedPreferences.getString("customerId", "");
+        String selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
 
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
-            customerDetails = dbHelper.getCustomer(selectCustomerId);
+            customerDetails = dbHelper.getCustomerCart(selectCustomerId);
+            Log.w("custDetail_catalg",""+customerDetails.size());
             //setAllValues(customerDetails);
 
             String taxValue = customerDetails.get(0).getTaxPerc();

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -132,10 +133,12 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
     private LinearLayout productSettingLayout;
     private Button btnLogin;
     private EditText userIdText;
+    private EditText passwordTextcatl;
     private EditText passwordText;
     private boolean isEmailValid;
     private boolean isPasswordValid;
     private AlertDialog alertDialog;
+    private Dialog alertDialog1;
     private String isLProductSettingLogin = "";
     private ArrayList<CustomerDetails> allCustomersList;
     private ProgressDialog pd;
@@ -372,6 +375,18 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
                 }
             }
         }
+        catalog_temp2_switchl.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    showcatalogPwdDialog();
+//                    dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"1");
+                }else {
+                    // catalog_temp2_switchl.setChecked(false);
+                    dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"0");
+                }
+            }
+        });
+
         JSONObject jsonObject = new JSONObject();
         try {
 //            {"CustomerCode":"C1348","ItemCode":"AAA01"}
@@ -610,6 +625,53 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
         // all set and time to build and show up!
         alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+    public void showcatalogPwdDialog() {
+        //        // load the dialog_romt_user.xml layout and inflate to view
+        LayoutInflater layoutinflater = LayoutInflater.from(SettingActivity.this);
+        View promptUserView = layoutinflater.inflate(R.layout.catalog_temp2_password_dialog, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(SettingActivity.this);
+
+        alertDialogBuilder.setView(promptUserView);
+        alertDialogBuilder.setCancelable(false);
+        //    l alertDialog = alertDialogBuilder.create()
+
+        passwordTextcatl = promptUserView.findViewById(R.id.passwordCatal);
+        ImageView buttonOk = promptUserView.findViewById(R.id.buttonOk);
+        ImageView buttonclose = promptUserView.findViewById(R.id.buttonclose);
+        // prompt for username
+        buttonOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               if(!passwordTextcatl.getText().toString().isEmpty()){
+                   if(passwordTextcatl.getText().toString().equals("5551")){
+
+                       dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"1");
+                       catalog_temp2_switchl.setChecked(true);
+
+                       alertDialog1.dismiss();
+                   }else{
+                       dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"0");
+                   //    catalog_temp2_switchl.setChecked(false);
+                       Toast.makeText(getApplicationContext(), "Invalid Password", Toast.LENGTH_SHORT).show();
+                   }
+               }else{
+                   Toast.makeText(getApplicationContext(), "Enter Password", Toast.LENGTH_SHORT).show();
+               }
+            }
+        });
+        buttonclose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"0");
+                catalog_temp2_switchl.setChecked(false);
+                alertDialog1.dismiss();
+            }
+        });
+
+        // all set and time to build and show up!
+        alertDialog1 = alertDialogBuilder.create();
+        alertDialog1.show();
     }
 
 
@@ -1206,13 +1268,14 @@ public class SettingActivity extends AppCompatActivity implements Runnable, Comp
                     dbHelper.insertSettings(email_Switch.getTag().toString(),"0");
                 }
                 break;
-            case R.id.catalog_temp2_switch:
-                if (isChecked){
-                    dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"1");
-                }else {
-                    dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"0");
-                }
-                break;
+//            case R.id.catalog_temp2_switch:
+//                if (isChecked){
+//                      dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"1");
+//                }else {
+//                   // catalog_temp2_switchl.setChecked(false);
+//                        dbHelper.insertSettings(catalog_temp2_switchl.getTag().toString(),"0");
+//                }
+//                break;
             case R.id.UomSwitch:
                 if (isChecked){
                     dbHelper.insertSettings(uom_Switch.getTag().toString(),"1");

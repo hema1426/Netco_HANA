@@ -2,6 +2,8 @@ package com.winapp.saperp.adapter;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import static com.winapp.saperp.fragments.CategoriesTemp2TabFragments.sharedPreferenceUtil;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,7 +33,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
 import com.winapp.saperp.R;
-import com.winapp.saperp.activity.DescriptionActivityToDialog;
 import com.winapp.saperp.activity.MainHomeActivity;
 import com.winapp.saperp.db.DBHelper;
 import com.winapp.saperp.model.CustomerDetails;
@@ -243,7 +244,6 @@ public class CatagoriesTemp2ProductAdapter extends RecyclerView.Adapter {
                                         productViewHolder.thumbnail.setImageResource(R.drawable.no_image_found);
                                         return false;
                                     }
-
                                     @Override
                                     public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                                         return false;
@@ -259,11 +259,14 @@ public class CatagoriesTemp2ProductAdapter extends RecyclerView.Adapter {
                     public void onClick(View view) {
                         SharedPreferences sharedPreferences = mContext.getSharedPreferences("customerPref", MODE_PRIVATE);
                         SharedPreferences.Editor customerPredEdit = sharedPreferences.edit();
-                        String selectCustomerId = sharedPreferences.getString("customerId", "");
+                   //     String selectCustomerId = sharedPreferences.getString("customerId", "");
+                        String selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
                         customerDetails = new ArrayList<>();
                         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
-                            customerDetails = dbHelper.getCustomer(selectCustomerId);
+                            customerDetails = dbHelper.getCustomerCart(selectCustomerId);
                         }
+                        Log.w("custname_descript", "" + selectCustomerId);
                         ArrayList<SettingsModel> settings = dbHelper.getSettings();
                         if (settings.size() > 0) {
                             for (SettingsModel model : settings) {
@@ -343,7 +346,6 @@ public class CatagoriesTemp2ProductAdapter extends RecyclerView.Adapter {
                             }
                         } else {
                             Toast.makeText(mContext, "Select Customer ", Toast.LENGTH_SHORT).show();
-
                         }
                     }
                 });

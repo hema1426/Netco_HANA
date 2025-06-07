@@ -2,6 +2,7 @@ package com.winapp.saperp.adapter;
 
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.winapp.saperp.activity.CartTemp2Activity.sharedPreferenceUtil;
 import static com.winapp.saperp.utils.Utils.fourDecimalPoint;
 import static com.winapp.saperp.utils.Utils.twoDecimalPoint;
 
@@ -539,7 +540,9 @@ public class CartAdapterTemp2 extends
         try {
             SharedPreferences sharedPreferences = mContext.getSharedPreferences("customerPref",MODE_PRIVATE);
             String selectCustomerId = sharedPreferences.getString("customerId", "");
-            customerDetails=dbHelper.getCustomer(selectCustomerId);
+            selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
+            customerDetails=dbHelper.getCustomerCart(selectCustomerId);
             String taxValue=customerDetails.get(0).getTaxPerc();
             String taxType=customerDetails.get(0).getTaxType();
             String itemDisc="";

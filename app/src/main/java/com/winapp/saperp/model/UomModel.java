@@ -6,6 +6,7 @@ import com.cete.dynamicpdf.merger.S;
 
 public class UomModel {
 
+    private String productCode;
     private String uomCode;
     private String uomName;
     private String uomEntry;
@@ -13,6 +14,14 @@ public class UomModel {
     private String baseQty;
     private String price;
     private Boolean isChecked;
+
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
+    }
 
     public Boolean getChecked() {
         return isChecked;

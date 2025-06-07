@@ -28,6 +28,8 @@ public class SharedPreferenceUtil {
     public  String KEY_CUSTOMER_TAXPERCENTAGE = "cust_taxpercent";
     public  String KEY_CUSTOMER_TAXCODE = "cust_taxcode";
     public  String KEY_CUSTOMER_HAVETAX = "cust_havetax";
+    public  String KEY_CATALOG_CUST_NAME = "catalog_cust_name";
+
 //    public  String KEY_ADMIN_PERMISSION = "admin_permission";
 
     private static SharedPreferences sharedPreferences;

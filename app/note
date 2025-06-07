@@ -7,6 +7,24 @@ Password: 1234
 
 V1 V11234
 
+ categorieesTempActivity
+----------------------
+//select customer shareprefence not showing
+//todo error line  -
+ //todo db error
+//todo check orderHistory db delete  -- TABLE_CART_HISTORY_TEMP2
+
+CateoriesTemp2Fragment
+----------------
+// todo check uom
+//todo letter list
+// Log.w("custname_descript", "" + selectCustomerId);  -- CatagoriesTemp2ProductAdapter
+//getCatalogUomDetail - DBHelper price not showimg
+// orderHistory date clear
+
+
+
+
 SUPER_STAR_DEMO
 ST01
 Yn7876z
@@ -16,6 +34,8 @@ Yn7876z
 
 
 thongai -- SALES   1234
+//imperial
+{"Username":"SALES2","Password":"imperial"}
 
 aug 24
 {

@@ -993,6 +993,7 @@ public class PrinterUtils extends AppCompatActivity {
                             Double.parseDouble(invoiceHeaderDetails.get(0).getBillDiscount()) > 0.00) {
                         invoiceBottomLine = invoiceBottomLine + 10;
                     }
+
                     Log.w("ActualFinalHeightinv::", invoiceList.size() + "");
 //            finalHeight = height + (invoiceList.size() * invoiceLineHeight) +invoiveSalesManHeight
 //                    +invoivePaynowHeight + invoiveReturnHeight + invoiveSubTotalHeight + invoiceBottomLine;
@@ -1180,10 +1181,12 @@ public class PrinterUtils extends AppCompatActivity {
                     if (showUserName.equalsIgnoreCase("True")) {
                         TscDll.sendcommand("TEXT 340," + y + ",\"Poppins.TTF\",0,8,8,\"" + "User: " + username + "\"\n");
                     }
+                    y += LINE_SPACING;
+                    TscDll.sendcommand("BAR 0," + y + ",800,2\n");
 
                     y += 20;
-                    TscDll.sendcommand("TEXT 13," + y + ",\"Poppins.TTF\",0,8,8,\"" + "SN" + "\"\n");
-                    TscDll.sendcommand("TEXT 63," + y + ",\"Poppins.TTF\",0,8,8,\"" + "PRODUCT" + "\"\n");
+                    TscDll.sendcommand("TEXT 16," + y + ",\"Poppins.TTF\",0,8,8,\"" + "SN" + "\"\n");
+                    TscDll.sendcommand("TEXT 65," + y + ",\"Poppins.TTF\",0,8,8,\"" + "PRODUCT" + "\"\n");
                     if (showReturn.equals("false")) {
                         TscDll.sendcommand("TEXT 270," + y + ",\"Poppins.TTF\",0,8,8,\"" + "QTY" + "\"\n");
                     }
@@ -1194,8 +1197,8 @@ public class PrinterUtils extends AppCompatActivity {
                     //  TscDll.sendcommand("TEXT 70,"+y+",\"Poppins.TTF\",0,8,8,\""+"ISS"+"\"\n");
                     if (showReturn.equals("true")) {
                         y += TITLE_LINE_SPACING;
-                        TscDll.sendcommand("TEXT 13," + y + ",\"Poppins.TTF\",0,8,8,\"" + "ISS" + "\"\n");
-                        TscDll.sendcommand("TEXT 170," + y + ",\"Poppins.TTF\",0,8,8,\"" + "RTN" + "\"\n");
+                        TscDll.sendcommand("TEXT 16," + y + ",\"Poppins.TTF\",0,8,8,\"" + "ISS" + "\"\n");
+                        TscDll.sendcommand("TEXT 173," + y + ",\"Poppins.TTF\",0,8,8,\"" + "RTN" + "\"\n");
                         TscDll.sendcommand("TEXT 270," + y + ",\"Poppins.TTF\",0,8,8,\"" + "NET" + "\"\n");
                         TscDll.sendcommand("TEXT 370," + y + ",\"Poppins.TTF\",0,8,8,\"" + "($)" + "\"\n");
                         TscDll.sendcommand("TEXT 460," + y + ",\"Poppins.TTF\",0,8,8,\"" + "($)" + "\"\n");
@@ -1207,7 +1210,7 @@ public class PrinterUtils extends AppCompatActivity {
                     int index = 1;
                     for (InvoicePrintPreviewModel.InvoiceList invoice : invoiceList) {
                         y += LINE_SPACING;
-                        TscDll.sendcommand("TEXT 13," + y + ",\"Bold.TTF\",0,8,8,\"" + index + "\"\n");
+                        TscDll.sendcommand("TEXT 16," + y + ",\"Bold.TTF\",0,8,8,\"" + index + "\"\n");
                         String productName = "";
                         String uomcode = "";
                         String custItemCode = "";
@@ -1237,15 +1240,15 @@ public class PrinterUtils extends AppCompatActivity {
 
                         productNameStr = productName + custItemCode ;
 
-                        if (productNameStr.length() <= 40) {
-                            TscDll.sendcommand("TEXT 60," + y + ",\"Bold.TTF\",0,8,8,\"" + productNameStr + "\"\n");
+                        if (productNameStr.length() <= 38) {
+                            TscDll.sendcommand("TEXT 63," + y + ",\"Bold.TTF\",0,8,8,\"" + productNameStr + "\"\n");
                         } else {
-                            String firstname = productNameStr.substring(0, 37);
-                            String secondname = productNameStr.substring(37);
+                            String firstname = productNameStr.substring(0, 35);
+                            String secondname = productNameStr.substring(35);
 
-                            TscDll.sendcommand("TEXT 60," + y + ",\"Bold.TTF\",0,8,8,\"" + firstname + "\"\n\n");
+                            TscDll.sendcommand("TEXT 63," + y + ",\"Bold.TTF\",0,8,8,\"" + firstname + "\"\n\n");
                             y += 30;
-                            TscDll.sendcommand("TEXT 60," + y + ",\"Bold.TTF\",0,8,8,\"" + secondname + "\"\n\n");
+                            TscDll.sendcommand("TEXT 63," + y + ",\"Bold.TTF\",0,8,8,\"" + secondname + "\"\n\n");
                         }
 
                         if (showReturn.equals("true")) {

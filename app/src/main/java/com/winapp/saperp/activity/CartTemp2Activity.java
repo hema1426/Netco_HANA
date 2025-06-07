@@ -235,7 +235,7 @@ public class CartTemp2Activity extends AppCompatActivity {
     public static String current_longitude = "0.00";
     public static String current_addr = "";
     public String currentDateString;
-    private SharedPreferenceUtil sharedPreferenceUtil;
+    public static SharedPreferenceUtil sharedPreferenceUtil;
     private String custNameShared = "" ;
     private String custCodeShared = "";
     private String custHavetaxShared  = "";
@@ -310,16 +310,10 @@ public class CartTemp2Activity extends AppCompatActivity {
         printerMacId = sharedPreferences.getString("mac_address", "");
 
         sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE);
-        selectCustomerId = sharedPreferences.getString("customerId", "");
-        if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
-            //  customerDetails=dbHelper.getCustomer(selectCustomerId);
-            try {
-                //todo
-                getCustomerDetails(selectCustomerId, false);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+       // selectCustomerId = sharedPreferences.getString("customerId", "");
+        selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+        Log.w("custidcatt..", "" + selectCustomerId);
+
         sharedPreferenceUtil.setStringPreference(
                 sharedPreferenceUtil.KEY_CUSTOMER_NAME, "");
         sharedPreferenceUtil.setStringPreference(
@@ -332,6 +326,41 @@ public class CartTemp2Activity extends AppCompatActivity {
                 sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, "");
         sharedPreferenceUtil.setStringPreference(
                 sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  "");
+
+        if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
+            //  customerDetails=dbHelper.getCustomer(selectCustomerId);
+            try {
+                //todo
+                customerDetails = dbHelper.getCustomerCart(selectCustomerId);
+
+                if(customerDetails.size() > 0){
+                    if(!selectCustomerId.equals(customerDetails.get(0).getCustomerCode())){
+                        Toast.makeText(this, "different customer!"
+                                +selectCustomerId+".."+customerDetails.get(0).getCustomerCode(), Toast.LENGTH_SHORT).show();
+                    }
+                    Log.w("custResNAme",""+customerDetails.get(0).getCustomerName()+
+                            ".. "+customerDetails.get(0).getCustomerCode());
+
+                    sharedPreferenceUtil.setStringPreference(
+                            sharedPreferenceUtil.KEY_CUSTOMER_NAME, customerDetails.get(0).getCustomerName());
+                    sharedPreferenceUtil.setStringPreference(
+                            sharedPreferenceUtil.KEY_CUSTOMER_CODE, customerDetails.get(0).getCustomerCode());
+                    sharedPreferenceUtil.setStringPreference(
+                            sharedPreferenceUtil.KEY_CUSTOMER_TAXTYPE, customerDetails.get(0).getTaxType());
+                    sharedPreferenceUtil.setStringPreference(
+                            sharedPreferenceUtil.KEY_CUSTOMER_TAXPERCENTAGE, customerDetails.get(0).getTaxPerc());
+                    sharedPreferenceUtil.setStringPreference(
+                            sharedPreferenceUtil.KEY_CUSTOMER_TAXCODE, customerDetails.get(0).getTaxCode());
+                    sharedPreferenceUtil.setStringPreference(
+                            sharedPreferenceUtil.KEY_CUSTOMER_HAVETAX,  customerDetails.get(0).getHaveTax());
+                }else{
+                    getCustomerDetails(selectCustomerId, false);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         // getPermission();
 
         Log.w("Printer_Mac_Id:", printerMacId);
@@ -393,11 +422,12 @@ public class CartTemp2Activity extends AppCompatActivity {
             selectImage.setTag("select_image");
         }
 
-        if (InternetConnectivity.isConnected(this)) {
-            getLocalData();
-        } else {
-            Toast.makeText(getApplicationContext(), "No Internet found", Toast.LENGTH_SHORT).show();
-        }
+        getLocalData();//todo
+//        if (InternetConnectivity.isConnected(this)) {
+//            getLocalData();
+//        } else {
+//            Toast.makeText(getApplicationContext(), "No Internet found", Toast.LENGTH_SHORT).show();
+//        }
 
         checkOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -480,7 +510,7 @@ public class CartTemp2Activity extends AppCompatActivity {
         shopNow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), CategoriesActivity.class);
+                Intent intent = new Intent(getApplicationContext(), CategoriesTemp2Activity.class);
                 startActivity(intent);
                 finish();
             }
@@ -1174,8 +1204,10 @@ public class CartTemp2Activity extends AppCompatActivity {
         }
 
         SharedPreferences sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE);
-        selectCustomerId = sharedPreferences.getString("customerId", "");
-        customerDetails = dbHelper.getCustomer(selectCustomerId);
+     //   selectCustomerId = sharedPreferences.getString("customerId", "");
+        selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
+        customerDetails = dbHelper.getCustomerCart(selectCustomerId);
         if (customerDetails.get(0).getTaxType().equals("I")) {
             net_total_value = net_total;
         } else {
@@ -1191,7 +1223,7 @@ public class CartTemp2Activity extends AppCompatActivity {
             double taxAmount1 = 0.0, netTotal1 = 0.0;
             double return_qty = 0.0;
             double pcspercarton = 0.0;
-            customerDetails = dbHelper.getCustomer(selectCustomerId);
+            customerDetails = dbHelper.getCustomerCart(selectCustomerId);
             String taxVal = customerDetails.get(0).getTaxPerc();
             String taxType = customerDetails.get(0).getTaxType();
             Log.w("TaxType:", taxType);
@@ -1533,8 +1565,10 @@ public class CartTemp2Activity extends AppCompatActivity {
             }
 
             SharedPreferences sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE);
-            selectCustomerId = sharedPreferences.getString("customerId", "");
-            customerDetails = dbHelper.getCustomer(selectCustomerId);
+           // selectCustomerId = sharedPreferences.getString("customerId", "");
+            selectCustomerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
+            customerDetails = dbHelper.getCustomerCart(selectCustomerId);
 
             if (customerDetails.get(0).getTaxType().equals("I")) {
                 taxTitle.setText("GST ( Inc )");
@@ -1833,7 +1867,7 @@ public class CartTemp2Activity extends AppCompatActivity {
 
         // Sales Header Add values
         ArrayList<CartModel> localCart;
-        localCart = dbHelper.getAllCartItems2();
+        localCart = dbHelper.getAllCartHistoryItems2();
         double net_sub_total = 0.0;
         double net_tax = 0.0;
         double net_total = 0.0;
@@ -1917,7 +1951,7 @@ public class CartTemp2Activity extends AppCompatActivity {
             orderHeader.setSubTotal(subTotalValue);
             orderHeader.setTotal(totalValue);
             orderHeader.setNetTotal(netTotalValue);
-            orderHeader.setNetTotal(itemDiscountAmount);
+            orderHeader.setItemDiscount(itemDiscountAmount);
             orderHeader.setBillDiscount(billDiscountAmount);
 
 
@@ -2002,7 +2036,8 @@ public class CartTemp2Activity extends AppCompatActivity {
             dbHelper.insertOrderHeader(orderHeader);
             // Sales Details Add to the Objects
             dbHelper.updateCartTemp2OrderId(currentTimestamp,selectCustomerId);
-            localCart = dbHelper.getAllCartItems2();
+            dbHelper.updateCartTemp2_HistoryOrderId(currentTimestamp,selectCustomerId);
+            localCart = dbHelper.getAllCartHistoryItems2();
 
             int index = 1;
             for (CartModel model : localCart) {
@@ -2136,6 +2171,9 @@ public class CartTemp2Activity extends AppCompatActivity {
 
             Toast.makeText(this, "Saved successfully", Toast.LENGTH_SHORT).show();
             redirectActivity();
+            sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+            dbHelper.removeAllItemsTemp2();
+
 //            saveSalesOrder(rootJsonObject, "Invoice", copy);
 
         } catch (JSONException e) {
@@ -3211,16 +3249,19 @@ public class CartTemp2Activity extends AppCompatActivity {
     }
 
     public void redirectActivity() {
-        if (saveAction.equals("SalesOrder") || saveAction.equals("SalesEdit")) {
-            Intent intent = new Intent(CartTemp2Activity.this, SalesOrderListActivity.class);
+            Intent intent = new Intent(CartTemp2Activity.this, CategoriesTemp2Activity.class);
             startActivity(intent);
             finish();
-        } else {
-            Log.w("cartSavEntr2", "");
-            Intent intent = new Intent(CartTemp2Activity.this, NewInvoiceListActivity.class);
-            startActivity(intent);
-            finish();
-        }
+//        if (saveAction.equals("SalesOrder") || saveAction.equals("SalesEdit")) {
+//            Intent intent = new Intent(CartTemp2Activity.this, SalesOrderListActivity.class);
+//            startActivity(intent);
+//            finish();
+//        } else {
+//            Log.w("cartSavEntr2", "");
+//            Intent intent = new Intent(CartTemp2Activity.this, NewInvoiceListActivity.class);
+//            startActivity(intent);
+//            finish();
+//        }
     }
 
     public void resetCustomerDetails() {

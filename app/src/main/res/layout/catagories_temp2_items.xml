@@ -66,6 +66,7 @@
                     android:layout_height="30dp"
                     android:layout_gravity="center"
                     android:src="@drawable/add_orange"
+                    android:visibility="gone"
                     android:layout_alignParentRight="true"
                     tools:ignore="ContentDescription" />
 

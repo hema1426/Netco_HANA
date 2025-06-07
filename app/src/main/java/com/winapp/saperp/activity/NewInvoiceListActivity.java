@@ -14,9 +14,11 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -111,6 +113,7 @@ import com.winapp.saperp.thermalprinter.PrinterUtils;
 import com.winapp.saperp.utils.Constants;
 import com.winapp.saperp.utils.FileDownloader;
 import com.winapp.saperp.utils.ImageUtil;
+import com.winapp.saperp.utils.NetworkChangeReceiver;
 import com.winapp.saperp.utils.Pager;
 import com.winapp.saperp.utils.PdfUtils;
 import com.winapp.saperp.utils.SessionManager;
@@ -272,6 +275,7 @@ public class NewInvoiceListActivity extends NavigationActivity
     String pdfFileName;
     static View pdfViewLayout;
     File pdfFile;
+     NetworkChangeReceiver networkChangeReceiver;
 
     private String company_name;
     private String company_address1;
@@ -322,6 +326,8 @@ public class NewInvoiceListActivity extends NavigationActivity
         getLayoutInflater().inflate(R.layout.activity_new_invoice_list, contentFrameLayout);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Invoices");
+
+     networkChangeReceiver = new NetworkChangeReceiver();
 
         pd = new ProgressDialog(NewInvoiceListActivity.this);
         pd.setMessage("Downloading Product Image, please wait ...");
@@ -2967,7 +2973,21 @@ public class NewInvoiceListActivity extends NavigationActivity
             Log.e("PdfOpenError:", edx.getMessage());
         }
     }
+    @Override
+    public void onStart() {
+        super.onStart() ;
+        if(networkChangeReceiver!= null) {
+            IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+            registerReceiver(networkChangeReceiver, filter);
+        }
+    }
 
+    public void onStop() {
+        if(networkChangeReceiver!= null) {
+            super.onStop();
+            unregisterReceiver(networkChangeReceiver);
+        }
+    }
     public void sharePdfView(File pdfFile) {
         try {
             if (pdfGenerateDialog != null && pdfGenerateDialog.isShowing()) {

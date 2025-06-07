@@ -122,16 +122,17 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     private String creditLimitAmount = "0.00";
     private String outstandingAmount = "0.00";
     private String locationCode;
+    ArrayList<CustomerGroupModel> groupCustList = new ArrayList<>() ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_categories_temp2);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Catalog");
+        getSupportActionBar().setTitle("Catalog - Template2");
 
         Log.w("activity_cg", getClass().getSimpleName().toString()
-                + " - ProductAdapterLoadMore" + " - CategoriesTabFragments");
+                + " - CatagoriesTemp2ProductAdapter" + " - CategoriesTemp2TabFragments");
 
         // product loading apis
 //        https://c21326-EasySales-Test.cloudiax.com/api/CategoryDetails {"CategoryCode": "102", "LocationCode": "01"}
@@ -173,15 +174,26 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
 //            String customerId = sharedPreferences.getString("customerId", "");
 //            if (customerId != null && !customerId.equals("empty") && !customerId.isEmpty())
 //                customerDetails = dbHelper.getCustomer(customerId);
-
-            ArrayList<CustomerGroupModel> groupCustList = dbHelper.getCustomerGroup();
+            if(dbHelper.getCustomerGroup().size() > 0) {
+                //todo error line
+               // java.lang.IllegalStateException: Cannot perform this operation because the connection pool has been closed.
+                //attempt to re-open an already-closed object: SQLiteDatabase: /data/user/0/com.winapp.saperp/databases/Catalog.db
+                //at com.winapp.saperp.db.DBHelper.getCustomerGroup(DBHelper.java:433)
+                groupCustList = dbHelper.getCustomerGroup();
+            }
 
             runOnUiThread(() -> {
-//                if (customerDetails.size() > 0) {
-//                    selectCustomer.setText(customerDetails.get(0).getCustomerName());
-//                } else {
-//                    selectCustomer.setText("Select Customer");
-//                }
+               // String customerId = sharedPreferences.getString("customerId", "");
+                String customerId = sharedPreferenceUtil.getStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+
+                if (customerId != null && !customerId.equals("empty") && !customerId.isEmpty()) {
+                    customerDetails = dbHelper.getCustomerCart(customerId);
+                    Log.w("custname11", "" + customerDetails.get(0).getCustomerName());
+                    selectCustomer.setText(customerDetails.get(0).getCustomerName());
+                } else {
+                    Log.w("custname22", "" );
+                    selectCustomer.setText("Choose Customer");
+                }
 
                 if (groupCustList.size() > 0) {
                     Log.w("custSize_cata_group", "" + groupCustList.size());
@@ -288,6 +300,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
             }
         });
         allCategoriesList = new ArrayList<>();
+        //todo db error
         allCategoriesList = dbHelper.getAllCategories();
         if (allCategoriesList.size() > 0) {
             Log.w("catalo_catagori", "" + allCategoriesList.size());
@@ -707,14 +720,17 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         customerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         customerNameAdapter = new CustomerNameAdapter(customerNames, (customerId, customerName, pos) -> {
             viewCloseBottomSheet();
-//            int count = dbHelper.numberOfRowsTemp2();
-//            if (count > 0) {
-//                showProductDeleteAlert(customerId);
-//            } else {
+            int count = dbHelper.numberOfRowsTemp2();
+            Log.w("count_categ",""+count);
+            if (count > 0) {
+                //todo check orderHistory db delete  -- TABLE_CART_HISTORY_TEMP2
+                showProductDeleteAlert(customerId);
+            } else {
             selectCustomer.setText(customerName);
-            //todo customer detail
-            setCustomerDetails(customerId);
-//            }
+            //todo customer detail - no need to remove
+                sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, customerId);
+                setCustomerDetails(customerId);
+            }
 
         });
         customerView.setAdapter(customerNameAdapter);
@@ -730,10 +746,11 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         builder.setMessage("All Data Will be Cleared are you sure want to back ?");
         builder.setPositiveButton("OK", (dialogInterface, i) -> {
             dialogInterface.dismiss();
-            dbHelper.removeAllInvoices();
-            dbHelper.removeAllInvoiceItems();
-            dbHelper.removeAllReturn();
-            Utils.clearCustomerSession(this);
+            sharedPreferenceUtil.setStringPreference(sharedPreferenceUtil.KEY_CATALOG_CUST_NAME, "");
+            dbHelper.removeAllItemsTemp2();
+            clearData();
+           // dbHelper.removeAllInvoiceItems();
+           // dbHelper.removeAllReturn();
             finish();
         });
         builder.setNegativeButton("NO", (dialog, which) -> dialog.dismiss());
@@ -751,7 +768,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                 "OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
-                        dbHelper.removeAllItemsTemp2();
+                        clearData();
                         setupBadge();
                         Utils.refreshActionBarMenu(CategoriesTemp2Activity.this);
                         try {
@@ -771,14 +788,19 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
         AlertDialog alert11 = builder1.create();
         alert11.show();
     }
+    public void clearData() {
+        dbHelper.removeAllItemsTemp2();
+        //dbHelper.removeCustomer();
+        selectCustomer.setText("Choose Customer");
+        Utils.clearCustomerSession(this);
+    }
 
     public void setCustomerDetails(String customerId) {
         Utils.setCustomerSession(this, customerId);
         //todo
-        ArrayList<CustomerDetails> custDetails = dbHelper.getCustomer(customerId) ;
+       // ArrayList<CustomerDetails> custDetails = dbHelper.getCustomer(customerId) ;
 
 //        if(custDetails.size() > 0) {
-//
 //        }else{
             getCustomerDetails(customerId, true, "");
        // }
@@ -903,6 +925,7 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
                         viewPagerAdapter = new ViewPagerTemp2Adapter(getSupportFragmentManager(),
                                 allCategoriesList.size(), allCategoriesList);
 //                        viewPager.setOffscreenPageLimit(5);
+                        viewPager.setOffscreenPageLimit(allCategoriesList.size());
                         viewPager.setAdapter(viewPagerAdapter);
 
                        tabLayout.setupWithViewPager(viewPager);  // viewpager only click item
@@ -975,9 +998,10 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        int count = dbHelper.numberOfRowsInInvoice();
+        int count = dbHelper.numberOfRowsTemp2();
+        Log.w("noofcount2",""+count);
         if (count > 0) {
-            showAlertDialog();
+            //showAlertDialog();
         } else {
             finish();
         }
@@ -986,9 +1010,10 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            int count = dbHelper.numberOfRowsInInvoice();
+            int count = dbHelper.numberOfRowsTemp2();
+            Log.w("noofcount",""+count);
             if (count > 0) {
-                showAlertDialog();
+              //  showAlertDialog();
             } else {
                 finish();
             }
@@ -1033,8 +1058,9 @@ public class CategoriesTemp2Activity extends AppCompatActivity {
 
         if (id == android.R.id.home) {
             int count = dbHelper.numberOfRowsInInvoice();
+            Log.w("noofcount1",""+count);
             if (count > 0) {
-                showAlertDialog();
+              //  showAlertDialog();
             } else {
                 finish();
             }

@@ -164,11 +164,12 @@ public class CategoriesActivity extends AppCompatActivity {
         //emptyLayout=findViewById(R.id.empty_layout);
 
         String customerId = sharedPreferences.getString("customerId", "");
+
         if (customerId != null && !customerId.equals("empty") && !customerId.isEmpty()) {
             customerDetails = dbHelper.getCustomer(customerId);
             selectCustomer.setText(customerDetails.get(0).getCustomerName());
         } else {
-            selectCustomer.setText("Select Customer");
+            selectCustomer.setText("Choose Customer");
         }
 
         try {

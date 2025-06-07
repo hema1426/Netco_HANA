@@ -310,6 +310,7 @@ public class CartActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences("customerPref", MODE_PRIVATE);
         selectCustomerId = sharedPreferences.getString("customerId", "");
+
         if (selectCustomerId != null && !selectCustomerId.isEmpty()) {
             //  customerDetails=dbHelper.getCustomer(selectCustomerId);
             try {
