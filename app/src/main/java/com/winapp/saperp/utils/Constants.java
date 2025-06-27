@@ -137,6 +137,7 @@ public class Constants {
     public static String TRANS_ORIENT_DEMO ="https://c21326-easysales-onlytesting.cloudiax.com/api/";
 
     public static String FUXIN ="https://app0030.cloudtaktiks.com:11018/api/";
+    public static String Netco ="https://c21696-easysales-livesingmar.cloudiax.com/api/";
     public static String test_URL_OCT24 ="https://c21199-er-test.cloudiax.com/api/";
    //RAYMANG
     public static String RAYMANG_URL_JULY="https://app0027.cloudtaktiks.com:11014/api/";
