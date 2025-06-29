@@ -108,6 +108,15 @@
     </group>
 
     <group
+        android:id="@+id/drawermenu_group_a"
+        >
+        <item
+            android:id="@+id/navigation_item_purchaseorder"
+            android:icon="@drawable/ic_catalog"
+            android:title="Purchase Order" />
+    </group>
+
+    <group
         android:id="@+id/drawermenu_group_9"
         >
         <item
@@ -116,7 +125,6 @@
             android:title="Receipts" />
 
     </group>
-
 
     <group
         android:id="@+id/drawermenu_group_3"
@@ -134,6 +142,7 @@
         <item
             android:icon="@drawable/ic_calendar_menu"
             android:id="@+id/navigation_settlement"
+            android:visible="false"
             android:title="Settlement" />
 
     </group>
@@ -190,6 +199,7 @@
         <item
             android:icon="@drawable/ic_sales_order_menu"
             android:id="@+id/navigation_expense"
+            android:visible="false"
             android:title="Expense" />
 
     </group>

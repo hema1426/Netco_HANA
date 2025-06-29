@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.winapp.saperp">
+    package="com.winapp.sapNetco">
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -68,7 +68,7 @@
         android:required="false" />
 
     <application
-        android:name=".thermalprinter.App"
+        android:name="com.winapp.sapNetco.thermalprinter.App"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:fullBackupOnly="false"
@@ -83,201 +83,211 @@
         tools:ignore="GoogleAppIndexingWarning,UnusedAttribute"
         tools:replace="allowBackup,supportsRtl">
         <activity
-            android:name=".activity.StockProductsActivity"
+            android:name="com.winapp.sapNetco.activity.StockProductsActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="false" />
         <activity
-            android:name=".salesreturn.NewSalesReturnProductAddActivity"
+            android:name="com.winapp.sapNetco.salesreturn.NewSalesReturnProductAddActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".salesreturn.NewSalesReturnListActivity"
+            android:name="com.winapp.sapNetco.salesreturn.NewSalesReturnListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".ReportPreview.ReceiptDetailPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.ReceiptDetailPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.CustomerLisrOutstandPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.CustomerLisrOutstandPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.ReceiptSummaryPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.ReceiptSummaryPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoCustomerOutstandPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoCustomerOutstandPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.SapStockSummaryOpenPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.SapStockSummaryOpenPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoCustomerOutstandDatePreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoCustomerOutstandDatePreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".printpreview.StockAdjustPrintPreview"
+            android:name="com.winapp.sapNetco.printpreview.StockAdjustPrintPreview"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.StockTakePreviewPrintActivity"
+            android:name="com.winapp.sapNetco.activity.PurchaseOrderPrintPreviewActivity"
             android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.winapp.sapNetco.activity.PurchaseOrderListActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.winapp.sapNetco.activity.StockTakePreviewPrintActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".ReportPreview.SapStockSummaryPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.SapStockSummaryPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.SapStockReturnPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.SapStockReturnPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoInvoicebyProductPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoInvoicebyProductPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoReceiptSettlePreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoReceiptSettlePreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoInvoicebySummaryPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoInvoicebySummaryPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoSettlementPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoSettlementPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.NewExpensePrintPreviewActivity"
+            android:name="com.winapp.sapNetco.activity.NewExpensePrintPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.StockAdjustmentListActivity"
+            android:name="com.winapp.sapNetco.activity.StockAdjustmentListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.NewStockAdjustmentProductAddActivity"
+            android:name="com.winapp.sapNetco.activity.NewStockAdjustmentProductAddActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             />
         <activity
-            android:name=".activity.StockTakeListActivity"
+            android:name="com.winapp.sapNetco.activity.StockTakeListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.PurchaseInvoiceListActivity"
+            android:name="com.winapp.sapNetco.activity.PurchaseInvoiceListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
-            android:name=".ReportPreview.SapSalesSummaryPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.SapSalesSummaryPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ReportPreview.RoProductStockPreviewActivity"
+            android:name="com.winapp.sapNetco.ReportPreview.RoProductStockPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".printpreview.NewInvoicePrintPreviewActivity"
+            android:name="com.winapp.sapNetco.printpreview.NewInvoicePrintPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.PurchasePrintPreviewActivity"
+            android:name="com.winapp.sapNetco.activity.PurchasePrintPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.TransferPreviewPrintActivity"
+            android:name="com.winapp.sapNetco.activity.TransferPreviewPrintActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.FilterCustomerListActivity"
+            android:name="com.winapp.sapNetco.activity.FilterCustomerListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.StockRequestListActivity"
+            android:name="com.winapp.sapNetco.activity.StockRequestListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.TransferProductAddActivity"
+            android:name="com.winapp.sapNetco.activity.TransferProductAddActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.NewExpenseModuleListActivity"
+            android:name="com.winapp.sapNetco.activity.NewExpenseModuleListActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.NewExpenseModuleAddActivity"
+            android:name="com.winapp.sapNetco.activity.NewExpenseModuleAddActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.CreateNewInvoiceActivity"
+            android:name="com.winapp.sapNetco.activity.CreateNewInvoiceActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".newtransfer.TransferInActivity"
+            android:name="com.winapp.sapNetco.newtransfer.TransferInActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.TransferListProductActivity"
+            android:name="com.winapp.sapNetco.activity.TransferListProductActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.TransferActivity"
+            android:name="com.winapp.sapNetco.activity.TransferActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.GRAActivity"
+            android:name="com.winapp.sapNetco.activity.GRAActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.GRAListActivity"
+            android:name="com.winapp.sapNetco.activity.GRAListActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".printpreview.SettlementPrintPreview"
+            android:name="com.winapp.sapNetco.printpreview.SettlementPrintPreview"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.ReportsActivity"
+            android:name="com.winapp.sapNetco.activity.ReportsActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.SettlementListActivity"
+            android:name="com.winapp.sapNetco.activity.SettlementListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.SettlementActivity"
+            android:name="com.winapp.sapNetco.activity.SettlementActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.DeliveryOrderListActivity"
+            android:name="com.winapp.sapNetco.activity.DeliveryOrderListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".printpreview.DOPrintPreview"
+            android:name="com.winapp.sapNetco.printpreview.DOPrintPreview"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.NewCashCollectionActivity"
+            android:name="com.winapp.sapNetco.activity.NewCashCollectionActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".dashboard.GraphDashboardActivity"
+            android:name="com.winapp.sapNetco.dashboard.GraphDashboardActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.ProductStockAnalysisActivity"
+            android:name="com.winapp.sapNetco.activity.ProductStockAnalysisActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 <!--        <activity android:name=".googlemap.CustomerLocationActivity" />-->
@@ -298,29 +308,29 @@
 <!--            android:name=".googlemap.MapsActivity"-->
 <!--            android:label="@string/title_activity_maps" />-->
         <activity
-            android:name=".activity.NewCompanySwitchActivity"
+            android:name="com.winapp.sapNetco.activity.NewCompanySwitchActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.ProductAnalyzeActivity"
+            android:name="com.winapp.sapNetco.activity.ProductAnalyzeActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.ReOrderCartActivity"
+            android:name="com.winapp.sapNetco.activity.ReOrderCartActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.OrderDetailsHistoryActivity"
+            android:name="com.winapp.sapNetco.activity.OrderDetailsHistoryActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.OrderHistoryActivity"
+            android:name="com.winapp.sapNetco.activity.OrderHistoryActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".receipts.ReceiptsPrintPreview"
+            android:name="com.winapp.sapNetco.receipts.ReceiptsPrintPreview"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".salesreturn.SalesReturnPrintPreview"
+            android:name="com.winapp.sapNetco.salesreturn.SalesReturnPrintPreview"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".salesreturn.SalesReturnActivity"
+            android:name="com.winapp.sapNetco.salesreturn.SalesReturnActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
@@ -328,67 +338,67 @@
             android:windowTranslucentNavigation="true"
             android:windowTranslucentStatus="true" />
         <activity
-            android:name=".activity.NewInvoiceListActivity"
+            android:name="com.winapp.sapNetco.activity.NewInvoiceListActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".printer.zqprinter.printingutils.DeviceListActivity"
+            android:name="com.winapp.sapNetco.printer.zqprinter.printingutils.DeviceListActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".printpreview.SalesOrderPrintPreview"
+            android:name="com.winapp.sapNetco.printpreview.SalesOrderPrintPreview"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".printpreview.InvoicePrintPreviewActivity"
+            android:name="com.winapp.sapNetco.printpreview.InvoicePrintPreviewActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".printer.PrinterActivity"
+            android:name="com.winapp.sapNetco.printer.PrinterActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activity.ShowCatagoryActivity" />
+        <activity android:name="com.winapp.sapNetco.activity.ShowCatagoryActivity" />
         <activity
-            android:name=".receipts.ReceiptsListActivity"
+            android:name="com.winapp.sapNetco.receipts.ReceiptsListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activity.CategoriesActivity" />
-        <activity android:name=".activity.CategoriesTemp2Activity" />
-        <activity android:name=".activity.CartTemp2Activity" />
+        <activity android:name="com.winapp.sapNetco.activity.CategoriesActivity" />
+        <activity android:name="com.winapp.sapNetco.activity.CategoriesTemp2Activity" />
+        <activity android:name="com.winapp.sapNetco.activity.CartTemp2Activity" />
         <activity
-            android:name=".activity.SettingActivity"
+            android:name="com.winapp.sapNetco.activity.SettingActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.OrderHistoryListActivity"
+            android:name="com.winapp.sapNetco.activity.OrderHistoryListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
-            android:name=".activity.PrinterActivity"
+            android:name="com.winapp.sapNetco.activity.PrinterActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".utils.DeviceListActivity"
+            android:name="com.winapp.sapNetco.utils.DeviceListActivity"
             android:screenOrientation="portrait" /> <!-- android:theme="@android:style/Theme.DeviceDefault.Dialog" -->
         <!-- /> -->
         <activity
-            android:name=".activity.CashCollectionActivity"
+            android:name="com.winapp.sapNetco.activity.CashCollectionActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".activity.RegisterActivity"
+            android:name="com.winapp.sapNetco.activity.RegisterActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.AddCustomerActivity"
+            android:name="com.winapp.sapNetco.activity.AddCustomerActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.CustomerListActivity"
+            android:name="com.winapp.sapNetco.activity.CustomerListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".utils.BarCodeScanner" />
-        <activity android:name=".activity.NavigationActivity" />
+        <activity android:name="com.winapp.sapNetco.utils.BarCodeScanner" />
+        <activity android:name="com.winapp.sapNetco.activity.NavigationActivity" />
         <activity
-            android:name=".activity.MainHomeActivity"
+            android:name="com.winapp.sapNetco.activity.MainHomeActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.AddInvoiceActivityOld"
+            android:name="com.winapp.sapNetco.activity.AddInvoiceActivityOld"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
@@ -396,49 +406,49 @@
             android:windowTranslucentNavigation="true"
             android:windowTranslucentStatus="true" />
         <activity
-            android:name=".activity.CustomerSelectActivity"
+            android:name="com.winapp.sapNetco.activity.CustomerSelectActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.DashboardActivity"
+            android:name="com.winapp.sapNetco.activity.DashboardActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.MainDashboardActivity"
+            android:name="com.winapp.sapNetco.activity.MainDashboardActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.InvoiceListActivityCopy"
+            android:name="com.winapp.sapNetco.activity.InvoiceListActivityCopy"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.SalesOrderListActivity"
+            android:name="com.winapp.sapNetco.activity.SalesOrderListActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.CartActivity"
+            android:name="com.winapp.sapNetco.activity.CartActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.OTPVerification"
+            android:name="com.winapp.sapNetco.activity.OTPVerification"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.ValidateUrlActivity"
+            android:name="com.winapp.sapNetco.activity.ValidateUrlActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.InvoiceTableActivity"
+            android:name="com.winapp.sapNetco.activity.InvoiceTableActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.DescriptionActivity"
+            android:name="com.winapp.sapNetco.activity.DescriptionActivity"
             android:screenOrientation="portrait" />
          <activity
-            android:name=".activity.SchedulingActivity"
+            android:name="com.winapp.sapNetco.activity.SchedulingActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.SplashActivity"
+            android:name="com.winapp.sapNetco.activity.SplashActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="true">
@@ -449,16 +459,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.MainActivity"
+            android:name="com.winapp.sapNetco.activity.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.SearchProductActivity"
+            android:name="com.winapp.sapNetco.activity.SearchProductActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activity.LoginActivity"
+            android:name="com.winapp.sapNetco.activity.LoginActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -474,7 +484,7 @@
         </provider>
 
         <receiver
-            android:name=".utils.NetworkChangeReceiver"
+            android:name="com.winapp.sapNetco.utils.NetworkChangeReceiver"
             android:label="NetworkChangeReceiver"
             android:exported="true">
             <intent-filter>
@@ -482,7 +492,7 @@
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver> <!-- Firebase Notifications -->
-        <service android:name=".firebase.MyFirebaseMessagingService"
+        <service android:name="com.winapp.sapNetco.firebase.MyFirebaseMessagingService"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
