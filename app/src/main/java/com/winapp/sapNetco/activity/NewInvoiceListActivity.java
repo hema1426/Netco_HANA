@@ -1937,15 +1937,17 @@ public class NewInvoiceListActivity extends NavigationActivity
 
         MenuItem addInvoice = menu.findItem(R.id.action_add);
         addInvoice.setVisible(false);
-        if (createInvoiceSetting.equals("true")) {
-            if (company_name.equals("AADHI INTERNATIONAL PTE LTD")) {
-                addInvoice.setVisible(false);
-            } else {
-                addInvoice.setVisible(true);
-            }
-        } else {
-            addInvoice.setVisible(false);
-        }
+//        if (createInvoiceSetting.equals("true")) {  // add function hide 29.06.25
+//            if (company_name.equals("AADHI INTERNATIONAL PTE LTD")) {
+//                addInvoice.setVisible(false);
+//            } else {
+//                addInvoice.setVisible(true);
+//            }
+//        } else {
+//            addInvoice.setVisible(false);
+//        }
+
+
       /*  ArrayList<UserRoll> userRolls=helper.getUserPermissions();
         if (userRolls.size()>0) {
             for (UserRoll roll : userRolls) {

@@ -131,7 +131,7 @@
         <include
             android:id="@+id/search_filter"
             android:visibility="gone"
-            layout="@layout/purchase_invoice_filter_layout"/>
+            layout="@layout/purchase_order_filter_layout"/>
 
         <LinearLayout
             android:layout_width="match_parent"

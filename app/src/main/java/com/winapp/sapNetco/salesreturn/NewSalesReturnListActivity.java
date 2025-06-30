@@ -1285,6 +1285,8 @@ public class NewSalesReturnListActivity extends NavigationActivity {
         MenuItem item = menu.findItem(R.id.action_barcode);
         item.setVisible(false);
 
+        MenuItem addInvoice = menu.findItem(R.id.action_add);
+        addInvoice.setVisible(false);
       /*  ArrayList<UserRoll> userRolls=helper.getUserPermissions();
         if (userRolls.size()>0) {
             for (UserRoll roll : userRolls) {

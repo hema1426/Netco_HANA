@@ -2069,6 +2069,8 @@ public class SalesOrderListActivity extends NavigationActivity implements Adapte
         getMenuInflater().inflate(R.menu.sorting_menu, menu);
       //  MenuItem action_save = menu.findItem(R.id.action_filter);
        // action_save.setVisible(false);
+          MenuItem action_add = menu.findItem(R.id.action_add);
+        action_add.setVisible(false);
         return true;
     }
 

@@ -154,6 +154,7 @@
                 android:paddingBottom="@dimen/_5sdp"
                 android:paddingRight="@dimen/_10sdp"
                 android:paddingLeft="@dimen/_10sdp"
+                android:visibility="gone"
                 android:id="@+id/three_dot_cust"
                 android:src="@drawable/three_dot"
                 />

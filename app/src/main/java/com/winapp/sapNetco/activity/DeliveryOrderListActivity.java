@@ -1460,6 +1460,9 @@ public class DeliveryOrderListActivity extends NavigationActivity implements Del
 
         MenuItem action_barcode = menu.findItem(R.id.action_barcode);
         action_barcode.setVisible(false);
+
+        MenuItem addInvoice = menu.findItem(R.id.action_add);
+        addInvoice.setVisible(false);
         return true;
     }
 

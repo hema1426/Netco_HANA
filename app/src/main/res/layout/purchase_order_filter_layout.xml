@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
@@ -29,7 +30,7 @@
                     android:layout_width="match_parent"
                     android:padding="10dp"
                     android:orientation="vertical"
-                    android:layout_weight="0.7"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content">
 
                     <LinearLayout
@@ -60,7 +61,7 @@
                         android:visibility="visible">
 
                         <com.toptoche.searchablespinnerlibrary.SearchableSpinner
-                            android:id="@+id/supplier_name_spinner"
+                            android:id="@+id/supplier_name_spinnerpo"
                             android:layout_width="match_parent"
                             android:layout_height="35dp"
                             />
@@ -77,7 +78,6 @@
                             app:tint="@color/gray" />
 
                     </RelativeLayout>
-
 
                 </LinearLayout>
 
@@ -98,7 +98,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Status"
+                            android:text="Sales order Status"
                             android:textColor="#212121"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -113,12 +113,10 @@
                         android:layout_width="match_parent"
                         android:background="@drawable/invoice_edit_text"
                         android:layout_height="35dp"
-                        android:entries="@array/invoice_arrays"
+                        android:entries="@array/sales_arrays"
                         android:prompt="@string/invoice_prompt" />
 
                 </LinearLayout>
-
-
 
             </LinearLayout>
 
@@ -238,7 +236,7 @@
                     android:layout_gravity="center"
                     android:layout_marginRight="10dp"
                     android:textSize="12sp"
-                    android:id="@+id/btn_searchExpens"
+                    android:id="@+id/btn_searchpo"
                     android:text="Search"
                     android:background="?actionBarItemBackground"
                     android:textStyle="bold"

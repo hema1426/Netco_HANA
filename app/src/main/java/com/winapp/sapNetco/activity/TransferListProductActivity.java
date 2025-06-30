@@ -559,6 +559,9 @@ public class TransferListProductActivity extends NavigationActivity implements V
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.transfer_add_menu, menu);
+
+        MenuItem addInvoice = menu.findItem(R.id.action_add);
+        addInvoice.setVisible(false);
         return true;
     }
 

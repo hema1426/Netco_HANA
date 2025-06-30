@@ -329,6 +329,7 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:clickable="true"
+            android:visibility="gone"
             android:id="@+id/add_receipt_layout"
             android:layout_gravity="center"
             android:padding="5dp"

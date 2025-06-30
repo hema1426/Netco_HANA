@@ -2,7 +2,9 @@ Netco login
 --------
 Anish 12345
 
-
+Netco
+http://159.69.142.253:93/api/login
+{"Username":"Niyaz","Password":"1234"}
 
  categorieesTempActivity
 ----------------------
