@@ -304,7 +304,7 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
         jsonObject.put("InvoiceNo", soNumber);
         jsonObject.put("LocationCode",locationCode);
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url= Utils.getBaseUrl(this) +"PurchaseInvoiceDetails";
+        String url= Utils.getBaseUrl(this) +"APInvoiceDetails";
         // Initialize a new JsonArrayRequest instance
         Log.w("Given_url_purchas_Pr:",url+jsonObject.toString());
         pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);

@@ -154,7 +154,7 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
         super.onCreate(savedInstanceState);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
-        setContentView(R.layout.activity_purchase_invoice_print_preview);
+        setContentView(R.layout.activity_purchase_order_print_preview);
         setTitle();
         TscDll = new TSCActivity();
         session=new SessionManager(this);

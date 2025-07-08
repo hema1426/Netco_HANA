@@ -124,8 +124,6 @@ public class PurchaseOrderListingAdapter extends RecyclerView.Adapter<RecyclerVi
             SalesOrderModel salesOrderModel = salesOrderList.get(position);
             ((SalesOrderViewHolder) viewHolder).name.setText(salesOrderModel.getName());
             ((SalesOrderViewHolder) viewHolder).date.setText(salesOrderModel.getDate());
-            Log.w("polistnME",""+salesOrderModel.getName());
-            Log.w("polistndat",""+salesOrderModel.getDate());
 //            if (salesOrderModel.getAddress().equals("null") || salesOrderModel.getAddress().isEmpty()){
 //                ((SalesOrderViewHolder) viewHolder).address.setText("Address not found");
 //            }else {

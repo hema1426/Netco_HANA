@@ -253,7 +253,7 @@
                     <TextView
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
-                        android:text="Customer Address"
+                        android:text="Supplier Address"
                         android:textSize="12sp" />
 
                     <TextView
@@ -486,7 +486,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:listitem="@layout/sales_order_print_preview" />
+                tools:listitem="@layout/po_print_preview" />
 
         </LinearLayout>
 

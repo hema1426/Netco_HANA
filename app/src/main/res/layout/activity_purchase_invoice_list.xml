@@ -76,10 +76,19 @@
                 android:orientation="vertical"
                 android:layout_height="match_parent">
 
-
+                <TextView
+                    android:id="@+id/totalpi"
+                    android:layout_width="wrap_content"
+                    android:text="Total : "
+                    android:textColor="@color/red_btn_bg_color"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="15sp"
+                    android:visibility="gone"
+                    android:textStyle="bold"
+                    android:layout_height="35dp"/>
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:paddingTop="10dp"
                     android:orientation="vertical"
                     android:layout_height="match_parent">
 
@@ -106,8 +115,8 @@
 
                         <TextView
                             android:layout_width="wrap_content"
-                            android:text="Total Sales :"
-                            android:textSize="15sp"
+                            android:text="Total :  "
+                            android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="@color/white"
                             android:layout_height="wrap_content"/>

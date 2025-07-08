@@ -124,6 +124,7 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
             SalesOrderModel salesOrderModel = salesOrderList.get(position);
             ((SalesOrderViewHolder) viewHolder).name.setText(salesOrderModel.getName());
             ((SalesOrderViewHolder) viewHolder).date.setText(salesOrderModel.getDate());
+            Log.w("pilistndat",""+salesOrderModel.getDate());
 //            if (salesOrderModel.getAddress().equals("null") || salesOrderModel.getAddress().isEmpty()){
 //                ((SalesOrderViewHolder) viewHolder).address.setText("Address not found");
 //            }else {
@@ -263,9 +264,9 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
 
         public SalesOrderViewHolder(View view) {
             super(view);
-            name=view.findViewById(R.id.purchas_name_item);
-            date=view.findViewById(R.id.purchas_date_item);
-            soNumber=view.findViewById(R.id.purchas_no_item);
+            name=view.findViewById(R.id.purchas_name_item_pi);
+            date=view.findViewById(R.id.purchas_date_item_pi);
+            soNumber=view.findViewById(R.id.purchas_no_item_pi);
             balance=view.findViewById(R.id.purchas_balance_item);
             address=view.findViewById(R.id.address);
             netTotal=view.findViewById(R.id.purchas_nettotal_item);
@@ -323,12 +324,12 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
 
 
     private void getSalesOrderDetails(String soNumber,RecyclerView.ViewHolder  viewHolder, int position,SalesOrderModel salesOrderModel) throws JSONException {
-        // Initialize a new RequestQueue instance
+
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("InvoiceNo",soNumber);
-        jsonObject.put("LocationCode",locationCode);
+
         RequestQueue requestQueue = Volley.newRequestQueue(mContext);
-        String url= Utils.getBaseUrl(mContext) +"PurchaseInvoiceDetails";
+        String url= Utils.getBaseUrl(mContext) +"APInvoiceDetails";
         // Initialize a new JsonArrayRequest instance
         Log.w("Given_url_purchas:",url+jsonObject);
         salesOrdernewList =new ArrayList<>();
@@ -347,8 +348,8 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
                             SalesOrderPrintPreviewModel model = new SalesOrderPrintPreviewModel();
                             model.setSoNumber(object.optString("poNo"));
                             model.setSoDate(object.optString("poDate"));
-                            model.setCustomerCode(object.optString("customerCode"));
-                            model.setCustomerName(object.optString("customerName"));
+                            model.setCustomerCode(object.optString("vendorCode"));
+                            model.setCustomerName(object.optString("vendorName"));
                             model.setAddress(object.optString("address1") + object.optString("address2") + object.optString("address3"));
                             model.setDeliveryAddress(model.getAddress());
                             model.setSubTotal(object.optString("subTotal"));

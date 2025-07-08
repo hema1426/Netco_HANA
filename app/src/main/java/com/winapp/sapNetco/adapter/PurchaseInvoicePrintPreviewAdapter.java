@@ -35,7 +35,7 @@ public class PurchaseInvoicePrintPreviewAdapter extends RecyclerView.Adapter<Pur
         if (context instanceof PurchaseInvoiceListActivity){
             view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.sales_details_view_items, viewGroup, false);
         }else {
-            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.sales_order_print_preview, viewGroup, false);
+            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.purchase_inv_print_preview, viewGroup, false);
         }
         return new ViewHolder(view);
     }

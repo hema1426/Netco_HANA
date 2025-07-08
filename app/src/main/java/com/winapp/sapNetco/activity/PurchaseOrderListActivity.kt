@@ -146,6 +146,7 @@ class PurchaseOrderListActivity : NavigationActivity(), AdapterView.OnItemSelect
     private var supplierSpinner: SearchableSpinner? = null
     private var selectSupplierName: String? = ""
     private var selectSuppliercode: String? = ""
+    private var totalsizePO: TextView? = null
     //    private Spinner salesManSpinner;
     private var selectedUser = ""
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -190,6 +191,7 @@ class PurchaseOrderListActivity : NavigationActivity(), AdapterView.OnItemSelect
         progressLayout = findViewById(R.id.progress_layout)
         createSalesOrder = findViewById(R.id.create_sales)
         supplierSpinner = findViewById(R.id.supplier_name_spinnerpo)
+        totalsizePO = findViewById(R.id.totalpo)
 
         //        salesManSpinner=findViewById(R.id.salesman_spinner);
 //        salesManSpinner.setOnItemSelectedListener(this);
@@ -1240,10 +1242,13 @@ class PurchaseOrderListActivity : NavigationActivity(), AdapterView.OnItemSelect
     fun setShowHide() {
         if (salesOrderList!!.size > 0) {
             purchaseInvoiceView!!.visibility = View.VISIBLE
+            totalsizePO!!.visibility = View.VISIBLE
+            totalsizePO!!.setText("Total PO : "+salesOrderList!!.size)
             outstandingLayout!!.visibility = View.VISIBLE
             emptyLayout!!.visibility = View.GONE
         } else {
             purchaseInvoiceView!!.visibility = View.GONE
+            totalsizePO!!.visibility = View.GONE
             emptyLayout!!.visibility = View.VISIBLE
             outstandingLayout!!.visibility = View.GONE
         }

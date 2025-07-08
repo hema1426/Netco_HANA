@@ -65,7 +65,10 @@ open class NavigationActivity : AppCompatActivity() {
         sharedPreferenceUtil = SharedPreferenceUtil(this)
         user = session!!.userDetails
 
-        actionBarDrawerToggle = ActionBarDrawerToggle(
+      //todo set true in temporary
+        isAPIInvoice = true
+
+            actionBarDrawerToggle = ActionBarDrawerToggle(
             this,
             drawerLayout,
             toolbar,
@@ -136,17 +139,20 @@ open class NavigationActivity : AppCompatActivity() {
                        } else {
                            false
                        }
-                   }else if (model.settingName == "showAPInvoice") {
-                       Log.w("SettingNameApiInv:", model.settingName)
-                       Log.w("SettingValueApiInv:", model.settingValue)
-                       isAPIInvoice = if (model.settingValue == "True") {
-                           purchase_invoice.setVisible(true)
-                           true
-                       } else {
-                           purchase_invoice.setVisible(false)
-                           false
-                       }
                    }
+              //todo hide temporary
+
+//                   else if (model.settingName == "showAPInvoice") {
+//                       Log.w("SettingNameApiInv:", model.settingName)
+//                       Log.w("SettingValueApiInv:", model.settingValue)
+//                       isAPIInvoice = if (model.settingValue == "True") {
+//                           purchase_invoice.setVisible(true)
+//                           true
+//                       } else {
+//                           purchase_invoice.setVisible(false)
+//                           false
+//                       }
+//                   }
                 }
             }
         }

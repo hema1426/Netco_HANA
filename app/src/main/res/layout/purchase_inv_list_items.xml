@@ -16,7 +16,6 @@
     android:layout_marginRight="0dp"
     android:layout_margin="0dp"
     android:layout_marginTop="0dp"
-    android:foreground="?android:attr/selectableItemBackground"
     android:orientation="vertical"
     card_view:cardBackgroundColor="@android:color/white"
     card_view:cardCornerRadius="10dp"
@@ -56,7 +55,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:maxWidth="250dp"
-                android:id="@+id/purchas_name_item"
+                android:id="@+id/purchas_name_item_pi"
                 android:textColor="#212121"
                 android:text="Azmal Trading Company"
                 android:layout_height="wrap_content"/>
@@ -70,7 +69,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_marginRight="10dp"
-                android:id="@+id/purchas_date_item"
+                android:id="@+id/purchas_date_item_pi"
                 android:text="13/34/3232"
                 android:textSize="12sp"
                 android:textColor="@color/secondaryColor"
@@ -103,7 +102,7 @@
                 android:layout_width="wrap_content"
                 android:textStyle="bold"
                 android:textSize="13sp"
-                android:id="@+id/purchas_no_item"
+                android:id="@+id/purchas_no_item_pi"
                 android:textColor="#3655D2"
                 android:text="INV #1234"
                 android:layout_height="wrap_content"/>
@@ -225,14 +224,21 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="0dp"/>
-
-            <ImageView
-                android:id="@+id/show_hide_purchase"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
-                android:tag="hide" />
+                android:layout_height="wrap_content"
+                android:padding="5dp">
+
+                <ImageView
+                    android:id="@+id/show_hide_purchase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+                    android:tag="hide" />
+
+            </LinearLayout>
+
 
         </LinearLayout>
 
