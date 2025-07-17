@@ -164,6 +164,10 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:name="com.winapp.sapNetco.ReportPreview.RoSupplierStatementPreviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name="com.winapp.sapNetco.activity.NewExpensePrintPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
@@ -201,7 +205,7 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.winapp.sapNetco.activity.PurchasePrintPreviewActivity"
+            android:name="com.winapp.sapNetco.activity.PurchaseInvoicePrintPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
@@ -352,6 +356,9 @@
             android:name="com.winapp.sapNetco.printpreview.InvoicePrintPreviewActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name="com.winapp.sapNetco.activity.OutgoingPaymentPrintPreview"
+            android:screenOrientation="portrait" />
+        <activity
             android:name="com.winapp.sapNetco.printer.PrinterActivity"
             android:screenOrientation="portrait" />
         <activity android:name="com.winapp.sapNetco.activity.ShowCatagoryActivity" />
@@ -359,6 +366,11 @@
             android:name="com.winapp.sapNetco.receipts.ReceiptsListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="com.winapp.sapNetco.activity.OutgoingReceiptListActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <activity android:name="com.winapp.sapNetco.activity.CategoriesActivity" />
         <activity android:name="com.winapp.sapNetco.activity.CategoriesTemp2Activity" />
         <activity android:name="com.winapp.sapNetco.activity.CartTemp2Activity" />

@@ -128,7 +128,7 @@ public class PaidInvoices extends Fragment {
 //        }else {
 //            usernamel  = username;
 //        }
-        getInvoices(companyId,username,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        getInvoices(companyId,"",String.valueOf(pageNo),"ALL",currentDate,currentDate);
 
         invoiceListView.setHasFixedSize(true);
 

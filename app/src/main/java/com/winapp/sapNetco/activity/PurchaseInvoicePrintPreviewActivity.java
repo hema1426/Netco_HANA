@@ -78,7 +78,7 @@ import java.util.Objects;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-public class PurchasePrintPreviewActivity extends AppCompatActivity implements OnPageChangeListener, OnLoadCompleteListener {
+public class PurchaseInvoicePrintPreviewActivity extends AppCompatActivity implements OnPageChangeListener, OnLoadCompleteListener {
 
     private String companyId;
     private SweetAlertDialog pDialog;
@@ -104,13 +104,13 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
     private TextView itemDiscount;
     private TextView companyNametext;
     private TextView companyAddress1Text;
-    private TextView companyAddress2Text;
+    private TextView companyAddress2Text , referNo;
     private String company_name;
     private String company_address1;
     private String company_address2;
     private String company_address3;
     private RelativeLayout rootLayout;
-    private LinearLayout addressLayout;
+    private LinearLayout addressLayout ,ref_No_lay;
     private SharedPreferences sharedPreferences;
     private String printerMacId;
     private String printerType;
@@ -158,6 +158,8 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
         TscDll = new TSCActivity();
         session=new SessionManager(this);
         user=session.getUserDetails();
+        Log.w("activity_cg",getClass().getSimpleName().toString());
+
         companyId=user.get(SessionManager.KEY_COMPANY_CODE);
         company_name=user.get(SessionManager.KEY_COMPANY_NAME);
         company_address1=user.get(SessionManager.KEY_ADDRESS1);
@@ -185,6 +187,8 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
         companyAddress2Text=findViewById(R.id.address2);
         addressLayout=findViewById(R.id.adressLayout);
         rootLayout=findViewById(R.id.rootLayout);
+        referNo=findViewById(R.id.reference_no_pi_prev);
+        ref_No_lay = findViewById(R.id.ref_no_lay_pi);
         pdfView= (PDFView)findViewById(R.id.pdfView);
 
         companyAddress3Text=findViewById(R.id.address3);
@@ -341,6 +345,8 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
                             Utils.setInvoiceMode("SalesOrder");
                             model.setBillDiscount(object.optString("billDiscount"));
                             model.setItemDiscount(object.optString("totalDiscount"));
+                            model.setReferenceNo(object.optString("customerRefNo"));
+
                             model.setAddress1(object.optString("address1"));
                             model.setAddress2(object.optString("address2"));
                             model.setAddress3(object.optString("address3"));
@@ -446,6 +452,16 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
             soDateText.setText(model.getSoDate());
             customerCodetext.setText(model.getCustomerCode());
             customerNameText.setText(model.getCustomerName());
+            Log.w("refernoaa.",""+model.getReferenceNo());
+            if(model.getReferenceNo() == null || model.getReferenceNo().equals("null")
+                    || model.getReferenceNo().equals("NA")) {
+                Log.w("refernoss.",""+model.getReferenceNo());
+                ref_No_lay.setVisibility(View.GONE);
+            }else{
+                Log.w("referno11.",""+model.getReferenceNo());
+                ref_No_lay.setVisibility(View.VISIBLE);
+                referNo.setText(model.getReferenceNo());
+            }
 
             if (!model.getAddress1().isEmpty()){
                 address1Layout.setVisibility(View.VISIBLE);
@@ -556,8 +572,8 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
         }
         salesListView.setHasFixedSize(true);
         // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        salesListView.setLayoutManager(new LinearLayoutManager(PurchasePrintPreviewActivity.this, LinearLayoutManager.VERTICAL, false));
-        adapter = new PurchaseInvoicePrintPreviewAdapter(PurchasePrintPreviewActivity.this, salesOrderList);
+        salesListView.setLayoutManager(new LinearLayoutManager(PurchaseInvoicePrintPreviewActivity.this, LinearLayoutManager.VERTICAL, false));
+        adapter = new PurchaseInvoicePrintPreviewAdapter(PurchaseInvoicePrintPreviewActivity.this, salesOrderList);
         salesListView.setAdapter(adapter);
         rootLayout.setVisibility(View.VISIBLE);
     }
@@ -724,7 +740,7 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
     }
 
     public void showPrintAlert(){
-        AlertDialog.Builder builder1 = new AlertDialog.Builder(PurchasePrintPreviewActivity.this);
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(PurchaseInvoicePrintPreviewActivity.this);
         builder1.setMessage("Do you want to print this Purchase Invoice ?.");
         builder1.setCancelable(false);
         builder1.setPositiveButton("YES", new DialogInterface.OnClickListener() {
@@ -735,7 +751,7 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
                   //  printInvoice();
                     // TSCPrinter tscPrinter=new TSCPrinter(SalesOrderPrintPreview.this,printerMacId);
                     //  tscPrinter.printInvoice(invoiceHeaderDetails,invoiceList);
-                    TSCPrinter printer=new TSCPrinter(PurchasePrintPreviewActivity.this,printerMacId,"SalesOrder");
+                    TSCPrinter printer=new TSCPrinter(PurchaseInvoicePrintPreviewActivity.this,printerMacId,"SalesOrder");
                     try {
                         printer.printPurchaseInvoice(1,salesOrderHeaderDetails,salesOrderList);
                         printer.setOnCompletionListener(new TSCPrinter.OnCompletionListener() {
@@ -749,7 +765,7 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
                         e.printStackTrace();
                     }
                 }else if (printerType.equals("Zebra Printer")){
-                    ZebraPrinterActivity zebraPrinterActivity=new ZebraPrinterActivity(PurchasePrintPreviewActivity.this,printerMacId);
+                    ZebraPrinterActivity zebraPrinterActivity=new ZebraPrinterActivity(PurchaseInvoicePrintPreviewActivity.this,printerMacId);
                     try {
                         zebraPrinterActivity.printSalesOrder(1,salesOrderHeaderDetails,salesOrderList);
                     } catch (IOException e) {
@@ -757,7 +773,7 @@ public class PurchasePrintPreviewActivity extends AppCompatActivity implements O
                     }
                 }else {
                     try {
-                        final TSCPrinterActivity print = new TSCPrinterActivity(PurchasePrintPreviewActivity.this, printerMacId, printerType);
+                        final TSCPrinterActivity print = new TSCPrinterActivity(PurchaseInvoicePrintPreviewActivity.this, printerMacId, printerType);
                         print.initGenericPrinter();
                         print.setInitCompletionListener(() -> {
                             print.printSalesOrder(1, salesOrderHeaderDetails, salesOrderList);

@@ -260,6 +260,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="1dp"
                 app:elevation="1dp"
+                android:visibility="gone"
                 android:id="@+id/invoice_print"
                 android:layout_gravity="right"
                 android:src="@drawable/ic_baseline_print_24"

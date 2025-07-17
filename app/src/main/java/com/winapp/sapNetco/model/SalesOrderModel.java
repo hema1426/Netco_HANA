@@ -13,6 +13,16 @@ public class SalesOrderModel {
     private String status;
     private String salesOrderCode;
     private String remarks;
+    private String referenceNo;
+
+
+    public String getReferenceNo() {
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
+    }
 
     public String getRemarks() {
         return remarks;

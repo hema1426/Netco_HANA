@@ -48,6 +48,7 @@
                 android:layout_marginRight="20dp"
                 android:id="@+id/print"
                 android:padding="5dp"
+                android:visibility="gone"
                 android:background="@drawable/editext_border"
                 android:src="@drawable/ic_baseline_print_24"
                 android:layout_height="wrap_content"/>
@@ -105,27 +106,88 @@
             android:text="Bad Stock Return Summary Report"
             android:layout_height="match_parent"/>
 
+    </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:background="#d3d3d3"
+            android:layout_marginTop="10dp"
+            android:layout_height="1dip"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:padding="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Customer"
+                android:textSize="16sp"
+                android:textColor="@color/primaryDark"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"/>
+            <CheckBox
+                android:id="@+id/customer_statement"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#f3f3f3"
+                android:minHeight="48dp"
+                android:text="Customer Outstanding Period"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+            <CheckBox
+                android:layout_width="match_parent"
+                android:text="Customer Outstanding Statement (as on Date)"
+                android:textSize="14sp"
+                android:layout_marginTop="10dp"
+                android:background="#f3f3f3"
+                android:id="@+id/customer_statement_date"
+                android:textStyle="bold"
+                android:layout_height="40dp"/>
+
+        </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:background="#d3d3d3"
+        android:layout_marginTop="10dp"
+        android:layout_height="1dip"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:text="Supplier"
+            android:textSize="16sp"
+            android:textColor="@color/primaryDark"
+            android:textStyle="bold"
+            android:layout_height="wrap_content"/>
         <CheckBox
-            android:id="@+id/customer_statement"
+            android:id="@+id/supplier_statement"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="#f3f3f3"
             android:minHeight="48dp"
-            android:text="Customer Outstanding Period"
+            android:text="Supplier Statement"
             android:textSize="14sp"
             android:textStyle="bold" />
         <CheckBox
+            android:id="@+id/supplier_statement_date"
             android:layout_width="match_parent"
-            android:text="Customer Outstanding Statement (as on Date)"
-            android:textSize="14sp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="#f3f3f3"
-            android:id="@+id/customer_statement_date"
-            android:textStyle="bold"
-            android:layout_height="40dp"/>
-
-
+            android:minHeight="48dp"
+            android:text="Supplier Statement(as on Date)"
+            android:textSize="14sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <View
@@ -137,8 +199,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="vertical"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
         android:layout_height="wrap_content">
 
         <TextView

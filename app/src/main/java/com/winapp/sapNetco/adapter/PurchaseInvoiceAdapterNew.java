@@ -36,8 +36,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -123,8 +126,19 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
 
             SalesOrderModel salesOrderModel = salesOrderList.get(position);
             ((SalesOrderViewHolder) viewHolder).name.setText(salesOrderModel.getName());
-            ((SalesOrderViewHolder) viewHolder).date.setText(salesOrderModel.getDate());
-            Log.w("pilistndat",""+salesOrderModel.getDate());
+
+            String oldToDate = salesOrderModel.getDate();
+
+            Date fromDate = null;
+            try {
+                fromDate = new SimpleDateFormat("yyyyMMdd").parse(oldToDate);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            String fromDateString = new SimpleDateFormat("dd/MM/yyyy").format(fromDate);
+            ((SalesOrderViewHolder) viewHolder).date.setText(fromDateString);
+
+
 //            if (salesOrderModel.getAddress().equals("null") || salesOrderModel.getAddress().isEmpty()){
 //                ((SalesOrderViewHolder) viewHolder).address.setText("Address not found");
 //            }else {
@@ -132,6 +146,17 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
 //            }
             ((SalesOrderViewHolder) viewHolder).soNumber.setText(salesOrderModel.getSaleOrderNumber());
             ((SalesOrderViewHolder) viewHolder).balance.setText("$ "+salesOrderModel.getBalance());
+            if(salesOrderModel.getReferenceNo() != null && !salesOrderModel.getReferenceNo().isEmpty()
+                    && !salesOrderModel.getReferenceNo().equals("NA")
+            ) {
+                Log.w("pilistref",""+salesOrderModel.getReferenceNo());
+                ((SalesOrderViewHolder) viewHolder).reference_nol.setText(salesOrderModel.getReferenceNo());
+                ((SalesOrderViewHolder)viewHolder).referno_layl.setVisibility(View.VISIBLE);
+            }else{
+                Log.w("pilistrefaa",""+salesOrderModel.getReferenceNo());
+                ((SalesOrderViewHolder)viewHolder).referno_layl.setVisibility(View.GONE);
+            }
+
             if (salesOrderModel.getNetTotal()!=null && !salesOrderModel.getNetTotal().equals("null")){
                 ((SalesOrderViewHolder) viewHolder).netTotal.setText("$ "+Utils.twoDecimalPoint(Double.parseDouble(salesOrderModel.getNetTotal())));
             }else {
@@ -251,9 +276,9 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
         private TextView netTotal;
         private TextView address;
         private CardView mainCard;
-        private TextView status;
+        private TextView status,reference_nol;
         private ImageView moreOption;
-        private LinearLayout statusLayout;
+        private LinearLayout statusLayout,referno_layl;
         private View indicator;
 
         private RecyclerView productListView;
@@ -275,6 +300,8 @@ public class PurchaseInvoiceAdapterNew extends RecyclerView.Adapter<RecyclerView
             moreOption=view.findViewById(R.id.more);
             statusLayout=view.findViewById(R.id.status_layout);
             indicator=view.findViewById(R.id.indicator);
+            reference_nol=view.findViewById(R.id.reference_no_pi_item);
+            referno_layl=view.findViewById(R.id.refNo_lay_pi_item);
 
             productListView=view.findViewById(R.id.invoiceList);
             showHideBottomLayout=view.findViewById(R.id.show_hide_purchase);

@@ -153,8 +153,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
-            android:paddingBottom="5dp"
-            android:layout_marginTop="@dimen/_8sdp"
+            android:layout_marginTop="6dp"
             android:layout_height="wrap_content">
 
             <LinearLayout
@@ -216,6 +215,7 @@
                 android:layout_width="wrap_content"
                 android:id="@+id/show_hide"
                 android:tag="hide"
+                android:padding="5dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
                 android:layout_height="wrap_content"/>
@@ -290,7 +290,7 @@
                     android:orientation="vertical"
                     android:layout_height="wrap_content">
                     <include
-                        layout="@layout/invoice_details_items"/>
+                        layout="@layout/invoice_details_items_title"/>
 
                     <View
                         android:layout_width="match_parent"

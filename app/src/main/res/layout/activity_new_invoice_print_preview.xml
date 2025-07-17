@@ -459,21 +459,21 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_weight="0.3"
+                        android:layout_weight="0.5"
                         android:gravity="center"
-                        android:text="SNO"
+                        android:text="SNO "
                         android:textColor="@color/colorPrimary"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <RelativeLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_weight="1.9">
+                        android:layout_weight="1.5">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -482,46 +482,39 @@
                             android:layout_gravity="center"
                             android:text="PRODUCT"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
-
-
                     </RelativeLayout>
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/qty_invTitle"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_weight="0.9"
+                        android:layout_weight="1"
                         android:gravity="center"
                         android:text="QTY"
                         android:textColor="@color/colorPrimary"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="0.9">
-
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/price_invTitle"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
+                            android:layout_weight="1"
+                            android:gravity="center"
                             android:layout_gravity="center"
                             android:text="PRICE"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
 
-                    </RelativeLayout>
-
                     <RelativeLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_weight="0.9">
+                        android:layout_weight="1">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -530,7 +523,7 @@
                             android:layout_gravity="center"
                             android:text="TOTAL"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
 
                     </RelativeLayout>
@@ -681,7 +674,7 @@
                 android:id="@+id/rv_invoicelist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:listitem="@layout/invoice_preview_print_item">
+                tools:listitem="@layout/invoice_print_preview_item">
 
             </androidx.recyclerview.widget.RecyclerView>
 

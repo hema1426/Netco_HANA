@@ -382,49 +382,49 @@ public class InvoicePrintPreviewActivity extends AppCompatActivity implements On
 
                             for (int i=0;i<detailsArray.length();i++) {
                                 JSONObject detailObject = detailsArray.optJSONObject(i);
-                                if (Double.parseDouble(detailObject.optString("quantity")) > 0) {
-                                    InvoicePrintPreviewModel.InvoiceList invoiceListModel = new InvoicePrintPreviewModel.InvoiceList();
-                                    invoiceListModel.setProductCode(detailObject.optString("productCode"));
-                                    invoiceListModel.setDescription(detailObject.optString("productName"));
-                                    invoiceListModel.setLqty(detailObject.optString("unitQty"));
-                                    invoiceListModel.setCqty(detailObject.optString("cartonQty"));
-                                    invoiceListModel.setNetQty(detailObject.optString("quantity"));
-                                    invoiceListModel.setExcQty(detailObject.optString("exc_Qty"));
-                                    invoiceListModel.setNetQuantity(detailObject.optString("netQuantity"));
-                                    invoiceListModel.setFocQty(detailObject.optString("foc_Qty"));
-                                    invoiceListModel.setSaleType("");
+                              //  if (Double.parseDouble(detailObject.optString("quantity")) > 0) {
+                                    InvoicePrintPreviewModel.InvoiceList invoiceListModel1 = new InvoicePrintPreviewModel.InvoiceList();
+                                    invoiceListModel1.setProductCode(detailObject.optString("productCode"));
+                                    invoiceListModel1.setDescription(detailObject.optString("productName"));
+                                    invoiceListModel1.setLqty(detailObject.optString("unitQty"));
+                                    invoiceListModel1.setCqty(detailObject.optString("cartonQty"));
+                                    invoiceListModel1.setNetQty(detailObject.optString("quantity"));
+                                    invoiceListModel1.setExcQty(detailObject.optString("exc_Qty"));
+                                    invoiceListModel1.setNetQuantity(detailObject.optString("netQuantity"));
+                                    invoiceListModel1.setFocQty(detailObject.optString("foc_Qty"));
+                                    invoiceListModel1.setSaleType("");
                                     if (detailObject.optString("bP_CatalogNo") != null) {
-                                        invoiceListModel.setCustomerItemCode(detailObject.optString("bP_CatalogNo"));
+                                        invoiceListModel1.setCustomerItemCode(detailObject.optString("bP_CatalogNo"));
                                     }
-                                    invoiceListModel.setReturnQty(detailObject.optString("returnQty"));
-                                    invoiceListModel.setCartonPrice(detailObject.optString("cartonPrice"));
-                                    invoiceListModel.setUnitPrice(detailObject.optString("price"));
-                                    double qty = Double.parseDouble(detailObject.optString("quantity"));
-                                    double price = 0.0;
+                                    invoiceListModel1.setReturnQty(detailObject.optString("returnQty"));
+                                    invoiceListModel1.setCartonPrice(detailObject.optString("cartonPrice"));
+                                    invoiceListModel1.setUnitPrice(detailObject.optString("price"));
+                                    double qty1 = Double.parseDouble(detailObject.optString("quantity"));
+                                    double price1 = 0.0;
 
                                     if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
                                         if(object.optString("taxType").equalsIgnoreCase("E")){
-                                            price = Double.parseDouble(detailObject.optString("price"));
-                                            invoiceListModel.setPricevalue(String.valueOf(price));
+                                            price1 = Double.parseDouble(detailObject.optString("price"));
+                                            invoiceListModel1.setPricevalue(String.valueOf(price1));
                                         }else{
-                                            invoiceListModel.setPricevalue(detailObject.optString("grossPrice"));
-                                            price = Double.parseDouble(detailObject.optString("grossPrice"));
+                                            invoiceListModel1.setPricevalue(detailObject.optString("grossPrice"));
+                                            price1 = Double.parseDouble(detailObject.optString("grossPrice"));
                                         }
                                     }else{
-                                        price = Double.parseDouble(detailObject.optString("price"));
-                                        invoiceListModel.setPricevalue(String.valueOf(price));
+                                        price1 = Double.parseDouble(detailObject.optString("price"));
+                                        invoiceListModel1.setPricevalue(String.valueOf(price1));
                                     }
 
-                                    double nettotal = qty * price;
-                                    invoiceListModel.setTotal(String.valueOf(nettotal));
+                                    double nettotal1 = qty1 * price1;
+                                    invoiceListModel1.setTotal(String.valueOf(nettotal1));
 //                                    invoiceListModel.setPricevalue(String.valueOf(price));
-                                    invoiceListModel.setPcsperCarton(detailObject.optString("pcsPerCarton"));
-                                    invoiceListModel.setItemtax(detailObject.optString("totalTax"));
-                                    invoiceListModel.setSubTotal(detailObject.optString("subTotal"));
-                                    invoiceList.add(invoiceListModel);
+                                    invoiceListModel1.setPcsperCarton(detailObject.optString("pcsPerCarton"));
+                                    invoiceListModel1.setItemtax(detailObject.optString("totalTax"));
+                                    invoiceListModel1.setSubTotal(detailObject.optString("subTotal"));
+                                    invoiceList.add(invoiceListModel1);
                                     Log.w("invoicSizeEntr1","");
 
-                                }
+                              //  }
                                 if (!detailObject.optString("returnQty").isEmpty() && !detailObject.optString("returnQty").equals("null")
                                         && Double.parseDouble(detailObject.optString("returnQty")) > 0) {
                                     InvoicePrintPreviewModel.InvoiceList invoiceListModel = new InvoicePrintPreviewModel.InvoiceList();
@@ -683,7 +683,7 @@ public class InvoicePrintPreviewActivity extends AppCompatActivity implements On
         invoiceListView.setHasFixedSize(true);
         // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         invoiceListView.setLayoutManager(new LinearLayoutManager(InvoicePrintPreviewActivity.this, LinearLayoutManager.VERTICAL, false));
-        adapter = new InvoicePrintPreviewAdapter(InvoicePrintPreviewActivity.this, invoiceList,"Invoice");
+        adapter = new InvoicePrintPreviewAdapter(InvoicePrintPreviewActivity.this, invoiceList,"Invoice",new ArrayList<>());
         invoiceListView.setAdapter(adapter);
         rootLayout.setVisibility(View.VISIBLE);
     }

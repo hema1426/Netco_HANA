@@ -762,7 +762,7 @@ public class NewInvoiceListActivity extends NavigationActivity
 //                        }else {
 //                            usernamel  = username;
 //                        }
-                        invoices.filterSearch(NewInvoiceListActivity.this, username, selectCustomerCode, invoice_status, fromDateString, toDateString, locationCode);
+                        invoices.filterSearch(NewInvoiceListActivity.this, "", selectCustomerCode, invoice_status, fromDateString, toDateString, locationCode);
                     } catch (JSONException | ParseException e) {
                         e.printStackTrace();
                     }
@@ -1121,7 +1121,7 @@ public class NewInvoiceListActivity extends NavigationActivity
         super.onResume();
     }
 
-    @Override
+        @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_all_invoice) {
             allInvoiceButton.setBackgroundResource(R.drawable.button_order);
@@ -1224,15 +1224,15 @@ public class NewInvoiceListActivity extends NavigationActivity
 
         } else if (invoiceStatus.equals("Partial")) {
             //   editInvoiceLayout.setVisibility(View.GONE);
-            cashCollectionLayout.setVisibility(View.VISIBLE);
+            cashCollectionLayout.setVisibility(View.GONE);
             deleteInvoiceLayout.setVisibility(View.GONE);
             duplicateInvoiceLayout.setVisibility(View.GONE);
 
             invoiceStatusValue = "PR";
         } else if (invoiceStatus.equals("Open") || invoiceStatus.equals("O")) {
             // editInvoiceLayout.setVisibility(View.VISIBLE);
-            cashCollectionLayout.setVisibility(View.VISIBLE);
-            duplicateInvoiceLayout.setVisibility(View.VISIBLE);
+            cashCollectionLayout.setVisibility(View.GONE);
+            duplicateInvoiceLayout.setVisibility(View.GONE);
             invoiceStatusValue = "O";
             // deleteInvoiceLayout.setVisibility(View.VISIBLE);
         }
@@ -3483,6 +3483,7 @@ public class NewInvoiceListActivity extends NavigationActivity
                             model.setAddresssZipcode(object.optString("countryName")+" "+object.optString("state")+" "
                                     +object.optString("zipcode"));
 
+                            model.setDocType(object.optString("docType"));
                             // model.setDeliveryAddress(model.getAddress());
                             model.setSubTotal(object.optString("subTotal"));
                             model.setNetTax(object.optString("taxTotal"));

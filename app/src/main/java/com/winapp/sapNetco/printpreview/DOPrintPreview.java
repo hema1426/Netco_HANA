@@ -481,7 +481,7 @@ public class DOPrintPreview extends AppCompatActivity implements OnPageChangeLis
         invoiceListView.setHasFixedSize(true);
         // RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         invoiceListView.setLayoutManager(new LinearLayoutManager(DOPrintPreview.this, LinearLayoutManager.VERTICAL, false));
-        adapter = new InvoicePrintPreviewAdapter(DOPrintPreview.this, invoiceList,"Do");
+        adapter = new InvoicePrintPreviewAdapter(DOPrintPreview.this, invoiceList,"Do",new ArrayList<>());
         invoiceListView.setAdapter(adapter);
         rootLayout.setVisibility(View.VISIBLE);
     }

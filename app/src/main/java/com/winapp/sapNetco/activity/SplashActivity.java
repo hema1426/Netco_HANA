@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -73,6 +74,7 @@ public class SplashActivity extends AppCompatActivity {
     private SharedPreferences.Editor registerPrefsEditor;
     private SharedPreferences registerPreferences;
     private boolean isRegister;
+    public TextView version_txtl;
 
 
     @Override
@@ -96,6 +98,8 @@ public class SplashActivity extends AppCompatActivity {
         isRegister = registerPreferences.getBoolean("saveRegister", false);
         api_url=registerPreferences.getString("apiUrl","");
         dbHelper=new DBHelper(this);
+
+        version_txtl = findViewById(R.id.version_txt);
         // handler for redirect the main activity
         /*new Handler().postDelayed(new Runnable() {
             @Override
@@ -145,7 +149,7 @@ public class SplashActivity extends AppCompatActivity {
             }
         }, SPLASH_TIME);*/
 
-
+        version_txtl.setText("Version 1.1");
         new Handler().postDelayed(() -> {
             // Testing Function
             if (session.isLoggedIn()){
@@ -162,7 +166,8 @@ public class SplashActivity extends AppCompatActivity {
                // String apiUrl=Constants.FUXIN;
               //String apiUrl=Constants.TRANS_ORIENT_LIVE;
               //String apiUrl=Constants.IMPERIAL_URL;
-               String apiUrl=Constants.Netco;
+
+               String apiUrl=Constants.Netco; //17.7.25 - v1.1
 
 /*SQL app
 //          String apiUrl=Constants.AADHI_DEMO;

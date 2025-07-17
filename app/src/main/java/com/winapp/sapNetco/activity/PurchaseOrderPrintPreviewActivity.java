@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -32,12 +33,14 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.winapp.sapNetco.BuildConfig;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,7 +57,6 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.winapp.sapNetco.R;
-import com.winapp.sapNetco.adapter.PurchaseInvoicePrintPreviewAdapter;
 import com.winapp.sapNetco.adapter.PurchaseOrderPrintPreviewAdapter;
 import com.winapp.sapNetco.model.SalesOrderPrintPreviewModel;
 import com.winapp.sapNetco.tscprinter.TSCPrinterActivity;
@@ -72,6 +74,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,7 +111,7 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
     private TextView itemDiscount;
     private TextView companyNametext;
     private TextView companyAddress1Text;
-    private TextView companyAddress2Text;
+    private TextView companyAddress2Text,referNo;
     private String company_name;
     private String company_address1;
     private String company_address2;
@@ -136,12 +142,13 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
     LinearLayout address1Layout;
     LinearLayout address2Layout;
     LinearLayout address3Layout;
-    LinearLayout address4Layout;
+    LinearLayout address4Layout , reference_layl;
 
     TextView customerAddress1;
     TextView customerAddress2;
     TextView customerAddress3;
     TextView customerAddress4;
+    private ProgressDialog progressDg;
 
     private TextView companyAddress3Text;
     private TextView companyPhoneText;
@@ -159,6 +166,8 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
         TscDll = new TSCActivity();
         session=new SessionManager(this);
         user=session.getUserDetails();
+        Log.w("activity_cg",getClass().getSimpleName().toString());
+
         companyId=user.get(SessionManager.KEY_COMPANY_CODE);
         company_name=user.get(SessionManager.KEY_COMPANY_NAME);
         company_address1=user.get(SessionManager.KEY_ADDRESS1);
@@ -185,6 +194,8 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
         companyAddress1Text=findViewById(R.id.address1);
         companyAddress2Text=findViewById(R.id.address2);
         addressLayout=findViewById(R.id.adressLayout);
+        referNo=findViewById(R.id.reference_no_po_prev);
+        reference_layl = findViewById(R.id.reference_lay_po);
         rootLayout=findViewById(R.id.rootLayout);
         pdfView= (PDFView)findViewById(R.id.pdfView);
 
@@ -205,6 +216,18 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE);
         printerType=sharedPreferences.getString("printer_type","");
         printerMacId=sharedPreferences.getString("mac_address","");
+
+        progressDg = new ProgressDialog(PurchaseOrderPrintPreviewActivity.this);
+        progressDg.setMessage("Downloading Product Image, please wait ...");
+        progressDg.setIndeterminate(true);
+        progressDg.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDg.setCancelable(false);
+        progressDg.setButton(DialogInterface.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.dismiss();
+            }
+        });
+        progressDg.setProgressNumberFormat("%1d KB/%2d KB");
 
         shareLayout=findViewById(R.id.share_layout);
         printLayout=findViewById(R.id.print_layout);
@@ -341,6 +364,8 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
                             Utils.setInvoiceMode("SalesOrder");
                             model.setBillDiscount(object.optString("billDiscount"));
                             model.setItemDiscount(object.optString("totalDiscount"));
+                            model.setReferenceNo(object.optString("customerRefNo"));
+
                             model.setAddress1(object.optString("address1"));
                             model.setAddress2(object.optString("address2"));
                             model.setAddress3(object.optString("address3"));
@@ -446,6 +471,14 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
             soDateText.setText(model.getSoDate());
             customerCodetext.setText(model.getCustomerCode());
             customerNameText.setText(model.getCustomerName());
+
+            if(model.getReferenceNo() != null && !model.getReferenceNo().equals("NA")
+            ) {
+                reference_layl.setVisibility(View.VISIBLE);
+                referNo.setText(model.getReferenceNo());
+            }else{
+                reference_layl.setVisibility(View.GONE);
+            }
 
             if (!model.getAddress1().isEmpty()){
                 address1Layout.setVisibility(View.VISIBLE);
@@ -565,7 +598,7 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.print_menu, menu);
+        getMenuInflater().inflate(R.menu.print_whatap_menu, menu);
         return true;
     }
 
@@ -589,9 +622,14 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
                 }
             }
             return true;
-        }else if (id==android.R.id.home){
+        }
+        else if (id==android.R.id.home){
             finish();
-        }else if (id == R.id.action_pdf) {
+        }
+        else if (id==R.id.action_whatapp){
+            getPdfApi("");
+        }
+        else if (id == R.id.action_pdf) {
             if (boolean_permission) {
                 progressDialog = new ProgressDialog(this);
                 progressDialog.setMessage("Please wait");
@@ -604,6 +642,221 @@ public class PurchaseOrderPrintPreviewActivity extends AppCompatActivity impleme
         return super.onOptionsItemSelected(item);
     }
 
+    public void getPdfApi(String invoiceno) {
+
+        try {
+            // Initialize a new RequestQueue instance
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            // Initialize a new JsonArrayRequest instance
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("InvoiceNo", invoiceno);
+
+            String url = Utils.getBaseUrl(this) + "DownloadPDFInvoice";
+
+            Log.w("Given_url_PdfDownload:", url + "/" + jsonObject.toString());
+            pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+            pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+            pDialog.setTitleText("Generating Pdf...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.POST,
+                    url,
+                    jsonObject,
+                    response -> {
+                        try {
+                            pDialog.dismiss();
+                            Log.w("InvoicePdfResponse:", response.toString());
+                            //    {"statusCode":1,"statusMessage":"Success",
+                            //    "responseData":{"pdfURL":"http:\/\/172.16.5.60:8349\/PDF\/InvoiceNo_15031.pdf"}}
+                            if (response.length() > 0) {
+                                String statusCode = response.optString("statusCode");
+                                if (statusCode.equals("1")) {
+                                    JSONObject object = response.optJSONObject("responseData");
+                                    String pdfUrl = object.optString("pdfURL");
+                                   // shareMode = mode;
+                                    new pdfDownload(this).execute(pdfUrl, "invoice", invoiceno);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Error in Getting report..", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }, error -> {
+                Log.w("Error_throwing:", error.toString());
+            }) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    HashMap<String, String> params = new HashMap<>();
+                    String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
+                    String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
+                    params.put("Authorization", auth);
+                    return params;
+                }
+            };
+            jsonObjectRequest.setRetryPolicy(new RetryPolicy() {
+                @Override
+                public int getCurrentTimeout() {
+                    return 50000;
+                }
+
+                @Override
+                public int getCurrentRetryCount() {
+                    return 50000;
+                }
+
+                @Override
+                public void retry(VolleyError error) throws VolleyError {
+                }
+            });
+            // Add JsonArrayRequest to the RequestQueue
+            requestQueue.add(jsonObjectRequest);
+        } catch (Exception ex) {
+        }
+    }
+
+    private class pdfDownload extends AsyncTask<String, Integer, String> {
+
+        private Context c;
+        private int file_progress_count = 0;
+        File newFile;
+
+        public pdfDownload(Context c) {
+            this.c = c;
+        }
+
+        @Override
+        protected String doInBackground(String... sUrl) {
+            InputStream is = null;
+            OutputStream os = null;
+            HttpURLConnection con = null;
+            int length;
+            try {
+                URL url = new URL(sUrl[0]);
+                con = (HttpURLConnection) url.openConnection();
+                con.connect();
+
+                if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return "HTTP CODE: " + con.getResponseCode() + " " + con.getResponseMessage();
+                }
+
+                length = con.getContentLength();
+                progressDg.setMax(length / (1000));
+                is = con.getInputStream();
+
+                Log.w("DownloadImageURL:", url.toString());
+
+                //String folderPath = Environment.getExternalStorageDirectory() + "/CatalogErp/Products";
+                File folder = new File(Constants.getFolderPath(PurchaseOrderPrintPreviewActivity.this));
+                if (!folder.exists()) {
+                    File productsDirectory = new File(Constants.getFolderPath(PurchaseOrderPrintPreviewActivity.this));
+                    productsDirectory.mkdirs();
+                }
+
+                //create a new file
+                String filepath = sUrl[1] + "_" + sUrl[2];
+                String newfilePath = filepath.replace("/", "_");
+                newFile = new File(Constants.getFolderPath(PurchaseOrderPrintPreviewActivity.this), newfilePath + ".pdf");
+                if (newFile.exists()) {
+                    newFile.delete();
+                }
+                Log.w("GivenFilePath:", newFile.toString());
+                newFile.createNewFile();
+                //os = new FileOutputStream(Environment.getExternalStorageDirectory()+File.separator+"CatalogImages" + File.separator + "a-computer-engineer.jpg");
+                os = new FileOutputStream(newFile);
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = is.read(data)) != -1) {
+                    if (isCancelled()) {
+                        is.close();
+                        return null;
+                    }
+                    total += count;
+                    if (length > 0) {
+                        publishProgress((int) total);
+                    }
+                    this.file_progress_count = (int) ((100 * total) / ((long) length));
+                    os.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                Log.w("File_Write_Error:", e.getMessage());
+                return e.toString();
+            } finally {
+                try {
+                    if (os != null)
+                        os.close();
+                    if (is != null)
+                        is.close();
+                } catch (IOException ioe) {
+                }
+                if (con != null)
+                    con.disconnect();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDg.setMessage("Downloading Pdf..");
+            progressDg.show();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+            progressDg.setIndeterminate(false);
+            progressDg.setProgress(progress[0] / 1000);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                Log.w("ProgressCount:", file_progress_count + "");
+                if (file_progress_count == 100) {
+                    progressDg.dismiss();
+                    if (newFile.exists()) {
+//                        if (shareMode.equals("Share")) {
+//                            pdfFile = newFile;
+//                            displayFromAsset(newFile);
+//                        } else {
+                            shareWhatsapp(newFile);
+                    //    }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "NO file Download", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                if (result != null) {
+
+                }
+            } catch (Exception exception) {
+            }
+        }
+    }
+
+
+    public void shareWhatsapp(File file) {
+        Intent shareIntent = new Intent();
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shareIntent.setAction(Intent.ACTION_SEND);
+        //without the below line intent will show error
+        shareIntent.setType("application/pdf");
+        shareIntent.putExtra(android.content.Intent.EXTRA_STREAM,
+                FileProvider.getUriForFile(Objects.requireNonNull(getApplicationContext()),
+                        BuildConfig.APPLICATION_ID + ".provider", file));
+        // Target whatsapp:
+        shareIntent.setPackage("com.whatsapp");
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            startActivity(shareIntent);
+        } catch (android.content.ActivityNotFoundException ex) {
+           // shareWhatsappBusiness(file);
+            //Toast.makeText(NewInvoiceListActivity.this, "Whatsapp have not been installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
     private boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (result == PackageManager.PERMISSION_GRANTED) {

@@ -81,6 +81,7 @@
         <item
             android:id="@+id/navigation_item_purchase"
             android:icon="@drawable/ic_invoice_menu"
+            android:visible="false"
             android:title="Purchase Invoice" />
 
     </group>
@@ -113,6 +114,7 @@
         <item
             android:id="@+id/navigation_item_purchaseorder"
             android:icon="@drawable/ic_catalog"
+            android:visible="false"
             android:title="Purchase Order" />
     </group>
 
@@ -125,7 +127,15 @@
             android:title="Receipts" />
 
     </group>
+    <group
+        android:id="@+id/drawermenu_group_9a"
+        >
+        <item
+            android:id="@+id/navigation_item_receipts_outgoing"
+            android:icon="@drawable/ic_receipt"
+            android:title="Outgoing Payment" />
 
+    </group>
     <group
         android:id="@+id/drawermenu_group_3"
         >
@@ -152,6 +162,7 @@
         <item
             android:icon="@drawable/ic_baseline_transform_24"
             android:id="@+id/navigation_transfer"
+            android:visible="false"
             android:title="Transfer" />
 
     </group>
@@ -161,6 +172,7 @@
         <item
             android:icon="@drawable/ic_baseline_transform_24"
             android:id="@+id/navigation_stock_request"
+            android:visible="false"
             android:title="Stock Request" />
 
     </group>

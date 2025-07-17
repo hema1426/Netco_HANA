@@ -23,10 +23,16 @@ public class InvoicePrintPreviewAdapter extends RecyclerView.Adapter<InvoicePrin
     private Context context;
     View view;
     private String printView;
-    public InvoicePrintPreviewAdapter(Context context,ArrayList<InvoicePrintPreviewModel.InvoiceList> invoices,String printView) {
+    ArrayList<InvoicePrintPreviewModel> invoiceHeaderDetails ;
+
+    public InvoicePrintPreviewAdapter(Context context,ArrayList<InvoicePrintPreviewModel.InvoiceList> invoices,
+                                      String printView , ArrayList<InvoicePrintPreviewModel> invoiceHeader) {
         this.context=context;
         this.invoiceLists = invoices;
         this.printView=printView;
+        this.invoiceHeaderDetails=invoiceHeader;
+
+
     }
     @NonNull
     @Override
@@ -46,6 +52,14 @@ public class InvoicePrintPreviewAdapter extends RecyclerView.Adapter<InvoicePrin
         InvoicePrintPreviewModel.InvoiceList invoiceList=invoiceLists.get(position);
         viewHolder.slNo.setText(String.valueOf(position+1));
         viewHolder.code.setText(String.valueOf(invoiceList.getProductCode()));
+
+        if(invoiceHeaderDetails.get(0).getDocType().equals("S")){
+            viewHolder.price.setVisibility(View.GONE);
+            viewHolder.qtyValue.setVisibility(View.GONE);
+        }else{
+            viewHolder.price.setVisibility(View.VISIBLE);
+            viewHolder.qtyValue.setVisibility(View.VISIBLE);
+        }
 
         if (invoiceList.getUomCode()!=null && !invoiceList.getUomCode().equals("null") && !invoiceList.getUomCode().isEmpty()){
             viewHolder.description.setText(invoiceList.getDescription()+" ("+invoiceList.getUomCode()+")");

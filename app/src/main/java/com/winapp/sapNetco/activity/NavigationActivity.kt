@@ -100,6 +100,7 @@ open class NavigationActivity : AppCompatActivity() {
         val invoice = menu.findItem(R.id.navigation_item_invoice)
         val purchase_invoice = menu.findItem(R.id.navigation_item_purchase)
         val receipts = menu.findItem(R.id.navigation_item_receipts)
+        val receipts_outgoing = menu.findItem(R.id.navigation_item_receipts_outgoing)
         val settings = menu.findItem(R.id.navigation_item_settings)
         val salesreturn = menu.findItem(R.id.navigation_item_sales_return)
 
@@ -212,7 +213,7 @@ open class NavigationActivity : AppCompatActivity() {
                     "Sales Return" -> if (roll.havePermission == "true") {
                         purchase_invoice.setVisible(true)
                     } else {
-                        purchase_invoice.setVisible(false)
+                        purchase_invoice.setVisible(true)
                     }
                 }
             }
@@ -324,7 +325,15 @@ open class NavigationActivity : AppCompatActivity() {
                 // mCurrentSelectedPosition=9;
                 drawerLayout!!.closeDrawers()
                 return@OnNavigationItemSelectedListener true
-            } else if (itemId == R.id.navigation_item_catagories) {
+            }else if (itemId == R.id.navigation_item_receipts_outgoing) {
+                val intent: Intent
+                intent = Intent(this@NavigationActivity, OutgoingReceiptListActivity::class.java)
+                startActivity(intent)
+                // mCurrentSelectedPosition=9;
+                drawerLayout!!.closeDrawers()
+                return@OnNavigationItemSelectedListener true
+            }
+            else if (itemId == R.id.navigation_item_catagories) {
                     val intent: Intent
                     intent = Intent(this@NavigationActivity, CategoriesActivity::class.java)
                     startActivity(intent)

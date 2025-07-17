@@ -146,7 +146,7 @@ public class AllInvoices extends Fragment {
 //        }
 
         Log.w("userrna",""+usernamel);
-        getInvoices(companyId,username,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        getInvoices(companyId,"",String.valueOf(pageNo),"ALL",currentDate,currentDate);
 
         if(isLastSales.equalsIgnoreCase("True")){
             totalSalesLayout.setVisibility(View.VISIBLE);
@@ -457,7 +457,7 @@ public class AllInvoices extends Fragment {
     public  void filterCancel() {
       //  setFilterAdapter(displayInvoiceList);
         invoiceList=new ArrayList<>();
-        getInvoices(companyId,username,String.valueOf(pageNo),"ALL",currentDate,currentDate);
+        getInvoices(companyId,"",String.valueOf(pageNo),"ALL",currentDate,currentDate);
     }
 
     public  void filterSearch(Context context,String username, String customerCode, String invoiceStatus, String fromdate, String todate,String location) throws JSONException {

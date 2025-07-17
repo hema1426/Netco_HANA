@@ -2,6 +2,8 @@ Netco login
 --------
 Anish 12345
 
+outgoing payment listing , invoice list user empty -- 11.7.25
+
 Netco
 http://159.69.142.253:93/api/login
 {"Username":"Niyaz","Password":"1234"}
@@ -22,7 +24,15 @@ CateoriesTemp2Fragment
 // orderHistory date clear
 
 
+String oldToDate = salesOrderModel.getDate();
 
+            Date fromDate = null;
+            try {
+                fromDate = new SimpleDateFormat("yyyyMMdd").parse(oldToDate);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            String fromDateString = new SimpleDateFormat("dd/MM/yyyy").format(fromDate);
 
 SUPER_STAR_DEMO
 ST01

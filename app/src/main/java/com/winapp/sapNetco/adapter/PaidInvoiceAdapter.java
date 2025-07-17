@@ -57,6 +57,7 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private SessionManager session;
     private HashMap<String, String> user;
     private ArrayList<InvoicePrintPreviewModel.InvoiceList> invoiceshowList;
+    private ArrayList<InvoicePrintPreviewModel> invoiceHeader;
 
     public PaidInvoiceAdapter(Context context, RecyclerView mRecyclerView, ArrayList<InvoiceModel> invoiceList, CallBack callBack) {
 
@@ -178,7 +179,7 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                         ((UserViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_up_24));
                         try {
                             if (invoice.getInvoiceList().size()>0){
-                                setInvoiceAdapter(viewHolder,position,invoice.getInvoiceList());
+                                setInvoiceAdapter(viewHolder,position,invoice.getInvoiceList(),invoiceHeader);
                                 ((UserViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
                                 ((UserViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
                             }else {
@@ -203,7 +204,7 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 ((UserViewHolder) viewHolder).showHideBottomLayout.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_keyboard_arrow_up_24));
                 try {
                     //getReceiptsDetails(receiptsModel.getReceiptNumber(),viewHolder,position,receiptsModel);
-                    setInvoiceAdapter(viewHolder, position, invoice.getInvoiceList());
+                    setInvoiceAdapter(viewHolder, position, invoice.getInvoiceList(),invoiceHeader);
                     ((UserViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
                     ((UserViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
                 } catch (Exception e) {
@@ -261,8 +262,8 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         private TextView date;
         private TextView soNumber;
         private TextView balance;
-        private TextView netTotal;
-        private TextView status;
+        private TextView netTotal , qty_title;
+        private TextView status , price_title;
         private CardView mainCard;
         private ImageView moreOption;
         private LinearLayout statusLayout;
@@ -290,6 +291,8 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             moreOption = view.findViewById(R.id.more_option);
             statusLayout = view.findViewById(R.id.status_layout);
             indicator=view.findViewById(R.id.indicator);
+            price_title=view.findViewById(R.id.invDetail_price_title);
+            qty_title=view.findViewById(R.id.invDetail_qty_title);
 
             productListView=view.findViewById(R.id.invoiceList);
             showHideBottomLayout=view.findViewById(R.id.show_hide);
@@ -328,28 +331,17 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         RequestQueue requestQueue = Volley.newRequestQueue(mContext);
         String url= Utils.getBaseUrl(mContext) +"InvoiceDetails";
         // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url:",url);
+        Log.w("paid_invDet:",url);
         invoiceshowList =new ArrayList<>();
+        invoiceHeader =new ArrayList<>();
+
         ArrayList<InvoicePrintPreviewModel> pdfInvoiceList=new ArrayList<>();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url,
                 jsonObject,
                 response -> {
                     try{
                         Log.w("Invoice_Details_SAP:",response.toString());
-                        // {"statusCode":1,"statusMessage":"Success","responseData":[{"customerCode":"WinApp","customerName":"WinApp",
-                        // "invoiceNumber":"16","invoiceStatus":"O","invoiceDate":"5\/8\/2021 12:00:00 am","netTotal":"15321330.000000",
-                        // "balanceAmount":"15321330.000000","totalDiscount":"0.000000","paidAmount":"0.000000","contactPersonCode":"0",
-                        // "createDate":"5\/8\/2021 12:00:00 am","updateDate":"5\/8\/2021 12:00:00 am","remark":"","fDocTotal":"0.000000",
-                        // "fTaxAmount":"0.000000","receivedAmount":"0.000000","total":"15321330.000000","fTotal":"0.000000",
-                        // "iTotalDiscount":"0.000000","taxTotal":"1002330.000000","iPaidAmount":"0.000000","currencyCode":"SGD",
-                        // "currencyName":"Singapore Dollar","companyCode":"WINAPP_DEMO","docEntry":"3",
-                        // "invoiceDetails":[{"slNo":"1","companyCode":"WINAPP_DEMO","invoiceNo":"16","productCode":"MB001",
-                        // "productName":"MilkBread","quantity":"1.000000","price":"3000.000000","currency":"INR","taxRate":"4773.000000",
-                        // "discountPercentage":"0.000000","lineTotal":"15321330.000000","fRowTotal":"0.000000","warehouseCode":"01",
-                        // "salesEmployeeCode":"-1","accountCode":"400000","taxStatus":"Y","unitPrice":"3000.000000","customerCategoryNo":"",
-                        // "barCodes":"","totalTax":"1002330.000000","fTaxAmount":"0.000000","taxCode":"","taxType":"Y","taxPerc":"0.000000",
-                        // "invoiceDate":"5\/8\/2021 12:00:00 am","dueDate":"5\/8\/2021 12:00:00 am","createDate":"5\/8\/2021 12:00:00 am",
-                        // "updateDate":"5\/8\/2021 12:00:00 am","createdUser":"manager"}]}]}
+
                         if (response.length()>0){
                             JSONArray responseData=response.getJSONArray("responseData");
                             JSONObject object=responseData.optJSONObject(0);
@@ -368,6 +360,7 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                             model.setOutStandingAmount(object.optString("balanceAmount"));
                             model.setBillDiscount(object.optString("BillDIscount"));
                             model.setAllowDeliveryAddress(object.optString("showShippingAddress"));
+                            model.setDocType(object.optString("docType"));
 
                             JSONArray products=object.getJSONArray("invoiceDetails");
                             for (int i=0;i<products.length();i++) {
@@ -411,8 +404,8 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                                 invoiceListModel.setSubTotal(detailObject.optString("subTotal"));
                                 invoiceshowList.add(invoiceListModel);
                             }
-
                             model.setInvoiceList(invoiceshowList);
+                            invoiceHeader.add(model);
                             pdfInvoiceList.add(model);
                         }
 
@@ -420,7 +413,7 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                             ((UserViewHolder) viewHolder).progressLayout.setVisibility(View.GONE);
                             ((UserViewHolder) viewHolder).mainLayout.setVisibility(View.VISIBLE);
                             invoice.setInvoiceList(invoiceshowList);
-                            setInvoiceAdapter(viewHolder,position,invoiceshowList);
+                            setInvoiceAdapter(viewHolder,position,invoiceshowList,invoiceHeader);
                         }
 
                         if (action.equals("pdf")){
@@ -461,10 +454,19 @@ public class PaidInvoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         requestQueue.add(jsonObjectRequest);
     }
 
-    public void setInvoiceAdapter(@NonNull RecyclerView.ViewHolder  viewHolder, int position, ArrayList<InvoicePrintPreviewModel.InvoiceList> invoiceList){
+    public void setInvoiceAdapter(@NonNull RecyclerView.ViewHolder  viewHolder, int position,
+                                  ArrayList<InvoicePrintPreviewModel.InvoiceList> invoiceList,
+                                  ArrayList<InvoicePrintPreviewModel> invoiceHeader){
+        if(invoiceHeader.get(0).getDocType().equals("S")) {
+            ((UserViewHolder) viewHolder).price_title.setVisibility(View.GONE);
+            ((UserViewHolder) viewHolder).qty_title.setVisibility(View.GONE);
+        }else{
+            ((UserViewHolder) viewHolder).price_title.setVisibility(View.VISIBLE);
+            ((UserViewHolder) viewHolder).qty_title.setVisibility(View.VISIBLE);
+        }
         ((UserViewHolder) viewHolder).productListView.setHasFixedSize(true);
         ((UserViewHolder) viewHolder).productListView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-        InvoicePrintPreviewAdapter adapter=new InvoicePrintPreviewAdapter(mContext,invoiceList,"Invoice");
+        InvoicePrintPreviewAdapter adapter=new InvoicePrintPreviewAdapter(mContext,invoiceList,"Invoice",invoiceHeader);
         ((UserViewHolder) viewHolder).productListView.setAdapter(adapter);
         // notifyDataSetChanged();
     }

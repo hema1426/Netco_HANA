@@ -1,9 +1,6 @@
 package com.winapp.sapNetco.adapter;
 
-import static com.winapp.sapNetco.activity.NewInvoiceListActivity.shortCodeStr;
-
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +22,14 @@ public class NewInvoicePrintPreviewAdapter extends RecyclerView.Adapter<NewInvoi
     private Context context;
     View view;
     private String printView;
+    ArrayList<InvoicePrintPreviewModel> invoiceHeaderDetails ;
     public NewInvoicePrintPreviewAdapter(Context context, ArrayList<InvoicePrintPreviewModel.InvoiceList> invoices,
-                                         String printView , String companyName) {
+                                         String printView , String companyName,ArrayList<InvoicePrintPreviewModel> invoiceHeader) {
         this.context=context;
         this.invoiceLists = invoices;
         this.printView=printView;
         this.companyName=companyName;
+        this.invoiceHeaderDetails=invoiceHeader;
     }
     @NonNull
     @Override
@@ -44,6 +43,24 @@ public class NewInvoicePrintPreviewAdapter extends RecyclerView.Adapter<NewInvoi
         InvoicePrintPreviewModel.InvoiceList invoiceList=invoiceLists.get(position);
         viewHolder.slNo.setText(String.valueOf(position+1));
 //        viewHolder.product.setText(invoiceList.getDescription()+" ("+invoiceList.getUomCode()+")");
+        if(invoiceHeaderDetails.get(0).getDocType().equals("S")){
+            viewHolder.price.setVisibility(View.GONE);
+            viewHolder.netQty.setVisibility(View.GONE);
+        }else{
+            viewHolder.price.setVisibility(View.VISIBLE);
+            viewHolder.netQty.setVisibility(View.VISIBLE);
+
+            if (invoiceList.getSaleType().equals("Return")){
+                viewHolder.netQty.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+" (as Return)");
+            }else if (invoiceList.getSaleType().equals("FOC")){
+                viewHolder.netQty.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+" ( as FOC)");
+            } else if (invoiceList.getSaleType().equals("Exchange")){
+                viewHolder.netQty.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+" ( as Exch)");
+            }else {
+                viewHolder.netQty.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+"");
+            }
+            viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getPricevalue())));
+        }
 
         if (invoiceList.getUomCode()!=null && !invoiceList.getUomCode().equals("null") && !invoiceList.getUomCode().isEmpty()){
           if(invoiceList.getCustomerItemCode()!=null && !invoiceList.getCustomerItemCode().equals("null")
@@ -60,115 +77,9 @@ public class NewInvoicePrintPreviewAdapter extends RecyclerView.Adapter<NewInvoi
                 viewHolder.product.setText(invoiceList.getDescription());
             }
         }
-        if (invoiceList.getSaleType().equals("Return")){
-            viewHolder.net.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+" (as Return)");
-        }else if (invoiceList.getSaleType().equals("FOC")){
-            viewHolder.net.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+" ( as FOC)");
-        } else if (invoiceList.getSaleType().equals("Exchange")){
-            viewHolder.net.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+" ( as Exch)");
-        }else {
-            viewHolder.net.setText((int)Double.parseDouble(invoiceList.getNetQuantity())+"");
-        }
-//        if (invoiceList.getUomCode()!=null && !invoiceList.getUomCode().equals("null")
-//                && !invoiceList.getUomCode().isEmpty()) {
-//
-//            if (invoiceList.getFocQty() != null && !invoiceList.getFocQty().isEmpty()
-//                    && Double.parseDouble(invoiceList.getFocQty()) > 0) {
-//                if (invoiceList.getExcQty() != null && !invoiceList.getExcQty().isEmpty()
-//                        && Double.parseDouble(invoiceList.getExcQty()) > 0) {
-//                    Log.w("excInv", "" + invoiceList.getExcQty());
-//
-//                    viewHolder.product.setText((invoiceList.getDescription()) +
-//                            " (" + invoiceList.getUomCode() + ")" + " ( as FOC)" + " ( as Exc)");
-//                } else {
-//                    Log.w("excInv11", "" + invoiceList.getExcQty());
-//
-//                    viewHolder.product.setText((invoiceList.getDescription()) +
-//                            " (" + invoiceList.getUomCode() + ")" + " ( as FOC)");
-//                }
-//            } else {
-//                if (invoiceList.getExcQty() != null && !invoiceList.getExcQty().isEmpty()
-//                        && Double.parseDouble(invoiceList.getExcQty()) > 0) {
-//                    viewHolder.product.setText((invoiceList.getDescription()) +
-//                            " (" + invoiceList.getUomCode() + ")" + " ( as Exc)");
-//
-//                }
-//                else{
-//             viewHolder.product.setText(invoiceList.getDescription()+" ("+invoiceList.getUomCode()+")");
-//                }
-//            }
-//        }
-//
-//        else {
-//            viewHolder.product.setText(invoiceList.getDescription());
-//        }
 
-//            if (invoiceList.getUomCode()!=null && !invoiceList.getUomCode().equals("null") && !invoiceList.getUomCode().isEmpty()){
-//            if (Double.parseDouble(invoiceList.getTotal()) < 0.00){
-//                viewHolder.product.setText((invoiceList.getDescription())+" ("+invoiceList.getUomCode()+")"+" (as Return)");
-//            }else if (Double.parseDouble(invoiceList.getTotal())==0.00){
-//                if (invoiceList.getReturnQty()!=null && !invoiceList.getReturnQty().isEmpty() && Double.parseDouble(invoiceList.getReturnQty()) > 0){
-//                    viewHolder.product.setText((invoiceList.getDescription())+" ("+invoiceList.getUomCode()+")"+" ( as Return)");
-//                }else {
-//                    if (invoiceList.getExcQty()!=null && !invoiceList.getExcQty().isEmpty() && Double.parseDouble(invoiceList.getExcQty()) > 0) {
-//                        viewHolder.product.setText((invoiceList.getDescription())+" ("+invoiceList.getUomCode()+")" + " ( as FOC)");
-//                    }
-//                    else{
-//                        viewHolder.product.setText((invoiceList.getDescription())+" ("+invoiceList.getUomCode()+")" + " ( as FOC)"+ " ( as Exc)");
-//                    }
-//                }
-//            }else {
-//                viewHolder.product.setText(invoiceList.getDescription()+" ("+invoiceList.getUomCode()+")");
-//            }
-//        }
-//        else {
-//
-//            if (Double.parseDouble(invoiceList.getTotal()) < 0.00){
-//                viewHolder.product.setText(Double.parseDouble(invoiceList.getDescription())+" (as Return)");
-//            }else if (Double.parseDouble(invoiceList.getTotal())==0.00){
-//                if (invoiceList.getReturnQty()!=null && !invoiceList.getReturnQty().isEmpty() && Double.parseDouble(invoiceList.getReturnQty()) > 0){
-//                    viewHolder.product.setText((invoiceList.getDescription())+" ( as Return)");
-//                }else {
-//                    if (invoiceList.getExcQty()!=null && !invoiceList.getExcQty().isEmpty() && Double.parseDouble(invoiceList.getExcQty()) > 0) {
-//                        viewHolder.product.setText((invoiceList.getDescription()) + " ( as FOC)");
-//                    }
-//                    else{
-//                        viewHolder.product.setText((invoiceList.getDescription()) + " ( as FOC)"+ " ( as Exc)");
-//                    }
-//                }
-//            }else {
-//                viewHolder.product.setText((invoiceList.getDescription()));
-//            }
-//        }
+        viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
 
-        Log.w("cpmadpta",""+companyName);
-        if (companyName.equalsIgnoreCase("Trans Orient Singapore Pte Ltd") ||
-                companyName.equalsIgnoreCase("RAYMANG EGGS & POULTRY SUPPLIER")) {
-            viewHolder.rtn.setVisibility(View.INVISIBLE);
-            viewHolder.iss.setVisibility(View.INVISIBLE);
-        }
-        else {
-            viewHolder.rtn.setVisibility(View.VISIBLE);
-            viewHolder.iss.setVisibility(View.VISIBLE);
-            viewHolder.iss.setText(invoiceList.getNetQty());
-            viewHolder.rtn.setText(invoiceList.getReturnQty());
-
-        }
-      //  viewHolder.net.setText(invoiceList.getNetQuantity());
-
-       // viewHolder.price.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getPricevalue())));
-        if(shortCodeStr.equalsIgnoreCase("FUXIN")) {
-            viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble((invoiceList.getPricevalue()))));
-            viewHolder.total.setText(Utils.fourDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
-        }else{
-            if(shortCodeStr.equalsIgnoreCase("SUPERSTAR")) {
-                viewHolder.price.setText(Utils.fourDecimalPoint(Double.parseDouble((invoiceList.getPricevalue()))));
-                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
-            }else{
-                viewHolder.price.setText(invoiceList.getPricevalue());
-                viewHolder.total.setText(Utils.twoDecimalPoint(Double.parseDouble(invoiceList.getTotal())));
-            }
-        }
     }
 
     @Override
@@ -180,7 +91,7 @@ public class NewInvoicePrintPreviewAdapter extends RecyclerView.Adapter<NewInvoi
         private TextView slNo;
         private TextView product;
         private TextView rtn;
-        private TextView net,iss;
+        private TextView netQty,iss;
         private TextView price;
         private TextView total;
         public ViewHolder(View view) {
@@ -189,7 +100,7 @@ public class NewInvoicePrintPreviewAdapter extends RecyclerView.Adapter<NewInvoi
             product=view.findViewById(R.id.itemproduct);
             rtn=view.findViewById(R.id.itemrtn);
             iss=view.findViewById(R.id.itemiss);
-            net=view.findViewById(R.id.itemnet);
+            netQty =view.findViewById(R.id.itemnet);
             price=view.findViewById(R.id.itemprice);
             total=view.findViewById(R.id.itemtotal);
         }

@@ -1,5 +1,6 @@
 package com.winapp.sapNetco.activity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
@@ -40,6 +41,7 @@ import com.winapp.sapNetco.ReportPreview.RoCustomerOutstandPreviewActivity;
 import com.winapp.sapNetco.ReportPreview.RoInvoicebyProductPreviewActivity;
 import com.winapp.sapNetco.ReportPreview.RoReceiptSettlePreviewActivity;
 import com.winapp.sapNetco.ReportPreview.RoSettlementPreviewActivity;
+import com.winapp.sapNetco.ReportPreview.RoSupplierStatementPreviewActivity;
 import com.winapp.sapNetco.ReportPreview.SapSalesSummaryPreviewActivity;
 import com.winapp.sapNetco.ReportPreview.SapStockReturnPreviewActivity;
 import com.winapp.sapNetco.ReportPreview.SapStockSummaryOpenPreviewActivity;
@@ -56,6 +58,7 @@ import com.winapp.sapNetco.model.SettlementReceiptDetailModel;
 import com.winapp.sapNetco.model.SettlementReceiptModel;
 import com.winapp.sapNetco.model.StockBadRequestReturnModel;
 import com.winapp.sapNetco.model.StockSummaryReportOpenModel;
+import com.winapp.sapNetco.model.SupplierModel;
 import com.winapp.sapNetco.model.UserListModel;
 import com.winapp.sapNetco.utils.Constants;
 import com.winapp.sapNetco.utils.SessionManager;
@@ -79,19 +82,23 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-public class ReportsActivity extends NavigationActivity implements View.OnClickListener {
+public class ReportsActivity extends SearchableSpinnerCustomDialog implements
+        View.OnClickListener ,  SearchableSpinnerCustomDialog.SupplierClickListener,
+        SearchableSpinnerCustomDialog.CustomerClickListener{
     // Variables Declarations
     private CheckBox invoiceByProduct;
     private CheckBox invoiceSummary;
-    private CheckBox customerStatement;
-    private CheckBox customerStatementDatel;
+    private CheckBox customerStatement,supplierStatement;
+    private CheckBox customerStatementDatel,supplierStatementDatel;
     private CheckBox receiptSummary;
     private CheckBox receiptDetails;
     private CheckBox settlementReport;
     private CheckBox settle_receiptReport;
     private ArrayList<CustomerModel> customerList;
     private ArrayList<String> searchableCustomerList;
-    private SearchableSpinner customerListSpinner;
+//    private SearchableSpinner customerListSpinner;
+    public TextView supplerListSpinner , customerListSpinner;
+
     private SearchableSpinner userListSpinner;
     private SearchableSpinner statusListSpinner;
     private SessionManager session;
@@ -108,6 +115,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
     private String to_date="";
     private String customer_name="";
     private String customer_id="";
+    private String supplier_id="";
     private String status_value="";
     private SweetAlertDialog pDialog;
     private JsonObjectRequest jsonObjectRequest;
@@ -159,7 +167,11 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
     private String isLocationPermissionAuthentication;
     private ArrayList<UserListModel> usersList;
     private ArrayList<String> salesManList;
-
+    private ArrayList<SupplierModel> supplierList;
+    private ArrayList<String> searchableSupplierList;
+    static ReportsActivity customerClickListenerRo ;
+    static ReportsActivity productClickListenerRo ;
+    static ReportsActivity supplierClickListenerRo ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -176,6 +188,10 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         locationCode=user.get(SessionManager.KEY_LOCATION_CODE);
         isLocationPermissionAuthentication=user.get(SessionManager.IS_LOCATION_PERMISSION);
 
+        supplierClickListenerRo = this ;
+        customerClickListenerRo = this ;
+        productClickListenerRo = this ;
+
         invoiceByProduct=findViewById(R.id.invoice_by_product);
         invoiceSummary=findViewById(R.id.invoice_by_summary);
         customerStatement=findViewById(R.id.customer_statement);
@@ -187,6 +203,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         stockSummaryReport=findViewById(R.id.stock_summary);
         badStockReturnSummary=findViewById(R.id.bad_stock_summary);
         stock_summary_openingBalm =findViewById(R.id.stock_summary_openingBal);
+        supplierStatement =findViewById(R.id.supplier_statement);
+        supplierStatementDatel =findViewById(R.id.supplier_statement_date);
         printPreview=findViewById(R.id.preview);
         printView=findViewById(R.id.print);
 
@@ -205,6 +223,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         stockSummaryReport.setOnClickListener(this);
         badStockReturnSummary.setOnClickListener(this);
         stock_summary_openingBalm.setOnClickListener(this);
+        supplierStatement.setOnClickListener(this);
+        supplierStatementDatel.setOnClickListener(this);
 
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE);
         printerType=sharedPreferences.getString("printer_type","");
@@ -223,6 +243,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         Log.w("Printer_Mac_Id:",printerMacId);
         Log.w("Printer_Type:",printerType);
 
+        isPrintEnable=false;
+        printPreview.setBackgroundResource(R.drawable.editext_border);
 
         printPreview.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -233,14 +255,14 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
             }
         });
 
-        printView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isPrintEnable=true;
-                printView.setBackgroundResource(R.drawable.editext_border);
-                printPreview.setBackground(null);
-            }
-        });
+//        printView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                isPrintEnable=true;
+//                printView.setBackgroundResource(R.drawable.editext_border);
+//                printPreview.setBackground(null);
+//            }
+//        });
 
         if (isLocationPermissionAuthentication.equals("Y")){
             try {
@@ -251,12 +273,14 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         }
 
         getCustomers();
+        getSupplier();
     }
 
     @Override
     public void onClick(View view) {
         customer_id = "" ;
         customer_name = "";
+        supplier_id = "";
 
         if (view.getId()==R.id.invoice_by_product){
             if (invoiceByProduct.isChecked()){
@@ -267,6 +291,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 settlementReport.setChecked(false);
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
 
                 showFilterAlertDialog(view,"Invoice By Products");
             }
@@ -279,6 +305,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 settlementReport.setChecked(false);
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
 
                 showFilterAlertDialog(view,"Sales Summary");
             }
@@ -292,6 +320,9 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 settlementReport.setChecked(false);
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
+
                 showFilterAlertDialog(view, "Customer Outstanding Period");
             }
         }
@@ -304,6 +335,9 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                     settlementReport.setChecked(false);
                     settle_receiptReport.setChecked(false);
                     customerStatement.setChecked(false);
+                    supplierStatement.setChecked(false);
+                    supplierStatementDatel.setChecked(false);
+
                     showFilterAlertDialog(view,"Customer Outstanding Statement (as on Date)");
                 }
 
@@ -316,6 +350,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 settlementReport.setChecked(false);
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
 
                 showFilterAlertDialog(view,"Receipt Details");
             }
@@ -328,6 +364,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 settlementReport.setChecked(false);
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
 
                 showFilterAlertDialog(view,"Receipt Summary");
             }
@@ -340,6 +378,8 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 customerStatement.setChecked(false);
                 settle_receiptReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
 
                 showFilterAlertDialog(view,"Settlement Report");
             }
@@ -352,8 +392,36 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 customerStatement.setChecked(false);
                 settlementReport.setChecked(false);
                 customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+                supplierStatementDatel.setChecked(false);
 
                 showFilterAlertDialog(view,"Settlement With Receipt");
+            }
+        }else if (view.getId()==R.id.supplier_statement){
+            if (supplierStatement.isChecked()){
+                invoiceSummary.setChecked(false);
+                receiptSummary.setChecked(false);
+                invoiceByProduct.setChecked(false);
+                receiptDetails.setChecked(false);
+                customerStatement.setChecked(false);
+                settlementReport.setChecked(false);
+                customerStatementDatel.setChecked(false);
+                supplierStatementDatel.setChecked(false);
+
+                showFilterAlertDialog(view,"Supplier Statement");
+            }
+        }else if (view.getId()==R.id.supplier_statement_date){
+            if (supplierStatementDatel.isChecked()){
+                invoiceSummary.setChecked(false);
+                receiptSummary.setChecked(false);
+                invoiceByProduct.setChecked(false);
+                receiptDetails.setChecked(false);
+                customerStatement.setChecked(false);
+                settlementReport.setChecked(false);
+                customerStatementDatel.setChecked(false);
+                supplierStatement.setChecked(false);
+
+                showFilterAlertDialog(view,"Supplier Statement (as on Date)");
             }
         }
         else if (view.getId()==R.id.stock_summary){
@@ -390,6 +458,9 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
             settlementReport.setChecked(false);
             settle_receiptReport.setChecked(false);
             customerStatementDatel.setChecked(false);
+            supplierStatement.setChecked(false);
+            supplierStatementDatel.setChecked(false);
+
         }catch (Exception exception){}
     }
 
@@ -428,7 +499,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         return resultDate;
     }
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId"})
     public void showFilterAlertDialog(View view, String title) {
         try {
             // create an alert builder
@@ -450,10 +521,13 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
             decreaseButton=customLayout.findViewById(R.id.decrease);
             increaseButton=customLayout.findViewById(R.id.increase);
             noOfCopyText=customLayout.findViewById(R.id.no_of_copy);
+            LinearLayout supplier_layout=customLayout.findViewById(R.id.supplierRp_lay);
+            supplerListSpinner =customLayout.findViewById(R.id.suppler_ro_list_spinner);
             LinearLayout stattusLayout=customLayout.findViewById(R.id.status_layout);
             LinearLayout customerListLayout =customLayout.findViewById(R.id.customer_list_layout);
             LinearLayout userListLayout=customLayout.findViewById(R.id.user_list_layout);
-            customerListSpinner.setTitle("Select Customer");
+            //customerListSpinner.setTitle("Select Customer");
+
            // customerListSpinner.setVisibility(View.GONE);
             if (isLocationPermissionAuthentication.equals("Y")){
                 if (salesManList!=null && salesManList.size() > 1){
@@ -468,10 +542,25 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 userName.setVisibility(View.VISIBLE);
             }
             userName.setText(username);
-            if (customerList.size()>0){
-                setDataToAdapter(searchableCustomerList);
-            }
+            customerListLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (customerList.size() > 0) {
+//                setDataToAdapter(searchableCustomerList);
+                        searchableCustDialog("Report", searchableCustomerList, customerList);
 
+                    }
+                }
+            });
+
+            supplier_layout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (supplierList.size()>0){
+                        searchable_supplierDialog("Report",searchableSupplierList,supplierList);
+                    }
+                }
+            });
             if (salesManList!=null && salesManList.size() > 1){
                 setUserAdapter(salesManList);
             }
@@ -492,7 +581,11 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
              || title.equals("Stock Summary Opening Balance")){
                 customerListSpinner.setVisibility(View.GONE);
             }
+            if ( title.equals("Supplier Statement") || title.equals("Supplier Statement (as on Date)")){
 
+                supplier_layout.setVisibility(View.VISIBLE);
+                customerListLayout.setVisibility(View.GONE);
+            }
             if (title.equals("Settlement With Receipt")){
                 customerListSpinner.setVisibility(View.GONE);
                 stattusLayout.setVisibility(View.GONE);
@@ -501,12 +594,14 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                 //  userListLayout.setVisibility(View.VISIBLE);
             }
 
-            if (title.equals("Customer Outstanding Statement (as on Date)")){
+            if (title.equals("Customer Outstanding Statement (as on Date)") ||
+                    (title.equals("Supplier Statement (as on Date)"))){
                 fromDate.setVisibility(View.GONE);
                 stattusLayout.setVisibility(View.GONE);
                 userListLayout.setVisibility(View.GONE);
             }
-            if (title.equals("Customer Outstanding Period")){
+            if (title.equals("Customer Outstanding Period") ||
+                    (title.equals("Supplier Statement"))){
                 stattusLayout.setVisibility(View.GONE);
                 userListLayout.setVisibility(View.GONE);
             }
@@ -549,10 +644,10 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                     if (!toDate.getText().toString().isEmpty()){
                         to_date=toDate.getText().toString();
                     }
-                    if (!customerListSpinner.getSelectedItem().toString().equals("Select Customer")){
-                        customername=customerListSpinner.getSelectedItem().toString().split("~");
-                        customer_id=customername[1];
-                    }
+//                    if (!customerListSpinner.getSelectedItem().toString().equals("Select Customer")){
+//                        customername=customerListSpinner.getSelectedItem().toString().split("~");
+//                        customer_id=customername[1];
+//                    }
 
                     if (!from_date.isEmpty() && !to_date.isEmpty()){
                         Date fromDate = null;
@@ -627,7 +722,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                                 }
                                 break;
                             case "Customer Outstanding Period":
-                                if (!customerListSpinner.getSelectedItem().toString().equals("Select Customer")) {
+                                if (!customerListSpinner.getText().toString().equals("Select Customer")) {
                                     dialog.dismiss();
                                     progressDialog.setMessage("Printing in Progress...!");
                                     progressDialog.show();
@@ -656,7 +751,7 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                                 }
                                 break;
                             case "Customer Outstanding Statement (as on Date)":
-                                if (!customerListSpinner.getSelectedItem().toString().equals("Select Customer")) {
+                                if (!customerListSpinner.getText().toString().equals("Select Customer")) {
                                     dialog.dismiss();
                                     progressDialog.setMessage("Printing in Progress...!");
                                     progressDialog.show();
@@ -683,6 +778,66 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
                                     }
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Select Customer", Toast.LENGTH_SHORT).show();
+                                }
+                                break;
+                            case "Supplier Statement":
+                                if (!supplerListSpinner.getText().toString().equals("")) {
+
+                                    dialog.dismiss();
+                                    progressDialog.setMessage("Printing in Progress...!");
+                                    progressDialog.show();
+//                                    if (isPrintEnable){
+//                                        try {
+//                                            getSupplierStatement(customer_id, fromDateString, toDateString, status_value, Integer.parseInt(noOfCopyText.getText().toString()));
+//                                        } catch (JSONException e) {
+//                                            e.printStackTrace();
+//                                        }
+//                                    }else {
+                                        Intent intent=new Intent(ReportsActivity.this, RoSupplierStatementPreviewActivity.class);
+                                        intent.putExtra("fromDate",from_date);
+                                        intent.putExtra("toDate",to_date);
+                                        intent.putExtra("locationCode",locationCode);
+                                        intent.putExtra("companyId",companyCode);
+                                        intent.putExtra("customerCode",customer_id);
+                                        intent.putExtra("customerName",customer_name);
+                                        intent.putExtra("userName",username);
+                                        intent.putExtra("roSupplierCode",supplier_id);
+                                        intent.putExtra("status",status_value);
+                                        intent.putExtra("actionRP","supplierRp");
+                                        startActivity(intent);
+                                 //   }
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Select Supplier", Toast.LENGTH_SHORT).show();
+                                }
+                                break;
+                            case "Supplier Statement (as on Date)":
+                                if (!supplerListSpinner.getText().toString().equals("")) {
+
+                                    dialog.dismiss();
+                                    progressDialog.setMessage("Printing in Progress...!");
+                                    progressDialog.show();
+//                                    if (isPrintEnable){
+//                                        try {
+//                                            getSupplierStatementDate(customer_id, toDateString, status_value, Integer.parseInt(noOfCopyText.getText().toString()));
+//                                        } catch (JSONException e) {
+//                                            e.printStackTrace();
+//                                        }
+//                                    }else {
+                                        Intent intent=new Intent(ReportsActivity.this, RoSupplierStatementPreviewActivity.class);
+                                        intent.putExtra("fromDate",from_date);
+                                        intent.putExtra("toDate",to_date);
+                                        intent.putExtra("locationCode",locationCode);
+                                        intent.putExtra("companyId",companyCode);
+                                        intent.putExtra("customerCode",customer_id);
+                                        intent.putExtra("customerName",customer_name);
+                                        intent.putExtra("userName",username);
+                                        intent.putExtra("roSupplierCode",supplier_id);
+                                        intent.putExtra("status",status_value);
+                                        intent.putExtra("actionRP","supplierDate");
+                                        startActivity(intent);
+                                  //  }
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Select Supplier", Toast.LENGTH_SHORT).show();
                                 }
                                 break;
                             case "Receipt Details":
@@ -2720,21 +2875,102 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
     }
 
 
-    public void setDataToAdapter(ArrayList<String> arrayList) {
-        try {
-            // Creating ArrayAdapter using the string array and default spinner layout
-            customerListSpinner.setTitle("Select Customer");
-            arrayAdapter = new ArrayAdapter<String>(ReportsActivity.this, android.R.layout.simple_spinner_item,
-                    arrayList);
-            // Specify layout to be used when list of choices appears
-            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            // Applying the adapter to our spinner
-            customerListSpinner.setAdapter(arrayAdapter);
-            // customerListSpinner.setOnItemSelectedListener(this);
-        }catch (Exception e){}
+//    public void setDataToAdapter(ArrayList<String> arrayList) {
+//        try {
+//            // Creating ArrayAdapter using the string array and default spinner layout
+//            customerListSpinner.setTitle("Select Customer");
+//            arrayAdapter = new ArrayAdapter<String>(ReportsActivity.this, android.R.layout.simple_spinner_item,
+//                    arrayList);
+//            // Specify layout to be used when list of choices appears
+//            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//            // Applying the adapter to our spinner
+//            customerListSpinner.setAdapter(arrayAdapter);
+//            // customerListSpinner.setOnItemSelectedListener(this);
+//        }catch (Exception e){}
+//
+//    }
 
+    public void getSupplier(){
+        // Initialize a new RequestQueue instance
+        requestQueue = Volley.newRequestQueue(this);
+        url= Utils.getBaseUrl(this) +"vendorList";
+
+        supplierList=new ArrayList<>();
+        searchableSupplierList=new ArrayList<>();
+        //  searchableSupplierList.add("Select Supplier");
+        ProgressDialog progressDialog=new ProgressDialog(this);
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage("Supplier List Loading....");
+        progressDialog.show();
+        Log.w("Given_url_supplier:",url);
+        JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.GET, url,null,
+                response -> {
+                    try {
+                        Log.w("Response_Supplier:", response.toString());
+                        // pDialog.dismiss();
+                        // Loop through the array elements
+
+                        String statusCode=response.optString("statusCode");
+                        if (statusCode.equals("1")){
+                            JSONArray detailArray=response.optJSONArray("responseData");
+                            for (int i=0;i<detailArray.length();i++){
+                                JSONObject obj=detailArray.optJSONObject(i);
+                                //  if (customerObject.optBoolean("IsActive")) {
+                                SupplierModel model = new SupplierModel(
+                                        obj.optString("vendorCode"),
+                                        obj.optString("vendorName"),
+                                        obj.optString("currencyCode"),
+                                        obj.optString("currencyName"),
+                                        obj.optString("taxType"),
+                                        obj.optString("taxCode"),
+                                        obj.optString("taxName"),
+                                        obj.optString("taxPercentage")
+                                );
+
+                                supplierList.add(model);
+                                searchableSupplierList.add(obj.optString("vendorName")+"~"+obj.optString("vendorCode"));
+                                progressDialog.dismiss();
+                            }
+                        }else {
+                            progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(),"Error,in getting Supplier list",Toast.LENGTH_LONG).show();
+                        }
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                },
+                error -> {
+                    progressDialog.dismiss();
+                    // Do something when error occurred
+                    Log.w("Error_throwing:",error.toString());
+                }){
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> params = new HashMap<>();
+                String creds = String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD);
+                String auth = "Basic " + Base64.encodeToString(creds.getBytes(), Base64.DEFAULT);
+                params.put("Authorization", auth);
+                return params;
+            }
+        };
+        jsonArrayRequest.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+        // Add JsonArrayRequest to the RequestQueue
+        requestQueue.add(jsonArrayRequest);
     }
-
 
     public void setUserAdapter(ArrayList<String> arrayList) {
         try {
@@ -2763,7 +2999,34 @@ public class ReportsActivity extends NavigationActivity implements View.OnClickL
         }catch (Exception e){}
 
     }
+    @Override
+    public void supplierSelected(@NonNull String supplierName) {
+        String[] selectName = new String[0];
+        String supNamel = "" ;
+        selectName = supplierName.split("~");
+        supplier_id=selectName[1];
+        supNamel=selectName[0];
 
+        supplerListSpinner.setText(supNamel);
+    }
+
+    @Override
+    public void custSelected(@NonNull String customerName) {
+        String[] selectName = new String[0];
+        String custNamel = "" ;
+        selectName = customerName.split("~");
+        customer_id=selectName[1];
+        custNamel=selectName[0];
+
+//        if(!custNamel.isEmpty() && !custNamel.equals("")){
+//            customerListLayout.setAlpha(0.9f);
+//            customerListLayout.setEnabled(true);
+//
+//            custGroup_layout.setAlpha(0.4f);
+//            custGroup_layout.setEnabled(false);
+//        }
+        customerListSpinner.setText(custNamel);
+    }
     public void setStatusList(ArrayList<String> arrayList) {
         try {
             // Creating ArrayAdapter using the string array and default spinner layout

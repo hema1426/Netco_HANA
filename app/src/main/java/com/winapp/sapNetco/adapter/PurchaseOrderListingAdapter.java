@@ -131,6 +131,15 @@ public class PurchaseOrderListingAdapter extends RecyclerView.Adapter<RecyclerVi
 //            }
             ((SalesOrderViewHolder) viewHolder).soNumber.setText(salesOrderModel.getSaleOrderNumber());
             ((SalesOrderViewHolder) viewHolder).balance.setText("$ "+salesOrderModel.getBalance());
+            ((SalesOrderViewHolder) viewHolder).reference_nol.setText(salesOrderModel.getReferenceNo());
+            if(salesOrderModel.getReferenceNo() != null && !salesOrderModel.getReferenceNo().equals("NA")
+            ) {
+                ((SalesOrderViewHolder) viewHolder).reference_nol.setText(salesOrderModel.getReferenceNo());
+                ((SalesOrderViewHolder)viewHolder).referno_layl.setVisibility(View.VISIBLE);
+            }else{
+                ((SalesOrderViewHolder)viewHolder).referno_layl.setVisibility(View.GONE);
+            }
+
             if (salesOrderModel.getNetTotal()!=null && !salesOrderModel.getNetTotal().equals("null")){
                 ((SalesOrderViewHolder) viewHolder).netTotal.setText("$ "+Utils.twoDecimalPoint(Double.parseDouble(salesOrderModel.getNetTotal())));
             }else {
@@ -250,14 +259,14 @@ public class PurchaseOrderListingAdapter extends RecyclerView.Adapter<RecyclerVi
         private TextView netTotal;
         private TextView address;
         private CardView mainCard;
-        private TextView status;
+        private TextView status ,reference_nol;
         private ImageView moreOption;
         private LinearLayout statusLayout;
         private View indicator;
 
         private RecyclerView productListView;
         private ImageView showHideBottomLayout;
-        private LinearLayout mainLayout;
+        private LinearLayout mainLayout , referno_layl;
         private LinearLayout progressLayout;
         private LinearLayout bottomLayout;
 
@@ -274,6 +283,8 @@ public class PurchaseOrderListingAdapter extends RecyclerView.Adapter<RecyclerVi
             moreOption=view.findViewById(R.id.more);
             statusLayout=view.findViewById(R.id.status_layout);
             indicator=view.findViewById(R.id.indicator);
+            reference_nol=view.findViewById(R.id.reference_no_po_item);
+            referno_layl=view.findViewById(R.id.referNo_lay_po_item);
 
             productListView=view.findViewById(R.id.podownList);
             showHideBottomLayout=view.findViewById(R.id.show_hide_purchase);

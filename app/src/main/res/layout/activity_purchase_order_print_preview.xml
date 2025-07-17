@@ -117,6 +117,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="PO Number"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -134,9 +135,10 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
+                        android:textColor="@color/black"
                         android:gravity="center"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
 
 
                 </LinearLayout>
@@ -150,6 +152,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="PO Date"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -168,8 +171,9 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
+                        android:textColor="@color/black"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
 
 
                 </LinearLayout>
@@ -202,12 +206,47 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
+                        android:textColor="@color/black"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/reference_lay_po"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:text="Reference No"
+                        android:textColor="@color/pink_clr1"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:gravity="center"
+                        android:text=":"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:id="@+id/reference_no_po_prev"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="10dp"
+                        android:gravity="center"
+                        android:textColor="@color/black"
+                        android:textSize="12sp"
+                        android:textStyle="normal" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -218,6 +257,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="Supplier Name"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -237,7 +277,8 @@
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textColor="@color/black"
+                        android:textStyle="normal" />
 
 
                 </LinearLayout>
@@ -254,6 +295,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="Supplier Address"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -272,8 +314,10 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
+                        android:textColor="@color/black"
+
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
 
 
                 </LinearLayout>
@@ -290,6 +334,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="Address 1"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -308,8 +353,10 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
+                        android:textColor="@color/black"
+
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -323,6 +370,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="Address 2"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -341,8 +389,10 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
+                        android:textColor="@color/black"
+
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -356,6 +406,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:text="Address 3"
+                        android:textColor="@color/pink_clr1"
                         android:textSize="12sp" />
 
                     <TextView
@@ -374,8 +425,10 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:gravity="center"
+                        android:textColor="@color/black"
+
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -388,6 +441,7 @@
                         android:layout_width="150dp"
                         android:textSize="12sp"
                         android:text="Address 4"
+                        android:textColor="@color/pink_clr1"
                         android:layout_height="wrap_content"/>
                     <TextView
                         android:layout_width="wrap_content"
@@ -403,7 +457,8 @@
                         android:id="@+id/cus_address4"
                         android:layout_marginLeft="10dp"
                         android:textSize="12sp"
-                        android:textStyle="bold"
+                        android:textStyle="normal"
+                        android:textColor="@color/black"
                         android:gravity="center"
                         android:layout_height="wrap_content"/>
                 </LinearLayout>

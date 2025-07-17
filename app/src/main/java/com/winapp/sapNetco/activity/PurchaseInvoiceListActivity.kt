@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -27,6 +27,7 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,7 +35,6 @@ import cn.pedant.SweetAlert.SweetAlertDialog
 import com.android.volley.Response
 import com.android.volley.RetryPolicy
 import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -66,11 +66,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
-import java.sql.Timestamp
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -79,8 +77,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.Objects
 
-class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSelectedListener {
+class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSelectedListener ,View.OnClickListener{
     private var salesOrderList: ArrayList<SalesOrderModel>? = null
+    private var salesOrder_OutstandList: ArrayList<SalesOrderModel>? = null
+
     private var pDialog: SweetAlertDialog? = null
      var session1: SessionManager? = null
       var user1: HashMap<String, String>? = null
@@ -147,6 +147,11 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
     private var selectSuppliercode: String? = ""
     var userPermission = ""
     private var totalsizePI: TextView? = null
+    private var allinvoice_pim: LinearLayout? = null
+    private var paid_pim: LinearLayout? = null
+    private var outstanding_pim: LinearLayout? = null
+    private var filterSOList: ArrayList<SalesOrderModel>? = ArrayList()
+    private var filterSOList1: ArrayList<SalesOrderModel>? = ArrayList()
 
     //    private Spinner salesManSpinner;
     private var selectedUser = ""
@@ -194,6 +199,13 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         createSalesOrder = findViewById(R.id.create_sales)
         supplierSpinner = findViewById(R.id.supplier_name_spinner_pi)
         totalsizePI = findViewById(R.id.totalpi)
+        allinvoice_pim = findViewById(R.id.allinvoice_pi)
+        paid_pim = findViewById(R.id.paid_pi)
+        outstanding_pim = findViewById(R.id.outstanding_pi)
+
+        allinvoice_pim!!.setOnClickListener(this)
+        paid_pim!!.setOnClickListener(this)
+        outstanding_pim!!.setOnClickListener(this)
 
 //        salesManSpinner=findViewById(R.id.salesman_spinner);
 //        salesManSpinner.setOnItemSelectedListener(this);
@@ -422,14 +434,14 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         printPreview!!.setOnClickListener(View.OnClickListener { //  viewCloseBottomSheet();
             behavior!!.setState(BottomSheetBehavior.STATE_COLLAPSED)
             val intent =
-                Intent(this@PurchaseInvoiceListActivity, PurchasePrintPreviewActivity::class.java)
+                Intent(this@PurchaseInvoiceListActivity, PurchaseInvoicePrintPreviewActivity::class.java)
             intent.putExtra("soNumber", soNumber!!.getText().toString())
             startActivity(intent)
         })
         printPreviewLayout!!.setOnClickListener(View.OnClickListener { //  viewCloseBottomSheet();
             behavior!!.setState(BottomSheetBehavior.STATE_COLLAPSED)
             val intent =
-                Intent(this@PurchaseInvoiceListActivity, PurchasePrintPreviewActivity::class.java)
+                Intent(this@PurchaseInvoiceListActivity, PurchaseInvoicePrintPreviewActivity::class.java)
             intent.putExtra("soNumber", soNumber!!.getText().toString())
             startActivity(intent)
         })
@@ -474,7 +486,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
                     }
                     setFilterSearch(
                         this@PurchaseInvoiceListActivity,
-                        companyId,
+                        "1",
                         selectSuppliercode,
                         invoice_status,
                         fromDateString,
@@ -498,6 +510,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
             salesOrderStatusSpinner!!.setSelection(0)
             supplierSpinner!!.setSelection(0)
             setFilterAdapeter()
+            buttonAction()
         })
     }
 
@@ -875,201 +888,6 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         requestQueue.add(jsonObjectRequest)
     }
 
-    @Throws(JSONException::class)
-    private fun getSalesOrderDetails(soNumber: String, action: String) {
-        // Initialize a new RequestQueue instance
-        val jsonObject = JSONObject()
-        jsonObject.put("InvoiceNo", soNumber)
-        val requestQueue = Volley.newRequestQueue(this)
-        //    EditSODetails
-        //    EditSODetailsWithFOC
-        val url = Utils.getBaseUrl(this) + "APInvoiceDetails"
-        Log.w("JsonValue:", jsonObject.toString())
-        // Initialize a new JsonArrayRequest instance
-        Log.w("Given_url_salesEdit:", url)
-        pDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
-        pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
-        pDialog!!.setTitleText("Getting SalesOrder Details...")
-        pDialog!!.setCancelable(false)
-        pDialog!!.show()
-        val jsonObjectRequest: JsonObjectRequest =
-            object : JsonObjectRequest(Method.POST, url, jsonObject,
-                Response.Listener { response: JSONObject ->
-                    try {
-                        Log.w("So_Details_edit:", response.toString())
-                        if (response.length() > 0) {
-                            val statusCode = response.optString("statusCode")
-                            if (statusCode == "1") {
-                                val salesArray = response.optJSONArray("responseData")
-                                val salesObject = salesArray.optJSONObject(0)
-                                val salesorder_no = salesObject.optString("poNo")
-                                val salesorder_code = salesObject.optString("code")
-                                val order_no = salesObject.optString("customerReferenceNo")
-                                val company_code = salesObject.optString("CompanyCode")
-                                val customer_code = salesObject.optString("customerCode")
-                                val customer_name = salesObject.optString("customerName")
-                                val customerBill_Disc =
-                                    salesObject.optString("customerDiscountPercentage")
-                                val total = salesObject.optString("total")
-                                val sub_total = salesObject.optString("subTotal")
-                                val bill_discount = salesObject.optString("billDiscount")
-                                val item_discount = salesObject.optString("ItemDiscount")
-                                val tax = salesObject.optString("taxTotal")
-                                val net_total = salesObject.optString("netTotal")
-                                val currency_rate = salesObject.optString("CurrencyRate")
-                                val currency_name = salesObject.optString("currencyName")
-                                val tax_type = salesObject.optString("taxType")
-                                val tax_perc = salesObject.optString("taxPerc")
-                                val tax_code = salesObject.optString("taxCode")
-                                val phone_no = salesObject.optString("DelPhoneNo")
-                                val so_date = salesObject.optString("soDate")
-                                val signFlag = salesObject.optString("signFlag")
-                                Utils.setInvoiceMode("SalesOrder")
-                                if (signFlag == "Y") {
-                                    val signature = salesObject.optString("signature")
-                                    Utils.setSignature(signature)
-                                }
-                                dbHelper!!.removeCustomer()
-                                dbHelper!!.insertCustomer(
-                                    customer_code,
-                                    customer_name,
-                                    phone_no,
-                                    salesObject.optString("address1"),
-                                    salesObject.optString("Address2"),
-                                    salesObject.optString("Address3"),
-                                    salesObject.optString("IsActive"),
-                                    salesObject.optString("HaveTax"),
-                                    salesObject.optString("taxType"),
-                                    salesObject.optString("taxPerc"),
-                                    salesObject.optString("taxCode"),
-                                    salesObject.optString("CreditLimit"),
-                                    "Singapore",
-                                    salesObject.optString("currencyCode")
-                                )
-                                customerDetails = dbHelper!!.getCustomer()
-                                dbHelper!!.removeAllItems()
-                                dbHelper!!.removeAllInvoiceItems()
-                                dbHelper!!.removeCustomerTaxes()
-                                val model = CustomerDetails()
-                                model.customerCode = customer_code
-                                model.customerName = customer_name
-                                model.customerAddress1 = salesObject.optString("address1")
-                                model.taxPerc = salesObject.optString("taxPerc")
-                                model.taxType = salesObject.optString("taxType")
-                                model.taxCode = salesObject.optString("taxCode")
-                                val taxList = ArrayList<CustomerDetails>()
-                                taxList.add(model)
-                                Log.w("TaxModelPrint::", model.toString())
-                                dbHelper!!.insertCustomerTaxValues(taxList)
-                                val products = salesObject.getJSONArray("salesOrderDetails")
-                                for (i in 0 until products.length()) {
-                                    val `object` = products.getJSONObject(i)
-                                    var lqty: String? = "0.0"
-                                    var cqty = "0.0"
-                                    if (`object`.optString("unitQty") != "null") {
-                                        lqty = `object`.optString("unitQty")
-                                    }
-                                    if (`object`.optString("quantity") != "null") {
-                                        cqty = `object`.optString("quantity")
-                                    }
-                                    val priceValue = 0.0
-                                    val return_qty = "0"
-                                    val net_qty = cqty.toDouble() - return_qty.toDouble()
-                                    val price_value = `object`.optString("price")
-                                    //String price_value=object.optString("grossPrice");
-                                    val return_amt = return_qty.toDouble() * price_value.toDouble()
-                                    val total1 = net_qty * price_value.toDouble()
-                                    val sub_total1 = total1 - return_amt
-                                    val laterDate = System.currentTimeMillis()
-                                    val millisec = 18000
-                                    val original = Timestamp(laterDate)
-                                    val cal = Calendar.getInstance()
-                                    cal.setTimeInMillis(original.getTime())
-                                    cal.add(Calendar.MILLISECOND, millisec)
-                                    val timeStamp = Timestamp(cal.time.time)
-                                    dbHelper!!.insertCreateInvoiceCartEdit(
-                                        `object`.optString("productCode"),
-                                        `object`.optString("productName"),
-                                        `object`.optString("uomCode"),
-                                        cqty.toString(),
-                                        return_qty, net_qty.toString(),
-                                        `object`.optString("focQty"),
-                                        price_value,
-                                        `object`.optString("stockInHand"),
-                                        `object`.optString("total"),
-                                        `object`.optString("subTotal"),
-                                        `object`.optString("taxAmount"),
-                                        `object`.optString("netTotal"),
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        `object`.optString("focQty"),
-                                        `object`.optString("minimumSellingPrice"),
-                                        `object`.optString("stockInHand"), timeStamp.toString(),
-                                        `object`.optString("itemAllowFOC")
-                                    )
-                                    Log.w(
-                                        "ProductsLength:",
-                                        products.length()
-                                            .toString() + "" + `object`.optString("itemAllowFOC")
-                                    )
-                                    Log.w(
-                                        "ActualPrintProducts:",
-                                        dbHelper!!.numberOfRowsInInvoice().toString() + ""
-                                    )
-                                    if (products.length() == dbHelper!!.numberOfRowsInInvoice()) {
-                                        redirectActivity(
-                                            action,
-                                            customer_code,
-                                            customer_name,
-                                            salesorder_code,
-                                            order_no,
-                                            customerBill_Disc
-                                        )
-                                        break
-                                    }
-                                }
-                            } else {
-                            }
-                        }
-                        pDialog!!.dismiss()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }, Response.ErrorListener { error: VolleyError ->
-                    // Do something when error occurred
-                    pDialog!!.dismiss()
-                    Log.w("Error_throwing:", error.toString())
-                }) {
-                override fun getHeaders(): Map<String, String> {
-                    val params = HashMap<String, String>()
-                    val creds = String.format(
-                        "%s:%s",
-                        Constants.API_SECRET_CODE,
-                        Constants.API_SECRET_PASSWORD
-                    )
-                    val auth = "Basic " + Base64.encodeToString(creds.toByteArray(), Base64.DEFAULT)
-                    params["Authorization"] = auth
-                    return params
-                }
-            }
-        jsonObjectRequest.setRetryPolicy(object : RetryPolicy {
-            override fun getCurrentTimeout(): Int {
-                return 50000
-            }
-
-            override fun getCurrentRetryCount(): Int {
-                return 50000
-            }
-
-            @Throws(VolleyError::class)
-            override fun retry(error: VolleyError) {
-            }
-        })
-        // Add JsonArrayRequest to the RequestQueue
-        requestQueue.add(jsonObjectRequest)
-    }
 
     private fun createSignature() {
         if (Utils.getSignature() != null && !Utils.getSignature().isEmpty()) {
@@ -1081,6 +899,47 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun onClick(view: View) {
+        if (view.id == R.id.allinvoice_pi) {
+            allinvoice_pim!!.setBackgroundResource(R.color.btn_greenlit1)
+            paid_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+            outstanding_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+
+           if(salesOrderList!!.size > 0){
+               setSalesOrderAdapter(this,salesOrderList!!,"")
+           }
+            totalsizePI!!.setText("Total Purchase : "+salesOrderList!!.size)
+        }
+        else if (view.getId() == R.id.paid_pi) {
+            filterSOList = ArrayList()
+            allinvoice_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+            paid_pim!!.setBackgroundResource(R.color.btn_greenlit1)
+            outstanding_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+            if(salesOrderList!!.size > 0){
+                filterSOList = salesOrderList!!.filter { it.balance != null && it.balance != "" && it.balance!!.toDouble() == 0.0}
+                        as ArrayList<SalesOrderModel>
+                totalsizePI!!.setText("Total Purchase : "+filterSOList!!.size)
+                setSalesOrderAdapter(this,filterSOList,"")
+            }
+        }
+        else if (view.getId() == R.id.outstanding_pi) {
+            filterSOList1 = ArrayList()
+            allinvoice_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+            paid_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+            outstanding_pim!!.setBackgroundResource(R.color.btn_greenlit1)
+
+            setFilterOutstanding(
+                this@PurchaseInvoiceListActivity,
+                "",
+                selectSuppliercode,
+                "",
+                "",
+                ""
+            )
+
+        }
+    }
     override fun onResume() {
         sharedPreferences = getSharedPreferences("PrinterPref", MODE_PRIVATE)
         printerType = sharedPreferences!!.getString("printer_type", "")
@@ -1168,8 +1027,8 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
                 }
             })
         purchaseInvoiceView!!.adapter = purchaseInvoiceAdapter
-        if (salesOrderList!!.size > 0) {
-            setNettotalFun(salesOrderList)
+        if (salesList!!.size > 0) {
+            setNettotalFun(salesList)
         }
         selectedCustomerId = ""
     }
@@ -1243,7 +1102,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         Log.w("Given_url_FilterSearch:", "$url-$jsonObject")
         pDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
         pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
-        pDialog!!.setTitleText("Getting SalesOrders...")
+        pDialog!!.setTitleText("Getting Purchase Invoice...")
         pDialog!!.setCancelable(false)
         pDialog!!.show()
         salesOrderList = ArrayList()
@@ -1269,6 +1128,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
                             model.status = `object`.optString("poStatus")
                             model.salesOrderCode = `object`.optString("code")
                             model.remarks = `object`.optString("remark")
+                            model.referenceNo = `object`.optString("vendorRefNo")
                             // netTotalApi +=Double.parseDouble(object.optString("netTotal"));
                             // netTotalText.setText("$ "+Utils.twoDecimalPoint(netTotalApi));
                             val salesLists = ArrayList<SalesOrderPrintPreviewModel.SalesList>()
@@ -1282,6 +1142,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
                         setShowHide()
                         //Toast.makeText(getApplicationContext(),"Error in getting SalesOrder Data",Toast.LENGTH_LONG).show();
                     }
+                    buttonAction()
                     setSalesOrderAdapter(context, salesOrderList, status)
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -1322,6 +1183,143 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         requestQueue.add(jsonArrayRequest)
     }
 
+
+    fun setFilterOutstanding(
+        context: Context?,
+        action: String?,
+        customerCode: String?,
+        status: String?,
+        fromdate: String?,
+        todate: String?
+    ) {
+        val requestQueue = Volley.newRequestQueue(this)
+        val jsonObject = JSONObject()
+        var usernamel: String? = ""
+        usernamel = if (userPermission.equals("True", ignoreCase = true)) {
+            "All"
+        } else {
+            userName
+        }
+        //  "FromDate":"20241226","Todate":"20251226","DocStatus":"","VendorCode": "","User":"All"
+        jsonObject.put("User", usernamel)
+        jsonObject.put("VendorCode", customerCode)
+        jsonObject.put("FromDate", "")
+        jsonObject.put("ToDate", todate)
+        jsonObject.put("DocStatus", status)
+        // Initialize a new JsonArrayRequest instance
+        val url = Utils.getBaseUrl(this) + "PurchaseInvoiceList"
+        Log.w("Given_url_outSearch:", "$url-$jsonObject")
+        pDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
+        pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
+        pDialog!!.setTitleText("Getting Purchase Invoice...")
+        pDialog!!.setCancelable(false)
+        pDialog!!.show()
+
+        salesOrder_OutstandList = ArrayList()
+
+        val jsonArrayRequest: JsonObjectRequest = object : JsonObjectRequest(
+            Method.POST,
+            url,
+            jsonObject,
+            Response.Listener { response: JSONObject ->
+                try {
+                    Log.w("Response_Filter:", response.toString())
+                    pDialog!!.dismiss()
+                    val statusCode = response.optString("statusCode")
+                    if (statusCode == "1") {
+                        val salesOrderArray = response.optJSONArray("responseData")
+                        for (i in 0 until salesOrderArray.length()) {
+                            val `object` = salesOrderArray.optJSONObject(i)
+                            val model = SalesOrderModel()
+                            model.name = `object`.optString("vendorName")
+                            model.date = `object`.optString("poDate")
+                            model.balance = `object`.optString("balance")
+                            model.saleOrderNumber = `object`.optString("poNumber")
+                            model.netTotal = `object`.optString("netTotal")
+                            model.status = `object`.optString("poStatus")
+                            model.salesOrderCode = `object`.optString("code")
+                            model.remarks = `object`.optString("remark")
+                            model.referenceNo = `object`.optString("vendorRefNo")
+                            // netTotalApi +=Double.parseDouble(object.optString("netTotal"));
+                            // netTotalText.setText("$ "+Utils.twoDecimalPoint(netTotalApi));
+                            val salesLists = ArrayList<SalesOrderPrintPreviewModel.SalesList>()
+                            model.salesList = salesLists
+                            salesOrder_OutstandList!!.add(model)
+                        }
+                        // salesOrderAdapter.notifyDataSetChanged();
+                        //  salesOrderAdapter.setLoaded();
+                      //  setShowHide()
+                    } else {
+                       // setShowHide()
+                        //Toast.makeText(getApplicationContext(),"Error in getting SalesOrder Data",Toast.LENGTH_LONG).show();
+                    }
+                    button_OutstandAction()
+                    if(salesOrder_OutstandList!!.size > 0){
+                        setShowHide();
+                        filterSOList1 = salesOrder_OutstandList!!.filter { it.balance != null && it.balance != "" && it.balance!!.toDouble() > 0 }
+                                as ArrayList<SalesOrderModel>
+                            if (filterSOList1!!.size > 0) {
+                                purchaseInvoiceView!!.visibility = View.VISIBLE
+                                outstandingLayout!!.visibility = View.GONE
+                                emptyLayout!!.visibility = View.GONE
+                            } else {
+                                purchaseInvoiceView!!.visibility = View.GONE
+                                emptyLayout!!.visibility = View.VISIBLE
+                                outstandingLayout!!.visibility = View.GONE
+                        }
+
+                        totalsizePI!!.setText("Total Purchase : "+filterSOList1!!.size)
+                        setSalesOrderAdapter(this,filterSOList1,"")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }, Response.ErrorListener { error: VolleyError ->
+                pDialog!!.dismiss()
+                // Do something when error occurred
+                Log.w("Error_throwing:", error.toString())
+                Toast.makeText(
+                    applicationContext,
+                    "Server Error,Please try again..",
+                    Toast.LENGTH_LONG
+                ).show()
+            }) {
+            override fun getHeaders(): Map<String, String> {
+                val params = HashMap<String, String>()
+                val creds =
+                    String.format("%s:%s", Constants.API_SECRET_CODE, Constants.API_SECRET_PASSWORD)
+                val auth = "Basic " + Base64.encodeToString(creds.toByteArray(), Base64.DEFAULT)
+                params["Authorization"] = auth
+                return params
+            }
+        }
+        jsonArrayRequest.setRetryPolicy(object : RetryPolicy {
+            override fun getCurrentTimeout(): Int {
+                return 50000
+            }
+
+            override fun getCurrentRetryCount(): Int {
+                return 50000
+            }
+
+            @Throws(VolleyError::class)
+            override fun retry(error: VolleyError) {
+            }
+        })
+        // Add JsonArrayRequest to the RequestQueue
+        requestQueue.add(jsonArrayRequest)
+    }
+
+    fun buttonAction(){
+        allinvoice_pim!!.setBackgroundResource(R.color.btn_greenlit1)
+        paid_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+        outstanding_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+    }
+    fun button_OutstandAction(){
+        allinvoice_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+        paid_pim!!.setBackgroundResource(R.color.btn_pinklit1)
+        outstanding_pim!!.setBackgroundResource(R.color.btn_greenlit1)
+    }
     @Throws(JSONException::class)
     fun getSalesOrderList(
         pageNo: String,
@@ -1343,10 +1341,10 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
         jsonObject.put("DocStatus", "")
 
         val url = Utils.getBaseUrl(this) + "PurchaseInvoiceList"
-        Log.w("Given_url:", "$url-$jsonObject")
+        Log.w("Given_urlPi:", "$url-$jsonObject")
         pDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
         pDialog!!.progressHelper.barColor = Color.parseColor("#A5DC86")
-        pDialog!!.setTitleText("Getting Salesorder...")
+        pDialog!!.setTitleText("Getting Purchase Invoice...")
         pDialog!!.setCancelable(false)
         if (pageNo == "1") {
             pDialog!!.show()
@@ -1372,6 +1370,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
                                 model.status = `object`.optString("poStatus")
                                 model.salesOrderCode = `object`.optString("code")
                                 model.remarks = `object`.optString("remark")
+                                model.referenceNo = `object`.optString("vendorRefNo")
                                 //  isFound=invoiceObject.optString("ErrorMessage");
                                 val salesLists = ArrayList<SalesOrderPrintPreviewModel.SalesList>()
                                 model.salesList = salesLists
@@ -1428,15 +1427,13 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
     }
 
     fun setShowHide() {
+        totalsizePI!!.setText("Total Purchase : "+salesOrderList!!.size)
         if (salesOrderList!!.size > 0) {
             purchaseInvoiceView!!.visibility = View.VISIBLE
-            outstandingLayout!!.visibility = View.VISIBLE
-            totalsizePI!!.visibility = View.VISIBLE
-            totalsizePI!!.setText("Total Purchase : "+salesOrderList!!.size)
+            outstandingLayout!!.visibility = View.GONE
             emptyLayout!!.visibility = View.GONE
         } else {
             purchaseInvoiceView!!.visibility = View.GONE
-            totalsizePI!!.visibility = View.GONE
             emptyLayout!!.visibility = View.VISIBLE
             outstandingLayout!!.visibility = View.GONE
         }
@@ -1456,7 +1453,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
     fun setFilterAdapeter() {
         purchaseInvoiceView!!.visibility = View.VISIBLE
         emptyLayout!!.visibility = View.GONE
-        outstandingLayout!!.visibility = View.VISIBLE
+        outstandingLayout!!.visibility = View.GONE
         purchaseInvoiceView!!.setHasFixedSize(true)
         purchaseInvoiceView!!.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -1967,7 +1964,7 @@ class PurchaseInvoiceListActivity : NavigationActivity(), AdapterView.OnItemSele
                 Log.w("FilteredSize:", filterdNames.size.toString() + "")
                 if (filterdNames.size > 0) {
                     purchaseInvoiceView!!.visibility = View.VISIBLE
-                    outstandingLayout!!.visibility = View.VISIBLE
+                    outstandingLayout!!.visibility = View.GONE
                     emptyLayout!!.visibility = View.GONE
                     //  setNettotal(filterdNames);
                     // invoiceAdapter.filterList(filterdNames);

@@ -288,7 +288,7 @@
                         android:orientation="vertical"
                         android:layout_height="wrap_content">
                         <include
-                            layout="@layout/invoice_details_items"/>
+                            layout="@layout/invoice_details_items_title"/>
 
                         <View
                             android:layout_width="match_parent"

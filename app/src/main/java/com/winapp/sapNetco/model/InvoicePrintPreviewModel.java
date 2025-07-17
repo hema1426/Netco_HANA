@@ -37,6 +37,15 @@ public class InvoicePrintPreviewModel {
     private String excQty;
     private String allowDeliveryAddress;
     private String currentAddress;
+    private String docType;
+
+    public String getDocType() {
+        return docType;
+    }
+
+    public void setDocType(String docType) {
+        this.docType = docType;
+    }
 
     public String getCurrentAddress() {
         return currentAddress;

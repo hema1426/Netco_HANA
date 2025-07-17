@@ -19,7 +19,7 @@
         android:padding="4dp"
         android:layout_marginLeft="5dp"
         android:textColor="#212121"
-        android:textSize="10sp"
+        android:textSize="11sp"
         android:textStyle="bold" />
 
     <LinearLayout
@@ -35,34 +35,34 @@
             android:layout_width="50dp"
             android:layout_height="match_parent"
             android:layout_gravity="top"
-            android:text="SNO"
+            android:text=""
             android:textColor="#212121"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/inv_code_item"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="top"
-            android:layout_weight="1"
+            android:layout_weight="1.5"
             android:gravity="left"
-            android:text="CODE"
+            android:text=""
             android:textColor="#212121"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textStyle="bold"
             />
 
         <TextView
             android:id="@+id/qty"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="top"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="QTY"
+            android:text=""
             android:textColor="#212121"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textStyle="bold"
 
             />
@@ -70,27 +70,27 @@
 
         <TextView
             android:id="@+id/price"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="top"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="PRICE"
+            android:text=""
             android:textColor="#212121"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
 
         <TextView
             android:id="@+id/total"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="top"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="TOTAL"
+            android:text=""
             android:textColor="#212121"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textStyle="bold"
 
             />

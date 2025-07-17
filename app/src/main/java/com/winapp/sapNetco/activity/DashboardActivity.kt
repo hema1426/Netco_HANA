@@ -86,6 +86,9 @@ class DashboardActivity : NavigationActivity() {
     private var productsLayout: LinearLayout? = null
     private var customerLayout: LinearLayout? = null
     private var settingsLayout: LinearLayout? = null
+    private var outgoingPaymentLayout: LinearLayout? = null
+    private var purchaseInvoiceLayout: LinearLayout? = null
+    private var purchaseOrderLayout: LinearLayout? = null
     private var catalogCard: CardView? = null
     private var creditLimit_Img: ImageView? = null
     private var sharedPreferenceUtil: SharedPreferenceUtil? = null
@@ -148,6 +151,9 @@ class DashboardActivity : NavigationActivity() {
         productsLayout = findViewById(R.id.product_layout)
         customerLayout = findViewById(R.id.customer_layout)
         settingsLayout = findViewById(R.id.settings_layout)
+        outgoingPaymentLayout = findViewById(R.id.outgoingPay_layout)
+        purchaseOrderLayout = findViewById(R.id.purchaseOrder_layout)
+        purchaseInvoiceLayout = findViewById(R.id.purchaseInvoice_layout)
         catalogCard = findViewById(R.id.catalog_card)
         creditLimit_Img = findViewById(R.id.creditLimit_dial)
         timeText = findViewById(R.id.time)
@@ -535,6 +541,18 @@ class DashboardActivity : NavigationActivity() {
         })
         settingsLayout!!.setOnClickListener(View.OnClickListener {
             val intent = Intent(this@DashboardActivity, SettingActivity::class.java)
+            startActivity(intent)
+        })
+        outgoingPaymentLayout!!.setOnClickListener(View.OnClickListener {
+            val intent = Intent(this@DashboardActivity, OutgoingReceiptListActivity::class.java)
+            startActivity(intent)
+        })
+        purchaseInvoiceLayout!!.setOnClickListener(View.OnClickListener {
+            val intent = Intent(this@DashboardActivity, PurchaseInvoiceListActivity::class.java)
+            startActivity(intent)
+        })
+        purchaseOrderLayout!!.setOnClickListener(View.OnClickListener {
+            val intent = Intent(this@DashboardActivity, PurchaseOrderListActivity::class.java)
             startActivity(intent)
         })
         salesReturnLayout!!.setOnClickListener(View.OnClickListener {

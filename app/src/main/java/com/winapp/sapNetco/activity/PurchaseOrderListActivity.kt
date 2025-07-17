@@ -639,6 +639,8 @@ class PurchaseOrderListActivity : NavigationActivity(), AdapterView.OnItemSelect
                                 salesListModel.pcsperCarton = detailObject.optString("pcsPerCarton")
                                 salesListModel.itemtax = detailObject.optString("totalTax")
                                 salesListModel.subTotal = detailObject.optString("subTotal")
+                                salesListModel.referenceNo = ""
+
                                 salesPrintList!!.add(salesListModel)
                                 model.salesList = salesPrintList
                                 salesOrderHeaderDetails!!.add(model)
@@ -1079,6 +1081,8 @@ class PurchaseOrderListActivity : NavigationActivity(), AdapterView.OnItemSelect
                             model.status = `object`.optString("poStatus")
                             model.salesOrderCode = `object`.optString("code")
                             model.remarks = `object`.optString("remark")
+                            model.referenceNo = `object`.optString("vendorRefNo")
+
                             // netTotalApi +=Double.parseDouble(object.optString("netTotal"));
                             // netTotalText.setText("$ "+Utils.twoDecimalPoint(netTotalApi));
                             val salesLists = ArrayList<SalesOrderPrintPreviewModel.SalesList>()
@@ -1185,6 +1189,8 @@ class PurchaseOrderListActivity : NavigationActivity(), AdapterView.OnItemSelect
                                 model.status = `object`.optString("poStatus")
                                 model.salesOrderCode = `object`.optString("code")
                                 model.remarks = `object`.optString("remark")
+                                model.referenceNo = `object`.optString("vendorRefNo")
+
                                 //  isFound=invoiceObject.optString("ErrorMessage");
                                 val salesLists = ArrayList<SalesOrderPrintPreviewModel.SalesList>()
                                 model.salesList = salesLists

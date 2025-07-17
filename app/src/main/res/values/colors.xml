@@ -53,6 +53,16 @@
     <color name="btn_clr2">#574A4E</color>
     <color name="lit_green_dark">#0092BE</color>
     <color name="accentLight">#F95B24</color>
+
+    <color name="btn_greenlit">#45a4b4</color>
+    <color name="btn_bluelit">#4d84b2</color>
+    <color name="btn_pinklit">#8f89b8</color>
+    <color name="btn_pinklit_la">#7169A5</color>
+    <color name="btn_pinklit2">#B52A93</color>
+    <color name="btn_pinklit1">#4d84b2</color>
+    <color name="btn_pinklit1a">#5cb1af</color>
+    <color name="btn_greenlit1">#af5cb1</color>
+    <color name="btn_bluelit1">#4d84b2</color>
 <!--    <color name="bottomsheet_bg">#8000</color>-->
 
 </resources>

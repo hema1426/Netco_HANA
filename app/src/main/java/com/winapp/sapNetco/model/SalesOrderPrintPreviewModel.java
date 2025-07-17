@@ -28,6 +28,15 @@ public class SalesOrderPrintPreviewModel {
     private ArrayList<SalesList> salesList;
 
     private String allowDeliveryAddress;
+    private String referenceNo;
+
+    public String getReferenceNo() {
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
+    }
 
     public String getAllowDeliveryAddress() {
         return allowDeliveryAddress;
@@ -214,6 +223,17 @@ public class SalesOrderPrintPreviewModel {
         private String subTotal;
         private String pricevalue;
         private String uomCode;
+        private String referenceNo;
+
+
+        public String getReferenceNo() {
+            return referenceNo;
+        }
+
+        public void setReferenceNo(String referenceNo) {
+            this.referenceNo = referenceNo;
+        }
+
 
         public String getGrossPrice() {
             return grossPrice;
