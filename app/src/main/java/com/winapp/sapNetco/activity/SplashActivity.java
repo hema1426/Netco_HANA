@@ -167,7 +167,8 @@ public class SplashActivity extends AppCompatActivity {
               //String apiUrl=Constants.TRANS_ORIENT_LIVE;
               //String apiUrl=Constants.IMPERIAL_URL;
 
-               String apiUrl=Constants.Netco; //17.7.25 - v1.1
+               //String apiUrl=Constants.Netco; //17.7.25 - v1.1
+               String apiUrl=Constants.Netco_url_sep; //17.9.25 - v1.1
 
 /*SQL app
 //          String apiUrl=Constants.AADHI_DEMO;

@@ -8,12 +8,17 @@ Netco
 http://159.69.142.253:93/api/login
 {"Username":"Niyaz","Password":"1234"}
 
+https://c21726-easysales-netco.cloudiax.com/api/login {"Username":"Niyaz","Password":"1234"}
+
+
  categorieesTempActivity
 ----------------------
 //select customer shareprefence not showing
 //todo error line  -
  //todo db error
 //todo check orderHistory db delete  -- TABLE_CART_HISTORY_TEMP2
+
+
 
 CateoriesTemp2Fragment
 ----------------

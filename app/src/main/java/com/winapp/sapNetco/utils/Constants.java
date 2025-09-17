@@ -60,6 +60,7 @@ public class Constants {
     //shaban LIVE URL    http://129.150.58.169:95
     public static String SHABAN_URL="http://129.150.58.169:91/api/";
 
+    public static String Netco_url_sep="https://c21726-easysales-netco.cloudiax.com/api/";
 
     // Live URL
     public static String NEW_LIVE_URL_AADHI ="http://18.143.95.61:81/api/";
